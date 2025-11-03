@@ -235,20 +235,31 @@ const ProductSingleDetails: React.FC<{
         setAddToCartLoader(false);
       }, 1500);
       const response = await addToCartApi(item);
+
       // console.log(response, '===> response');
-      if (response.message === 'Error processing request') {
-        toast.error('Please login to add item to cart', {
-          // progressClassName: 'fancy-progress-bar',
-          position: width! > 768 ? 'bottom-right' : 'top-right',
-          autoClose: 1500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        return;
-      }
-      if (response.items.length > 0) {
+    
+       if (response?.status === 400 || response?.error || response?.message) {
+    const errorMessage =
+    response?.message ||
+    response?.error ||
+    response?.data?.message ||
+    'Something went wrong while adding to cart.';
+
+  toast.error(errorMessage, {
+    position: 'top-right',
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+
+  setAddToCartLoader(false);
+  return;
+}
+      
+        
+      if (response?.items?.length > 0) {
         toast.success('Added to cart', {
           progressClassName: 'fancy-progress-bar',
           position: width! > 768 ? 'bottom-right' : 'top-right',
@@ -258,7 +269,7 @@ const ProductSingleDetails: React.FC<{
           pauseOnHover: true,
           draggable: true,
         });
-      }
+}
       addToCartContext({
         item: { _id: item?.id },
         price: item?.price,
@@ -420,7 +431,7 @@ const ProductSingleDetails: React.FC<{
           </div>
           <div className="flex items-center">
             <div className="text-brand-blue font-bold text-base md:text-xl xl:text-[32px]">
-              $ {data?.prices[0].amount}
+             {data?.prices?.[0]?.amount ? `$${data.prices[0].amount}` : 'Price not available'}
             </div>
           </div>
 

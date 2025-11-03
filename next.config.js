@@ -47,8 +47,8 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/en',
-        permanent: true,
+        destination: '/en/signin',
+        permanent: false,
       },
     ];
   },

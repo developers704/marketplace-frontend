@@ -21,11 +21,10 @@ export const useLogoutMutation = (lang: string) => {
   return useMutation({
     mutationFn: logout,
     onSuccess: (_data) => {
-      localStorage.removeItem('privacyPolicyAgreed');
-      localStorage.removeItem('privacyPolicyAgreedAt');
+      localStorage.clear();
       Cookies.remove('auth_token');
       unauthorize();
-      router.push(`/${lang}`);
+      router.push(`/${lang}/signin`);
     },
     onError: (data) => {
       console.log(data, 'logout error response');

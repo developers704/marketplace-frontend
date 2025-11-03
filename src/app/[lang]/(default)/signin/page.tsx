@@ -15,9 +15,9 @@ export default async function Page({
 }) {
   return (
     <>
-      <div className="flex items-center justify-start">
-        <div className="w-full">
-          <div className="w-full mb-5 flex flex-col items-center justify-start">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-md">
+          <div className="rounded-lg flex items-center justify-center w-full">
             {/* <Image
               src={'/assets/images/resetPassDone.jpeg'}
               alt="image"

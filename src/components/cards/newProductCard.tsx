@@ -137,7 +137,7 @@ const NewProductCard = ({
           )} */}
           <div>
             <p className="text-xl font-bold text-brand-blue">
-              $ {data?.prices[0]?.amount}
+            {data?.prices?.[0]?.amount ? `$${data?.prices[0]?.amount}` : 'Price not available'}
             </p>
           </div>
         </div>

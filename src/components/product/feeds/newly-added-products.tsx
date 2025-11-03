@@ -176,12 +176,12 @@ const NewlyAddedProduct = ({ lang }: any) => {
                 id="bottom"
                 className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
               >
-                {specialProducts.length > 0
-                  ? specialProducts.map((product: any) => {
+                  {specialProducts.length > 0
+                  ? specialProducts?.map((product: any) => {
                       return (
                         <Link
-                          href={`/${lang}/specialProducts/${product._id}`}
-                          key={product._id}
+                          href={`/${lang}/specialProducts/${product?._id}`}
+                          key={product?._id}
                         >
                           <NewProductCard data={product} lang={lang} />
                           {/* <div>hello</div> */}

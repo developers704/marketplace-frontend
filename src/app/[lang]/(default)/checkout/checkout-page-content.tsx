@@ -28,12 +28,12 @@ const CheckoutPageContent = () => {
   const key = 'Cart';
 
   useEffect(() => {
-    if (!isLoading) {
-      setWarehouse(user?.warehouse);
+    if (!isLoading && user?.warehouse?.length) {
+      // Default: select first warehouse
+      setWarehouse(user.warehouse[0]);
     }
-  }, [user]);
-
-  const fetchStoreWallet = async (warehouseId: any) => {
+  }, [user, isLoading]);
+    const fetchStoreWallet = async (warehouseId: any) => {
     const response = await getStoreWallet(warehouseId);
 
     // console.log(response, '===>>> response message store');
@@ -44,6 +44,7 @@ const CheckoutPageContent = () => {
   };
 
   const fetchWarehouseWallet = async (warehouseId: any) => {
+    if (!warehouseId) return;
     const response = await getWarehouseWallet(warehouseId);
 
     console.log(response, '===>>> response message store');
@@ -70,17 +71,17 @@ const CheckoutPageContent = () => {
       setProductsPrice(response?.total);
       setCart(response);
     }
-    if (response.items.length > 0) {
+    if (response?.items?.length > 0) {
       setItems(response.items);
     }
   };
 
   useEffect(() => {
-    if (isAuthorized) {
+    if (isAuthorized && warehouse?._id) {
       fetchCartForCheckout();
       fetchUserWallet();
-      fetchWarehouseWallet(warehouse?._id);
-      // if (permissions[key].View) {
+      fetchWarehouseWallet(warehouse._id);
+       // if (permissions[key].View) {
       //   fetchStoreWallet(warehouse?._id);
       //   setCanViewStoreWallet(true);
       // } else {
@@ -96,8 +97,28 @@ const CheckoutPageContent = () => {
   return (
     <section className="my-10 px-14">
       <div>
-        <div className="flex justify-center items-center mb-10">
+        <div className="flex justify-between items-center mb-10 mr-11">
           <h1 className="text-3xl font-bold">Checkout</h1>
+
+          <div className="flex flex-col items-start">
+            <label className="font-medium mb-1">Select Store for Purchase:</label>
+            <select
+              className="border border-gray-400 rounded px-3 py-2 text-lg w-full"
+              value={warehouse?._id || ''}
+              onChange={(e) => {
+                const selected = user?.warehouse?.find(
+                  (w: any) => w._id === e.target.value
+                );
+                setWarehouse(selected);
+              }}
+            >
+              {user?.warehouse?.map((wh: any) => (
+                <option key={wh._id} value={wh._id}>
+                  {wh.name || "store not found"}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="backContainer bg-[#f4f4f4] p-6 shadow-md mb-5">
           <div>

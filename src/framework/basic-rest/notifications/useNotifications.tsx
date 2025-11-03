@@ -4,6 +4,7 @@ import { getToken } from '../utils/get-token';
 export async function fetchNotifications() {
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   const token = getToken();
+  if (!token) return [];
   const response = await fetch(`${BASE_API}/api/notifications/`, {
     method: 'GET',
     headers: {
@@ -48,8 +49,10 @@ export async function readNotifications(id: any) {
 }
 
 export const useNotificationQuery = () => {
+  const token = getToken();
   return useQuery<any>({
     queryKey: ['get-notifications'],
     queryFn: () => fetchNotifications(),
+    enabled: Boolean(token),
   });
 };

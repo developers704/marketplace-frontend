@@ -74,8 +74,8 @@ const LoginForm = ({ lang }: { lang: string }) => {
   };
 
   return (
-    <div className="flex items-center justify-center pb-20">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-[500px] text-center flex flex-col gap-3">
+    <div className="flex items-center justify-center">
+      <div className="bg-red-50 p-8 rounded-2xl shadow-2xl w-[500px] text-center flex flex-col gap-3">
         <h2 className="text-[40px] font-bold mb-2">Welcome</h2>
         {/* <p className="text-gray-500 mb-6 ">Login into your account</p> */}
 
@@ -110,7 +110,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
 
         {/* Login Button */}
         <button
-          className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full bg-blue-400 text-white py-3   rounded-tr-[30px] rounded-bl-[30px]  text-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleSubmit}
           disabled={isLoading}
         >

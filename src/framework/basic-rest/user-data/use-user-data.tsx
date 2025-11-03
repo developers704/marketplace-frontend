@@ -55,8 +55,10 @@ export const fetchProfileData = async () => {
 
 export const useUserDataQuery = () => {
   // console.log(options, "===>>> otions")
+  const token = Cookies.get('auth_token');
   return useQuery({
     queryKey: ['User'],
     queryFn: fetchProfileData,
+    enabled: Boolean(token),
   });
 };
