@@ -9,11 +9,16 @@ module.exports = {
   //   // Required:
   //   appDir: true,
   // },
-  images: {
+ images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '2pl.app.boundlesstechnologies.net',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5000',
       },
       // Removed invalid hostname entry that contained 'undefined'
       {

@@ -157,7 +157,15 @@ const PersonalInfo = () => {
             </div>
             <div className="flex items-center justify-between">
               <strong>Store:</strong>
-              <p>{user?.warehouse?.name || '-'}</p>
+              <p>
+              {user?.warehouse?.length > 0
+                ? user.warehouse.map((w: any, index: any) => (
+                    <span key={w._id}>
+                      {w.name}{index !== user.warehouse.length - 1 ? ', ' : ''}
+                    </span>
+                  ))
+                : 'Store not available'}
+            </p>
             </div>
             <div className="flex items-center justify-between">
               <strong>Status:</strong>
