@@ -1,0 +1,187 @@
+{
+  "id": "pbsg4",
+  "name": "22K Gold Traditional Bangles Set",
+  "slug": "22k-gold-traditional-bangles-set",
+  "description": "Exquisitely crafted 22K gold bangles featuring intricate traditional designs. Each piece is meticulously handcrafted by skilled artisans, combining timeless beauty with contemporary elegance. These bangles showcase detailed metalwork and are perfect for both daily wear and special occasions. Available in various sizes to ensure a perfect fit.",
+  "image": {
+    "id": 1,
+    "thumbnail": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg",
+    "original": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg"
+  },
+  "gallery": [
+    {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg",
+      "original": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg"
+    },
+    {
+      "id": 2,
+      "thumbnail": "/assets/images/3pl/Birth Stone/BE/Topaz Birthstone Stud Earrings - price $39.99.jpg",
+      "original": "/assets/images/3pl/Birth Stone/BE/Topaz Birthstone Stud Earrings - price $39.99.jpg"
+    },
+    {
+      "id": 3,
+      "thumbnail": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg",
+      "original": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg"
+    }
+  ],
+  "quantity": 25,
+  "price": null,
+  "sale_price": null,
+  "unit": "1 Set",
+  "tag": [
+    {
+      "id": 1,
+      "name": "Gold Jewelry",
+      "slug": "gold-jewelry"
+    },
+    {
+      "id": 2,
+      "name": "Traditional",
+      "slug": "traditional"
+    },
+    {
+      "id": 3,
+      "name": "Bangles",
+      "slug": "bangles"
+    },
+    {
+      "id": 4,
+      "name": "22K Gold",
+      "slug": "22k-gold"
+    }
+  ],
+  "product_type": "variable",
+  "max_price": 2499,
+  "min_price": 1899,
+  "variations": [
+    {
+      "id": 8,
+      "attribute_id": 3,
+      "value": "2.4",
+      "attribute": {
+        "id": 3,
+        "slug": "weight-in-grams",
+        "name": "Weight in Grams",
+        "values": [
+          {
+            "id": 8,
+            "attribute_id": 3,
+            "value": "2.4"
+          },
+          {
+            "id": 9,
+            "attribute_id": 3,
+            "value": "2.8"
+          },
+          {
+            "id": 10,
+            "attribute_id": 3,
+            "value": "3.2"
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "attribute_id": 3,
+      "value": "2.8",
+      "attribute": {
+        "id": 3,
+        "slug": "weight-in-grams",
+        "name": "Weight in Grams",
+        "values": [
+          {
+            "id": 8,
+            "attribute_id": 3,
+            "value": "2.4"
+          },
+          {
+            "id": 9,
+            "attribute_id": 3,
+            "value": "2.8"
+          },
+          {
+            "id": 10,
+            "attribute_id": 3,
+            "value": "3.2"
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "attribute_id": 3,
+      "value": "3.2",
+      "attribute": {
+        "id": 3,
+        "slug": "weight-in-grams",
+        "name": "Weight in Grams",
+        "values": [
+          {
+            "id": 8,
+            "attribute_id": 3,
+            "value": "2.4"
+          },
+          {
+            "id": 9,
+            "attribute_id": 3,
+            "value": "2.8"
+          },
+          {
+            "id": 10,
+            "attribute_id": 3,
+            "value": "3.2"
+          }
+        ]
+      }
+    }
+  ],
+  "variation_options": [
+    {
+      "id": 247,
+      "title": "2.4 grams",
+      "price": 1999,
+      "sale_price": 1899,
+      "quantity": "8",
+      "is_disable": 0,
+      "sku": "GB2401",
+      "options": [
+        {
+          "name": "Weight in Grams",
+          "value": "2.4"
+        }
+      ]
+    },
+    {
+      "id": 248,
+      "title": "2.8 grams",
+      "price": 2299,
+      "sale_price": 2199,
+      "quantity": "10",
+      "is_disable": 0,
+      "sku": "GB2802",
+      "options": [
+        {
+          "name": "Weight in Grams",
+          "value": "2.8"
+        }
+      ]
+    },
+    {
+      "id": 249,
+      "title": "3.2 grams",
+      "price": 2499,
+      "sale_price": null,
+      "quantity": "7",
+      "is_disable": 0,
+      "sku": "GB3203",
+      "options": [
+        {
+          "name": "Weight in Grams",
+          "value": "3.2"
+        }
+      ]
+    }
+  ]
+}

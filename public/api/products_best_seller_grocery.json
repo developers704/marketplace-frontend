@@ -1,0 +1,722 @@
+[
+  {
+    "id": "pbsg13",
+    "name": "14K Gold Hoop Earrings",
+    "slug": "gold-bangles-set",
+    "description": "Traditional gold bangles featuring intricate craftsmanship. This luxurious set combines classic design with contemporary finishing.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/gold/hoops/14K Gold Hoop Earrings - price $74.99.png",
+      "original": "/assets/images/3pl/gold/hoops/14K Gold Hoop Earrings - price $74.99.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/gold/hoops/14K Gold Hoop Earrings - price $74.99.png",
+        "original": "/assets/images/3pl/gold/hoops/14K Gold Hoop Earrings - price $74.99.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/gold/hoops/14K Gold Hoop Earrings - price $74.99.png",
+        "original": "/assets/images/3pl/gold/hoops/14K Gold Hoop Earrings - price $74.99.png"
+      }
+    ],
+    "quantity": 170,
+    "price": 74.99,
+    "sale_price": 73,
+    "max_price": 74.99,
+    "min_price": 72.99,
+    "product_type": "variable",
+    "unit": "1 set",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Gold",
+        "slug": "gold"
+      },
+      {
+        "id": 2,
+        "name": "Bangles",
+        "slug": "bangles"
+      },
+      {
+        "id": 3,
+        "name": "Traditional",
+        "slug": "traditional"
+      }
+    ]
+  },
+  {
+    "id": "pbsg3",
+    "name": "Sterling Silver Cuff Bangle Bracelets",
+    "slug": "silver-statement-ring",
+    "description": "Contemporary silver ring featuring bold geometric designs and premium craftsmanship. Perfect for making a modern fashion statement.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/silver/bracelet/Sterling-Silver-Cuff-Bangle-Bracelets-Adjustable-Jewelry-Fashion-Simple-Open-Bangles-Cuff-Jewelry---price-$8.59.jpg",
+      "original": "/assets/images/2pl/silver/bracelet/Sterling-Silver-Cuff-Bangle-Bracelets-Adjustable-Jewelry-Fashion-Simple-Open-Bangles-Cuff-Jewelry---price-$8.59.jpg"
+    },
+    "gallery": [ 
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/silver/bracelet/Sterling-Silver-Cuff-Bangle-Bracelets-Adjustable-Jewelry-Fashion-Simple-Open-Bangles-Cuff-Jewelry---price-$8.59.jpg",
+        "original": "/assets/images/3pl/silver/bracelet/Sterling-Silver-Cuff-Bangle-Bracelets-Adjustable-Jewelry-Fashion-Simple-Open-Bangles-Cuff-Jewelry---price-$8.59.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/silver/bracelet/Silver-Bangle-Bracelets-for-Women---price-$9.99.jpg",
+        "original": "/assets/images/3pl/silver/bracelet/Silver-Bangle-Bracelets-for-Women---price-$9.99.jpg"
+      },
+      {
+        "id": 3,
+        "thumbnail": "/assets/images/3pl/silver/bracelet/Sterling-Silver-Cuff-Bangle-Bracelets-Adjustable-Jewelry-Fashion-Simple-Open-Bangles-Cuff-Jewelry---price-$8.59.jpg",
+        "original": "/assets/images/3pl/silver/bracelet/Sterling-Silver-Cuff-Bangle-Bracelets-Adjustable-Jewelry-Fashion-Simple-Open-Bangles-Cuff-Jewelry---price-$8.59.jpg"
+      }
+    ],
+    "quantity": 85,
+    "price": 189.99,
+    "sale_price": 159.99,
+    "max_price": 8.59,
+    "min_price": 7.99,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Silver",
+        "slug": "silver"
+      },
+      {
+        "id": 2,
+        "name": "Ring",
+        "slug": "ring"
+      },
+      {
+        "id": 3,
+        "name": "Modern",
+        "slug": "modern"
+      }
+    ]
+  },
+  {
+    "id": "pbsg2",
+    "name": "Birthstone Crystal Stud Earrings for Women",
+    "slug": "birthstone-pendant",
+    "description": "Personalized birthstone pendants featuring genuine gemstones. Each piece is carefully selected to represent your birth month with authentic stones and superior craftsmanship.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg",
+      "original": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg",
+        "original": "/assets/images/3pl/Birth Stone/BE/Birthstone Crystal Stud Earrings for Women - price $36.99.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/Birth Stone/BE/Topaz Birthstone Stud Earrings - price $39.99.jpg",
+        "original": "/assets/images/3pl/Birth Stone/BE/Topaz Birthstone Stud Earrings - price $39.99.jpg"
+      }
+    ],
+    "quantity": 50,
+    "price": 36,
+    "sale_price": 34,
+    "product_type": "variable",
+    "max_price": 36.99,
+    "min_price": 34.25,
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Birthstone",
+        "slug": "birthstone"
+      },
+      {
+        "id": 2,
+        "name": "Pendant",
+        "slug": "pendant"
+      },
+      {
+        "id": 3,
+        "name": "Personal",
+        "slug": "personal"
+      }
+    ]
+  },
+  {
+    "id": "pbsg1",
+    "name": "Multi Cut Birthstone Ring",
+    "slug": "diamond-bangle-collection",
+    "description": "Exquisite diamond bangles crafted with precision and elegance. Each piece showcases brilliant-cut diamonds set in premium metal, creating a timeless accessory that adds sophistication to any outfit.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Birth Stone/BB/Multi-Cut-Birthstone-Ring---price-$34.99.jpg",
+      "original": "/assets/images/3pl/Birth Stone/BB/Multi-Cut-Birthstone-Ring---price-$34.99.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/Birth Stone/BB/Multi-Cut-Birthstone-Ring---price-$34.99.jpg",
+        "original": "/assets/images/3pl/Birth Stone/BB/Multi-Cut-Birthstone-Ring---price-$34.99.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/Birth Stone/BB/Birthstone-Ring---price-$34.99.jpg",
+        "original": "/assets/images/3pl/Birth Stone/BB/Birthstone-Ring---price-$34.99.jpg"
+      },
+      {
+        "id": 3,
+        "thumbnail": "/assets/images/3pl/Birth Stone/BB/Birthstone-Ring---price-$34.99.jpg",
+        "original": "/assets/images/3pl/Birth Stone/BB/Birthstone-Ring---price-$34.99.jpg"
+      }
+    ],
+    "quantity": 70,
+    "price": 2.74,
+    "sale_price": 2.64,
+    "max_price": 34.99,
+    "min_price": 32.25,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Diamond",
+        "slug": "diamond"
+      },
+      {
+        "id": 2,
+        "name": "Bangle",
+        "slug": "bangle"
+      },
+      {
+        "id": 3,
+        "name": "Luxury",
+        "slug": "luxury"
+      }
+    ]
+  },
+  
+  {
+    "id": "pbsg9",
+    "name": "G Shock Casio Metal Covered Octagonal ",
+    "slug": "silver-drop-earrings",
+    "description": "Elegant silver drop earrings with intricate detailing. These versatile pieces add a touch of sophistication to any outfit.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Watches/G-Shock/G-Shock Casio Metal Covered Octagonal Black Resin Band Watch GM2100-1A - price $159.99.png",
+      "original": "/assets/images/3pl/Watches/G-Shock/G-Shock Casio Metal Covered Octagonal Black Resin Band Watch GM2100-1A - price $159.99.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/Watches/G-Shock/G-Shock Casio Metal Covered Octagonal Black Resin Band Watch GM2100-1A - price $159.99.png",
+        "original": "/assets/images/3pl/Watches/G-Shock/G-Shock Casio Metal Covered Octagonal Black Resin Band Watch GM2100-1A - price $159.99.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/Watches/G-Shock/G-Shock Casio Metal Covered Octagonal Black Resin Band Watch GM2100-1A - price $159.99.png",
+        "original": "/assets/images/3pl/Watches/G-Shock/G-Shock Casio Metal Covered Octagonal Black Resin Band Watch GM2100-1A - price $159.99.png"
+      }
+    ],
+    "quantity": 70,
+    "price": 159.99,
+    "sale_price": 99.99,
+    "max_price": 159.99,
+    "min_price": 155.99,
+    "product_type": "variable",
+    "unit": "1 pair",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Silver",
+        "slug": "silver"
+      },
+      {
+        "id": 2,
+        "name": "Earrings",
+        "slug": "earrings"
+      },
+      {
+        "id": 3,
+        "name": "Fashion",
+        "slug": "fashion"
+      }
+    ]
+  },
+ 
+  {
+    "id": "pbsg4",
+    "name": "Birthstone Bracelet For Women",
+    "slug": "tungsten-triton-band",
+    "description": "Modern and sophisticated tungsten band featuring a unique triton design. Known for its exceptional durability and scratch resistance, this contemporary piece offers both style and practicality for everyday wear.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Birth stone/Bp/Birthstone Bracelet For Women Friendship Bracelets for Girls - price $21.50.jpg",
+      "original": "/assets/images/3pl/Birth stone/Bp/Birthstone Bracelet For Women Friendship Bracelets for Girls - price $21.50.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/Birth stone/Bp/Birthstone Bracelet For Women Friendship Bracelets for Girls - price $21.50.jpg",
+        "original": "/assets/images/3pl/Birth stone/Bp/Birthstone Bracelet For Women Friendship Bracelets for Girls - price $21.50.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/Birth stone/Bp/Birthstone Bracelet For Women Friendship Bracelets for Girls - price $21.50.jpg",
+        "original": "/assets/images/3pl/Birth stone/Bp/Birthstone Bracelet For Women Friendship Bracelets for Girls - price $21.50.jpg"
+      }
+    ],
+    "quantity": 170,
+    "price": 299.99,
+    "sale_price": 249.99,
+    "max_price": 21.50,
+    "min_price": 20,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Tungsten",
+        "slug": "tungsten"
+      },
+      {
+        "id": 2,
+        "name": "Men's Band",
+        "slug": "mens-band"
+      },
+      {
+        "id": 3,
+        "name": "Modern",
+        "slug": "modern"
+      }
+    ]
+  },
+  {
+    "id": "pbsg10",
+    "name": "Bulova Men's Marine Star Series C Two Tone",
+    "slug": "silver-statement-bracelet",
+    "description": "Bold silver bracelet featuring contemporary design elements. A perfect blend of modern style and traditional craftsmanship.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Watches/Bulova/Bulova Men's Marine Star Series C Two-Tone Rose Gold Stainless Steel 6-Hand Chronograph Quartz Watch - price $339.95.png",
+      "original": "/assets/images/3pl/Watches/Bulova/Bulova Men's Marine Star Series C Two-Tone Rose Gold Stainless Steel 6-Hand Chronograph Quartz Watch - price $339.95.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/Watches/Bulova/Bulova Men's Marine Star Series C Two-Tone Rose Gold Stainless Steel 6-Hand Chronograph Quartz Watch - price $339.95.png",
+        "original": "/assets/images/3pl/Watches/Bulova/Bulova Men's Marine Star Series C Two-Tone Rose Gold Stainless Steel 6-Hand Chronograph Quartz Watch - price $339.95.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/Watches/Bulova/Bulova Men's Marine Star Series C Two-Tone Rose Gold Stainless Steel 6-Hand Chronograph Quartz Watch - price $339.95.png",
+        "original": "/assets/images/3pl/Watches/Bulova/Bulova Men's Marine Star Series C Two-Tone Rose Gold Stainless Steel 6-Hand Chronograph Quartz Watch - price $339.95.png"
+      }
+    ],
+    "quantity": 70,
+    "price": 339.95,
+    "sale_price": 139.99,
+    "max_price": 339.95,
+    "min_price": 335.89,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Silver",
+        "slug": "silver"
+      },
+      {
+        "id": 2,
+        "name": "Bracelet",
+        "slug": "bracelet"
+      },
+      {
+        "id": 3,
+        "name": "Modern",
+        "slug": "modern"
+      }
+    ]
+  },
+  {
+    "id": "pbsg5",
+    "name": "Birthstone Stud Earrings",
+    "slug": "tungsten-classic-band",
+    "description": "Timeless tungsten band with a polished finish. This classic design combines durability with elegance, perfect for both special occasions and everyday wear.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/Birth Stone/B/Birthstone Stud Earrings - price $20.90.jpg",
+      "original": "/assets/images/3pl/Birth Stone/B/Birthstone Stud Earrings - price $20.90.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/Birth Stone/B/Birthstone Stud Earrings - price $20.90.jpg",
+        "original": "/assets/images/3pl/Birth Stone/B/Birthstone Stud Earrings - price $20.90.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/Birth Stone/B/Birthstone Stud Earrings - price $20.90.jpg",
+        "original": "/assets/images/3pl/Birth Stone/B/Birthstone Stud Earrings - price $20.90.jpg"
+      }
+    ],
+    "quantity": 270,
+    "price": 279.99,
+    "sale_price": 229.99,
+    "max_price": 20.90,
+    "min_price": 18.00,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Tungsten",
+        "slug": "tungsten"
+      },
+      {
+        "id": 2,
+        "name": "Classic",
+        "slug": "classic"
+      },
+      {
+        "id": 3,
+        "name": "Band",
+        "slug": "band"
+      }
+    ]
+  },
+  {
+    "id": "pbsg14",
+    "name": "Gold Chain",
+    "slug": "gold-chain-collection",
+    "description": "Premium gold chain featuring elegant design and superior craftsmanship. Perfect for both casual and formal occasions.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/gold/chain/Gold Chain - price $8.99.png",
+      "original": "/assets/images/3pl/gold/chain/Gold Chain - price $8.99.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/gold/chain/Gold Chain - price $8.99.png",
+        "original": "/assets/images/3pl/gold/chain/Gold Chain - price $8.99.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/gold/chain/Gold Chain - price $8.99.png",
+        "original": "/assets/images/3pl/gold/chain/Gold Chain - price $8.99.png"
+      }
+    ],
+    "quantity": 170,
+    "price": 8.99,
+    "sale_price": 8,
+    "max_price": 8.99,
+    "min_price": 7.89,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Gold",
+        "slug": "gold"
+      },
+      {
+        "id": 2,
+        "name": "Chain",
+        "slug": "chain"
+      },
+      {
+        "id": 3,
+        "name": "Fashion",
+        "slug": "fashion"
+      }
+    ]
+  },
+  {
+    "id": "pbsg6",
+    "name": "Sterling Silver Teardrop Leverback Earrings",
+    "slug": "bulova-luxury-watch",
+    "description": "Elegant Bulova timepiece featuring precision movement and sophisticated design. This luxury watch combines traditional craftsmanship with modern functionality.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/silver/earring/Sterling-Silver-Teardrop-Leverback-Earrings---price-$14.79.jpg",
+      "original": "/assets/images/3pl/silver/earring/Sterling-Silver-Teardrop-Leverback-Earrings---price-$14.79.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/silver/earring/Sterling-Silver-Teardrop-Leverback-Earrings---price-$14.79.jpg",
+        "original": "/assets/images/3pl/silver/earring/Sterling-Silver-Teardrop-Leverback-Earrings---price-$14.79.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/silver/earring/Sterling-Silver-Teardrop-Leverback-Earrings---price-$14.79.jpg",
+        "original": "/assets/images/3pl/silver/earring/Sterling-Silver-Teardrop-Leverback-Earrings---price-$14.79.jpg"
+      }
+    ],
+    "quantity": 70,
+    "price": 599.99,
+    "sale_price": 499.99,
+    "max_price": 14.79,
+    "min_price": 13.78,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Watch",
+        "slug": "watch"
+      },
+      {
+        "id": 2,
+        "name": "Luxury",
+        "slug": "luxury"
+      },
+      {
+        "id": 3,
+        "name": "Bulova",
+        "slug": "bulova"
+      }
+    ]
+  },
+  {
+    "id": "pbsg7",
+    "name": "Celtic Knot Cross Pendant Necklace",
+    "slug": "g-shock-sports-watch",
+    "description": "Rugged and reliable G-Shock timepiece with advanced features. Perfect for active lifestyles, combining durability with modern technology.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/silver/pendant/Celtic-Knot-Cross-Pendant-Necklace-for-Womens---price-$28.jpg",
+      "original": "/assets/images/3pl/silver/pendant/Celtic-Knot-Cross-Pendant-Necklace-for-Womens---price-$28.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/silver/pendant/Celtic-Knot-Cross-Pendant-Necklace-for-Womens---price-$28.jpg",
+        "original": "/assets/images/3pl/silver/pendant/Celtic-Knot-Cross-Pendant-Necklace-for-Womens---price-$28.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/silver/pendant/Celtic-Knot-Cross-Pendant-Necklace-for-Womens---price-$28.jpg",
+        "original": "/assets/images/3pl/silver/pendant/Celtic-Knot-Cross-Pendant-Necklace-for-Womens---price-$28.jpg"
+      }
+    ],
+    "quantity": 70,
+    "price": 199.99,
+    "sale_price": 179.99,
+    "max_price": 599.99,
+    "min_price": 499.99,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Watch",
+        "slug": "watch"
+      },
+      {
+        "id": 2,
+        "name": "Sports",
+        "slug": "sports"
+      },
+      {
+        "id": 3,
+        "name": "G-Shock",
+        "slug": "g-shock"
+      }
+    ]
+  },
+  {
+    "id": "pbsg8",
+    "name": "Open Adjustable Ring for Women",
+    "slug": "cartier-luxury-timepiece",
+    "description": "Exquisite Cartier watch embodying luxury and precision. A masterpiece of watchmaking that combines elegant design with superior mechanics.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/silver/ring/Open-Adjustable-Ring-for-Women---price-$16.99.jpg",
+      "original": "/assets/images/3pl/silver/ring/Open-Adjustable-Ring-for-Women---price-$16.99.jpg"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/silver/ring/Open-Adjustable-Ring-for-Women---price-$16.99.jpg",
+        "original": "/assets/images/3pl/silver/ring/Open-Adjustable-Ring-for-Women---price-$16.99.jpg"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/silver/ring/Open-Adjustable-Ring-for-Women---price-$16.99.jpg",
+        "original": "/assets/images/3pl/silver/ring/Open-Adjustable-Ring-for-Women---price-$16.99.jpg"
+      }
+    ],
+    "quantity": 70,
+    "price": 7999.99,
+    "sale_price": 6999.99,
+    "max_price": 16.99,
+    "min_price": 15.99,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Watch",
+        "slug": "watch"
+      },
+      {
+        "id": 2,
+        "name": "Luxury",
+        "slug": "luxury"
+      },
+      {
+        "id": 3,
+        "name": "Cartier",
+        "slug": "cartier"
+      }
+    ]
+  },
+  
+ 
+  {
+    "id": "pbsg11",
+    "name": "Round Cut Diamond Ring for Men",
+    "slug": "diamond-statement-earrings",
+    "description": "Luxurious diamond earrings featuring brilliant-cut stones. These stunning pieces combine timeless elegance with contemporary design.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/diamond/gents ring/Round Cut Diamond Ring for Men - price $939.88.png",
+      "original": "/assets/images/3pl/diamond/gents ring/Round Cut Diamond Ring for Men - price $939.88.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/diamond/gents ring/Round Cut Diamond Ring for Men - price $939.88.png",
+        "original": "/assets/images/3pl/diamond/gents ring/Round Cut Diamond Ring for Men - price $939.88.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/diamond/gents ring/Round Cut Diamond Ring for Men - price $939.88.png",
+        "original": "/assets/images/3pl/diamond/gents ring/Round Cut Diamond Ring for Men - price $939.88.png"
+      }
+    ],
+    "quantity": 70,
+    "price": 939.88,
+    "sale_price": 939.99,
+    "max_price": 939.88,
+    "min_price": 937.88,
+    "product_type": "variable",
+    "unit": "1 pair",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Diamond",
+        "slug": "diamond"
+      },
+      {
+        "id": 2,
+        "name": "Earrings",
+        "slug": "earrings"
+      },
+      {
+        "id": 3,
+        "name": "Luxury",
+        "slug": "luxury"
+      }
+    ]
+  },
+  {
+    "id": "pbsg12",
+    "name": "Diamond Necklace for Women",
+    "slug": "diamond-gents-ring",
+    "description": "Sophisticated men's diamond ring crafted with precision. Features premium diamonds in a modern setting, perfect for special occasions.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/diamond/Fancy neck/Diamond Necklace for Women - price $34.89.png",
+      "original": "/assets/images/3pl/diamond/Fancy neck/Diamond Necklace for Women - price $34.89.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/diamond/Fancy neck/Diamond Necklace for Women - price $34.89.png",
+        "original": "/assets/images/3pl/diamond/Fancy neck/Diamond Necklace for Women - price $34.89.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/diamond/Fancy neck/Diamond Necklace for Women - price $34.89.png",
+        "original": "/assets/images/3pl/diamond/Fancy neck/Diamond Necklace for Women - price $34.89.png"
+      }
+    ],
+    "quantity": 70,
+    "price": 34.89,
+    "sale_price": 33.89,
+    "max_price": 34.89,
+    "min_price": 33.89,
+    "product_type": "variable",
+    "unit": "1 piece",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Diamond",
+        "slug": "diamond"
+      },
+      {
+        "id": 2,
+        "name": "Men's Ring",
+        "slug": "mens-ring"
+      },
+      {
+        "id": 3,
+        "name": "Luxury",
+        "slug": "luxury"
+      }
+    ]
+  },
+  
+  {
+    "id": "pbsg15",
+    "name": "4mm Thick Gold Chunky Earrings",
+    "slug": "gold-hoop-earrings",
+    "description": "Classic gold hoop earrings with modern styling. These versatile pieces add elegance to any ensemble.",
+    "image": {
+      "id": 1,
+      "thumbnail": "/assets/images/3pl/gold/hoops/4mm Thick Gold Chunky Earrings - price $14.99.png",
+      "original": "/assets/images/3pl/gold/hoops/4mm Thick Gold Chunky Earrings - price $14.99.png"
+    },
+    "gallery": [
+      {
+        "id": 1,
+        "thumbnail": "/assets/images/3pl/gold/hoops/4mm Thick Gold Chunky Earrings - price $14.99.png",
+        "original": "/assets/images/3pl/gold/hoops/4mm Thick Gold Chunky Earrings - price $14.99.png"
+      },
+      {
+        "id": 2,
+        "thumbnail": "/assets/images/3pl/gold/hoops/4mm Thick Gold Chunky Earrings - price $14.99.png",
+        "original": "/assets/images/3pl/gold/hoops/4mm Thick Gold Chunky Earrings - price $14.99.png"
+      }
+    ],
+    "quantity": 70,
+    "price": 14.45,
+    "sale_price": 13.99,
+    "max_price": 14.45,
+    "min_price": 13.99,
+    "product_type": "variable",
+    "unit": "1 pair",
+    "tag": [
+      {
+        "id": 1,
+        "name": "Gold",
+        "slug": "gold"
+      },
+      {
+        "id": 2,
+        "name": "Earrings",
+        "slug": "earrings"
+      },
+      {
+        "id": 3,
+        "name": "Classic",
+        "slug": "classic"
+      }
+    ]
+  }
+]

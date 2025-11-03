@@ -1,0 +1,219 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Diamond",
+      "slug": "fresh-vegetables",
+      "image": {
+        "id": 1,
+        "thumbnail": "/assets/images/2pl/diamond/bangles/1.png",
+        "original": "/assets/images/2pl/diamond/bangles/1.png"
+      },
+      "icon": "/assets/images/2pl/diamond/bangles/1.png",
+      "children": [
+        {
+          "id": 1,
+          "name": "Bangle",
+          "slug": "arugula"
+        },
+        {
+          "id": 2,
+          "name": "Earrings",
+          "slug": "asparagus"
+        },
+        {
+          "id": 3,
+          "name": "Fancy Neck",
+          "slug": "beets"
+        },
+        {
+          "id": 4,
+          "name": "Gents Ring",
+          "slug": "cabbages"
+        },
+        {
+          "id": 5,
+          "name": "Ladies BRCL",
+          "slug": "cabbages"
+        },
+        {
+          "id": 6,
+          "name": "Ladies Ring",
+          "slug": "cabbages"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Birth Stone",
+      "slug": "diet-foods",
+      "image": {
+        "id": 1,
+        "thumbnail": "/assets/images/2pl/birthstone/main.webp",
+        "original": "/assets/images/2pl/birthstone/main.webp"
+      },
+      "icon": "/assets/images/2pl/birthstone/main.webp",
+      "children": [
+        {
+          "id": 1,
+          "name": "B",
+          "slug": "whole-eggs"
+        },
+        {
+          "id": 2,
+          "name": "BB",
+          "slug": "boiled-potatoes"
+        },
+        {
+          "id": 3,
+          "name": "BE",
+          "slug": "boiled-potatoes"
+        },
+        {
+          "id": 4,
+          "name": "BP",
+          "slug": "boiled-potatoes"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Gold",
+      "slug": "diet-nutrition",
+      "image": {
+        "id": 1,
+        "thumbnail": "/assets/images/2pl/gold/gold bar/2.png",
+        "original": "/assets/images/2pl/gold/gold bar/2.png"
+      },
+      "icon": "/assets/images/2pl/gold/gold bar/2.png",
+      "children": [
+        {
+          "id": 1,
+          "name": "Gold Ankel",
+          "slug": "whole-eggs"
+        },
+        {
+          "id": 2,
+          "name": "Gold Bankel",
+          "slug": "boiled-potatoes"
+        },
+        {
+          "id": 3,
+          "name": "Gold Bar",
+          "slug": "boiled-potatoes"
+        },
+        {
+          "id": 4,
+          "name": "Gold Chain",
+          "slug": "boiled-potatoes"
+        },
+        {
+          "id": 5,
+          "name": "Gold Hoops",
+          "slug": "boiled-potatoes"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Silver",
+      "slug": "fast-food-items",
+      "image": {
+        "id": 1,
+        "thumbnail": "/assets/images/2pl/silver/silver ring/4.jpg",
+        "original": "/assets/images/2pl/silver/silver ring/4.jpg"
+      },
+      "icon": "/assets/images/2pl/silver/silver ring/4.jpg",
+      "children": [
+        {
+          "id": 1,
+          "name": "Silver",
+          "slug": "burger"
+        },
+        {
+          "id": 2,
+          "name": "Silver ERG",
+          "slug": "beef-sandwich"
+        },
+        {
+          "id": 3,
+          "name": "Silver PDT",
+          "slug": "burrito-supreme"
+        },
+        {
+          "id": 4,
+          "name": "Silver RNG",
+          "slug": "burrito-supreme"
+        },
+        {
+          "id": 5,
+          "name": "Silver BRCL",
+          "slug": "burrito-supreme"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Tungsten",
+      "slug": "fruits-items",
+      "image": {
+        "id": 1,
+        "thumbnail": "/assets/images/category/fruits-items.png",
+        "original": "/assets/images/category/fruits-items.png"
+      },
+      "icon": "/assets/images/2pl/tungsten/tungs band/4.webp",
+      "children": [
+        {
+          "id": 1,
+          "name": "Triton",
+          "slug": "apples"
+        },
+        {
+          "id": 2,
+          "name": "Tungs Band",
+          "slug": "melons"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Watch",
+      "slug": "healthy-foods",
+      "image": {
+        "id": 1,
+        "thumbnail": "/assets/images/2pl/watch/g-shock/4.png",
+        "original": "/assets/images/2pl/watch/g-shock/4.png"
+      },
+      "icon": "/assets/images/2pl/watch/g-shock/4.png",
+      "children": [
+        {
+          "id": 1,
+          "name": "BULOVA",
+          "slug": "apples"
+        },
+        {
+          "id": 2,
+          "name": "Tungs Band",
+          "slug": "CARTIER"
+        },
+        {
+          "id": 3,
+          "name": "G-Shock",
+          "slug": "CARTIER"
+        },
+        {
+          "id": 4,
+          "name": "Gucci",
+          "slug": "CARTIER"
+        },
+        {
+          "id": 5,
+          "name": "Gucci Jewl",
+          "slug": "CARTIER"
+        }
+      ]
+    }
+    
+  ]
+}
+
