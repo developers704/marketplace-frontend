@@ -658,7 +658,7 @@ const ProductListCard = ({
         });
       }
     } catch (error) {
-      console.log(error, '===>>> error');
+      // console.log(error, '===>>> error');
       toast.error('Something went wrong', {
         // progressClassName: 'fancy-progress-bar',
         autoClose: 1500,
@@ -868,7 +868,7 @@ const ProductListCard = ({
               href={`/${lang}/${data?.category[0]?.name}/${data?.subcategory[0]?.name}/${data?.name}?id=${data?._id}`}
             >
               <Image
-                src={getImageUrl(BASE_API, data?.gallery[0] || data?.image, `/assets/images/products/item1.png`)}
+                src={getImageUrl(BASE_API, data?.gallery?.[0] || data?.image, `/assets/images/products/item1.png`)}
                 alt="item1"
                 fill
                 objectFit="contain"

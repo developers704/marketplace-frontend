@@ -23,7 +23,8 @@ export function generateCartItem(
 ) {
   // const { _id, name, sku, image, gallery, prices } = item;
   const price = item?.prices[0]?.amount;
-  const imageCart = item?.gallery[0] || item?.image;
+  const imageCart = item?.gallery?.[0] || item?.image;
+
   const subTotal = price * quantity;
 
   // console.log(item, '===> item from utils');
