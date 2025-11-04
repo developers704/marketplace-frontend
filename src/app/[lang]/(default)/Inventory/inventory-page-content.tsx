@@ -11,9 +11,11 @@ import {
   // useProductsByCategoryQuery,
 } from '@/framework/basic-rest/product/get-products-by-category';
 import { getWishListItem } from '@/framework/basic-rest/wishlist/get-wishlist';
+import { useWarehousesQuery } from '@/framework/basic-rest/warehouse/get-all-warehouses';
 import PreventScreenCapture from '@/utils/PreventScreenShots';
 import { useParams, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+// import { XCircle } from "lucide-react";
 
 const ItemListPageContent = ({ lang }: any) => {
   const [wishlistProductIds, setWishlistProductIds] = useState<any>();
@@ -26,6 +28,10 @@ const ItemListPageContent = ({ lang }: any) => {
   >({});
   const [searchQuery, setSearchQuery] = useState<string | any>('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [warehouseFilter, setWarehouseFilter] = useState<string>('main-warehouse'); 
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [productsPerPage, setProductsPerPage] = useState<number>(20);
   // const [productsFilter, setProductsFilter] = useState<any>([]);
 
   const params = useParams();
@@ -36,11 +42,28 @@ const ItemListPageContent = ({ lang }: any) => {
   const { itemlist: categoryId, category } = params;
   const PageTitle = decodeURIComponent(`${category}`);
 
-  const { data: categoryProducts, isLoading, error } = useProducts();
+  // Fetch warehouses
+  const { data: warehouses, isLoading: isLoadingWarehouses } = useWarehousesQuery();
+  
+  // Fetch products with warehouse filters and pagination
+  const { data: productsData, isLoading, error } = useProducts(
+    selectedWarehouseId ? undefined : (warehouseFilter || undefined), // Use warehouseFilter only if no specific warehouse selected
+    selectedWarehouseId || undefined,
+    currentPage,
+    productsPerPage
+  );
+
+  const categoryProducts = productsData?.products || [];
+  const pagination = productsData?.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 };
 
   const activeProducts = categoryProducts?.filter((item: any) => {
     return item?.lifecycleStage === 'active';
   });
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [warehouseFilter, selectedWarehouseId]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -122,11 +145,11 @@ const ItemListPageContent = ({ lang }: any) => {
       if (response && response?.length > 0) {
         setVarinats(response);
       } else {
-        console.log('No Variants Found');
+        // console.log('No Variants Found');
         setVarinats([]);
       }
     } catch (error) {
-      console.log(error, '===>>> error');
+      // console.log(error, '===>>> error');
     }
   };
 
@@ -185,7 +208,7 @@ const ItemListPageContent = ({ lang }: any) => {
       if (groupedVariants) {
         setGroupedVariantsArray(Object.entries(groupedVariants));
       } else {
-        console.log('No Variants Found');
+        // console.log('No Variants Found');
         setGroupedVariantsArray([]);
       }
     }
@@ -213,7 +236,69 @@ const ItemListPageContent = ({ lang }: any) => {
               {'Inventory'}
             </h1>
           </div>
-          <div className="rightSide flex items-center justify-center space-x-4">
+          <div className="rightSide flex items-center justify-center space-x-4 flex-wrap gap-2">
+            {/* Warehouse Filter Dropdown */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="warehouseFilter" className="text-sm font-medium whitespace-nowrap">
+                
+              </label>
+              <select
+                id="warehouseFilter"
+                value={warehouseFilter}
+                onChange={(e) => {
+                  setWarehouseFilter(e.target.value);
+                  setSelectedWarehouseId(''); // Clear specific warehouse when filter changes
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+              >
+                <option value="main-warehouse">Available</option>
+                <option value="out-to-store">Out to Store</option>
+                <option value="warehouse-plus-store">All</option>
+              </select>
+            </div>
+
+            {/* Store/Warehouse Dropdown */}
+            {/* <div className="flex items-center gap-2">
+              <label htmlFor="warehouseSelect" className="text-sm font-medium whitespace-nowrap">
+                Store:
+              </label>
+              <select
+                id="warehouseSelect"
+                value={selectedWarehouseId}
+                onChange={(e) => {
+                  setSelectedWarehouseId(e.target.value);
+                  if (e.target.value) {
+                    setWarehouseFilter(''); // Clear filter when specific warehouse selected
+                  } else {
+                    setWarehouseFilter('main-warehouse'); // Reset to default when "All Stores" selected
+                  }
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+              >
+                <option value="">All Stores</option>
+                {warehouses?.map((warehouse: any) => (
+                  <option key={warehouse._id} value={warehouse._id}>
+                    {warehouse.name} {warehouse.isMain ? '(Main)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div> */}
+            
+
+            {/* Clear Filter Button */}
+            {/* {(warehouseFilter !== 'main-warehouse' || selectedWarehouseId) && (
+              <button
+                onClick={() => {
+                  setWarehouseFilter('main-warehouse');
+                  setSelectedWarehouseId('');
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors whitespace-nowrap"
+                type="button"
+              >
+                <XCircle size={18} />
+              </button>
+            )} */}
+
             <DebounceSearch
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -276,6 +361,48 @@ const ItemListPageContent = ({ lang }: any) => {
             )}
           </div>
         </div>
+        
+        {/* Pagination Controls */}
+        {!isLoading && pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8 mb-4">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+            >
+              Previous
+            </button>
+            
+            <span className="px-4 py-2 text-sm">
+              Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+            </span>
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+              disabled={currentPage >= pagination.totalPages}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+            >
+              Next
+            </button>
+            
+            {/* Page Size Selector */}
+            <select
+              value={productsPerPage}
+              onChange={(e) => {
+                setProductsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ml-4"
+            >
+              <option value={10}>10 per page</option>
+              <option value={20}>20 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={100}>100 per page</option>
+            </select>
+          </div>
+        )}
       </section>
     </Container>
   );

@@ -36,12 +36,24 @@ export const fetchProductsByCategory = async (
 };
 
 // Fetch function
-export const fetchProducts = async () => {
+export const fetchProducts = async (warehouseFilter?: string, warehouseId?: string, page: number = 1, limit: number = 20) => {
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   const token = getToken();
-  // console.log(categoryId, '===>>> category id from fetchProductsByCategory');
   try {
-    const response = await fetch(`${BASE_API}/api/products`, {
+    const params = new URLSearchParams();
+    if (warehouseFilter) {
+      params.append('warehouseFilter', warehouseFilter);
+    }
+    if (warehouseId) {
+      params.append('warehouseId', warehouseId);
+    }
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    const queryString = params.toString();
+    const url = `${BASE_API}/api/products${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +66,10 @@ export const fetchProducts = async () => {
     }
 
     const data = await response.json();
-    // console.log(data, '===>>> category data');
+    // Handle both old format (array) and new format (object with products and pagination)
+    if (Array.isArray(data)) {
+      return { products: data, pagination: { page: 1, limit: data.length, total: data.length, totalPages: 1 } };
+    }
     return data;
   } catch (error) {
     console.error('Error fetching category products:', error);
@@ -105,10 +120,10 @@ export const useProductsByCategoryQuery = (
   });
 };
 
-export const useProducts = () => {
+export const useProducts = (warehouseFilter?: string, warehouseId?: string, page: number = 1, limit: number = 20) => {
   return useQuery({
-    queryKey: ['products'],
-    queryFn: () => fetchProducts(),
+    queryKey: ['products', warehouseFilter, warehouseId, page, limit],
+    queryFn: () => fetchProducts(warehouseFilter, warehouseId, page, limit),
   });
 };
 
