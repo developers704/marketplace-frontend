@@ -1,56 +1,155 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const PreventScreenCapture = () => {
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [keyPress, setKeyPress] = useState(false);
+type Props = {
+  userLabel?: string;
+  watermarkIntervalMs?: number;
+};
+
+const PreventScreenCapture: React.FC<Props> = ({
+  userLabel = '',
+  watermarkIntervalMs = 5000,
+}) => {
+  const [blocked, setBlocked] = useState(false);
+  const [watermark, setWatermark] = useState('');
 
   useEffect(() => {
-    const handleContextMenu = (e: MouseEvent) => {
+    const update = () => {
+      const now = new Date();
+      const formattedTime = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+      setWatermark(`${userLabel ? userLabel + ' • ' : ''}${formattedTime}`);
+    };
+    update();
+    const iv = setInterval(update, watermarkIntervalMs);
+    return () => clearInterval(iv);
+  }, [userLabel, watermarkIntervalMs]);
+
+  useEffect(() => {
+    const onContext = (e: MouseEvent) => e.preventDefault();
+    const onSelect = (e: Event) => {
+      window.getSelection()?.removeAllRanges();
       e.preventDefault();
     };
-    const handleKeyDown: any = (e: KeyboardEvent) => {
-      //   console.log(e, '===>>> e');
-      if (e.ctrlKey && e.shiftKey) {
-        // console.log('Key pressed');
+
+    const onVisibility = () => setBlocked(document.hidden);
+    const onBlur = () => setBlocked(true);
+    const onFocus = () => setBlocked(false);
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey && e.shiftKey) ||
+        (e.metaKey && e.shiftKey) ||
+        e.key === 'PrintScreen' ||
+        e.code === 'PrintScreen' ||
+        (e.ctrlKey && e.key.toLowerCase() === 'p')
+      ) {
         e.preventDefault();
-        setShowOverlay(true); // Blur content on losing focus
-        setKeyPress(true);
-        // alert('Screenshots are disabled!');
-      } else if (e.metaKey && e.shiftKey) {
-        e.preventDefault();
-        setShowOverlay(true); // Blur content on losing focus
-      } else {
-        setShowOverlay(false);
+        setBlocked(true);
+        return;
       }
-    };
-    const handleVisibilityChange = () => {
-      if (keyPress) {
-        setShowOverlay(true); // Blur content on losing focus
-      } else {
-        setShowOverlay(false); // Remove blur when active
+
+      if (blocked) {
+        setBlocked(false);
       }
     };
 
-    // console.log(showOverlay, '===>>> showOverlay');
-    // document.addEventListener('visibilitychange', handleVisibilityChange);
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('contextmenu', onContext);
+    document.addEventListener('selectstart', onSelect);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('keydown', onKeyDown);
 
     return () => {
-      // document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('contextmenu', onContext);
+      document.removeEventListener('selectstart', onSelect);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('keydown', onKeyDown);
     };
-  }, [showOverlay]);
+  }, [blocked]);
 
-  return showOverlay ? (
-    <div className="sensitive-content screenshot-protection">
-      <h1 className="text-[42px] text-white font-bold absolute">
-        No Screenshots, Press any key to continue
-      </h1>
+  if (!blocked) return null;
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        background:
+          'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.7) 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'auto',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          backgroundColor:"black",
+          textAlign:"center",
+          fontSize: 14,
+          color: 'rgba(255,255,255,0.85)',
+        }}
+      >
+        Screenshots are disabled for security.
+      </div>
+
+      <div
+        style={{
+          textAlign: 'center',
+          color: 'white',
+          zIndex: 100000,
+          padding: '1rem 2rem',
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: 28 }}>Sensitive content blocked</h2>
+        <p style={{ marginTop: 8 }}>Press any key to continue.</p>
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        {Array.from({ length: 6 }).map((_, row) => (
+          <div
+            key={row}
+            style={{
+              display: 'flex',
+              gap: 40,
+              transform: `translateY(${row * 120}px) rotate(-20deg)`,
+              opacity: 0.08,
+              fontSize: 18,
+              color: '#fff',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {Array.from({ length: 10 }).map((__, i) => (
+              <span key={i} style={{ marginRight: 60 }}>
+                {watermark}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
-  ) : null;
+  );
 };
 
 export default PreventScreenCapture;

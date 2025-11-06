@@ -1,0 +1,30 @@
+name: Deploy Next.js to GoDaddy via FTP
+
+on:
+  push:
+    branches:
+      - main   # change if your branch is 'master'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and export Next.js site
+        run: npm run build
+
+      - name: Deploy to GoDaddy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ftp.arrakconsulting.com            
+          username: FTP_PASSWORD@dev.vallianimarketplace.com   
+          password: vallianimarketplace@gmail.com     
+          protocol: ftp
+          local-dir: ./out
+          server-dir: /public_html/dev.vallianimarketplace.com/

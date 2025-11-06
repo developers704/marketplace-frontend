@@ -1,2 +1,2 @@
-NEXT_PUBLIC_BASE_API=http://localhost:5000
-<!-- NEXT_PUBLIC_BASE_API=https://backend.vallianimarketplace.com -->
+<!-- NEXT_PUBLIC_BASE_API=http://localhost:5000 -->
+NEXT_PUBLIC_BASE_API=https://backend.vallianimarketplace.com
