@@ -14,9 +14,8 @@ export interface LoginInputType {
   remember_me: boolean;
 }
 
-export async function login(input: LoginInputType, setPermissions: any) {
+export async function login(input: LoginInputType & { warehouseId?: string }, setPermissions: any) {
   try {
-    // const { setPermissions } = useContext(PermissionsContext) || {};
     const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
     const response = await fetch(`${BASE_API}/api/auth/customer/login`, {
       method: 'POST',
@@ -26,6 +25,7 @@ export async function login(input: LoginInputType, setPermissions: any) {
       body: JSON.stringify({
         email: input.email,
         password: input.password,
+        warehouseId: input.warehouseId,
       }),
     });
 
@@ -45,7 +45,12 @@ export async function login(input: LoginInputType, setPermissions: any) {
 
     if (data.token) {
       Cookies.set('auth_token', data.token);
-      // Save permissions if provided in response
+      localStorage.setItem('auth_token', data.token);
+     if (data.selectedWarehouse) {
+     localStorage.setItem('selectedWarehouse', JSON.stringify(data.selectedWarehouse));
+      }
+
+      // Save permissions if provided
       if (data?.customer?.role?.permissions && setPermissions) {
         setPermissions(data?.customer?.role?.permissions);
         localStorage.setItem(

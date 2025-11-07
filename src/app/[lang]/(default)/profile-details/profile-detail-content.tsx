@@ -46,11 +46,24 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
     router.push(`/${lang}/profile-details?option=${title}`);
   };
 
-  useEffect(() => {
-    if (!isLoading) {
-      setWarehouse(user?.warehouse);
+useEffect(() => {
+  if (!isLoading) {
+    const savedWarehouse = localStorage.getItem('selectedWarehouse');
+
+    if (savedWarehouse) {
+      try {
+        const parsedWarehouse = JSON.parse(savedWarehouse);
+        setWarehouse(parsedWarehouse);
+      } catch (error) {
+        console.error("Failed to parse saved warehouse:", error);
+        setWarehouse(null);
+      }
+    } else {
+      console.warn("No saved warehouse found in localStorage.");
+      setWarehouse(null);
     }
-  }, [user]);
+  }
+}, [isLoading]);
 
   // console.log(warehouse, 'warehouse');
 

@@ -86,6 +86,7 @@ export async function requestWalletCredit(
   amount: any,
   reason: any,
   targetWallet: any,
+  selectedWarehouseId: any,
 ) {
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   const token = getToken();
@@ -94,6 +95,8 @@ export async function requestWalletCredit(
     amount: amount,
     reason: reason,
     targetWallet: targetWallet,
+    selectedWarehouseId: selectedWarehouseId,
+   
   };
 
   const response = await fetch(`${BASE_API}/api/wallet-request`, {

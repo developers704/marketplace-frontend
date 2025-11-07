@@ -6,14 +6,14 @@ import {
 } from '@/framework/basic-rest/auth/use-policies';
 import { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { useUI } from '@/contexts/ui.context'; // ✅ Import this
+import { useUI } from '@/contexts/ui.context'; 
 import { toast } from 'react-toastify';
 
 export default function PrivacyPolicyModal() {
   const [showModal, setShowModal] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const { data, isLoading, error } = useMainPolicyDataQuery();
-  const { isAuthorized } = useUI(); // ✅ Access isAuthorized
+  const { isAuthorized } = useUI(); 
 
   useEffect(() => {
     if (!isAuthorized) {

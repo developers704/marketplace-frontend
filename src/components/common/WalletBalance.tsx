@@ -25,11 +25,24 @@ const WalletBalance = ({ lang }: { lang: any }) => {
 
   // console.log(cartState.cartItems, 'cartState cartTotal');
 
-  useEffect(() => {
-    if (!isLoading) {
-      setWarehouse(user?.warehouse);
+useEffect(() => {
+  if (!isLoading) {
+    const savedWarehouse = localStorage.getItem('selectedWarehouse');
+
+    if (savedWarehouse) {
+      try {
+        const parsedWarehouse = JSON.parse(savedWarehouse);
+        setWarehouse(parsedWarehouse);
+      } catch (error) {
+        console.error("Failed to parse saved warehouse:", error);
+        setWarehouse(null);
+      }
+    } else {
+      console.warn("No saved warehouse found in localStorage.");
+      setWarehouse(null);
     }
-  }, [user]);
+  }
+}, [isLoading]);
 
   const calculateCartTotal = () => {
     let total = 0;
@@ -78,7 +91,7 @@ const WalletBalance = ({ lang }: { lang: any }) => {
   };
 
   useEffect(() => {
-    if (isAuthorized) {
+    if (isAuthorized && warehouse?._id) {
       // fetchWalletBalance();
       // fetchStoreWallet(warehouse?._id);
       fetchWarehouseWallet(warehouse?._id);

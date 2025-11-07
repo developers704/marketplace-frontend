@@ -27,12 +27,29 @@ const CheckoutPageContent = () => {
   const { permissions } = useContext(PermissionsContext);
   const key = 'Cart';
 
-  useEffect(() => {
-    if (!isLoading && user?.warehouse?.length) {
-      // Default: select first warehouse
-      setWarehouse(user.warehouse[0]);
+console.log(warehouse , " warehouse for check out");
+
+
+useEffect(() => {
+  if (!isLoading) {
+    const savedWarehouse = localStorage.getItem('selectedWarehouse');
+
+    if (savedWarehouse) {
+      try {
+        const parsedWarehouse = JSON.parse(savedWarehouse);
+        setWarehouse(parsedWarehouse);
+      } catch (error) {
+        console.error("Failed to parse saved warehouse:", error);
+        setWarehouse(null);
+      }
+    } else {
+      console.warn("No saved warehouse found in localStorage.");
+      setWarehouse(null);
     }
-  }, [user, isLoading]);
+  }
+}, [isLoading]);
+
+  
     const fetchStoreWallet = async (warehouseId: any) => {
     const response = await getStoreWallet(warehouseId);
 
@@ -88,8 +105,21 @@ const CheckoutPageContent = () => {
       //   setStoreWalletBalance(0);
       //   setCanViewStoreWallet(false);
       // }
+    } else {
+     console.log("Skipping fetch — no warehouse selected.");
     }
   }, [isAuthorized, warehouse]);
+  
+  
+  if (!warehouse?._id) {
+  return (
+    <div className="flex justify-center items-center h-[50vh]">
+      <h2 className="text-xl font-semibold text-gray-600">
+        No warehouse selected. Please log in again or select a warehouse.
+      </h2>
+    </div>
+  );
+}
 
   // console.log(walletBalance, '===>>> walletBalance');
   // console.log(storeWalletBalance, '===>>> storeWalletBalance');
@@ -100,7 +130,7 @@ const CheckoutPageContent = () => {
         <div className="flex justify-between items-center mb-10 mr-11">
           <h1 className="text-3xl font-bold">Checkout</h1>
 
-          <div className="flex flex-col items-start">
+          {/* <div className="flex flex-col items-start">
             <label className="font-medium mb-1">Select Store for Purchase:</label>
             <select
               className="border border-gray-400 rounded px-3 py-2 text-lg w-full"
@@ -118,7 +148,7 @@ const CheckoutPageContent = () => {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
         </div>
         <div className="backContainer bg-[#f4f4f4] p-6 shadow-md mb-5">
           <div>

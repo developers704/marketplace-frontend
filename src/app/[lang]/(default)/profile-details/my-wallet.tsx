@@ -52,9 +52,11 @@ const showCreditRequestModal = (targetWallet: any) => {
     if (result.isConfirmed && result.value) {
       const { amount, reason } = result.value;
       const amountInNumber = parseFloat(amount);
-
+      const selectedWarehouse = localStorage.getItem("selectedWarehouse");
+      const warehouseData = selectedWarehouse ? JSON.parse(selectedWarehouse) : null;
+      const selectedWarehouseId = warehouseData?._id;
       // ✅ Call requestWalletCredit function when confirmed
-      const response = await requestWalletCredit(amount, reason, targetWallet);
+      const response = await requestWalletCredit(amount, reason, targetWallet, selectedWarehouseId );
 
       if (response) {
         Swal.fire(
@@ -75,7 +77,7 @@ const MyWallet = ({ warehouse }: any) => {
   // const [warehouseWalletBalance, setWarehouseWalletBalance] = useState<any>(0);
   const { permissions } = useContext(PermissionsContext);
   const key = 'Cart';
-  // console.log(warehouse, '===>>> warehouse');
+  console.log(warehouse, '===>>> warehouse my wallet');
 
   // console.log(permissions[key]?.View, '===>>> permissions');
   // const fetchUserWallet = async () => {
