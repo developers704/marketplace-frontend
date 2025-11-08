@@ -15,6 +15,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
   const [password, setPassword] = useState('');
   const [remember_me, setRemember_me] = useState(false);
   const [warehouses, setWarehouses] = useState<any[]>([]);
+  // selectedWarehouse stores the selected warehouse _id
   const [selectedWarehouse, setSelectedWarehouse] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +49,18 @@ const LoginForm = ({ lang }: { lang: string }) => {
     }
 
     setIsLoading(true);
+    // find the full warehouse object and persist it locally so other parts of app can read it
+    const warehouseObj = warehouses.find((w) => w._id === selectedWarehouse);
+    if (warehouseObj) {
+      try {
+        localStorage.setItem('selectedWarehouse', JSON.stringify(warehouseObj));
+      } catch (err) {
+        console.log("yaha pr error h", err);
+        
+        toast.error('Failed to save selected warehouse.');
+      }
+    }
+
     const loginData = { email, password, remember_me, warehouseId: selectedWarehouse };
 
     try {

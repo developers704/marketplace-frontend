@@ -1,5 +1,7 @@
 'use client';
 import { checkout } from '@/framework/basic-rest/checkout/use-checkout';
+import { log } from 'console';
+import { Warehouse } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
@@ -19,6 +21,7 @@ const CheckoutCalculationBox = ({
   walletBalance,
   storeWalletBalance,
   canViewStoreWallet,
+  warehouse,
   cart,
   lang = 'en',
 }: any) => {
@@ -56,7 +59,7 @@ const CheckoutCalculationBox = ({
   const checkoutHandler = async () => {
     setLoader(true);
     try {
-      const response = await checkout(cart._id);
+      const response = await checkout(cart._id, warehouse?._id);
       // console.log(response, '===>>> checkout response from checkout handler');
       if (response.message === 'Order placed successfully') {
         setLoader(false);

@@ -31,6 +31,16 @@ const OrderHistroyCard = ({ setOrderDetail, setStatusTitle, data }: any) => {
             >
               {data?.orderStatus}
             </div>
+            <div
+              id="status"
+              className={`py-[5px] px-[10px] ${data?.shippingStatus === 'Shipped' ? 'bg-green-200' : data?.shippingStatus === 'Pending' ? 'bg-orange-200'  : ''} border rounded w-fit`}
+              onClick={() => {
+                setOrderDetail(true);
+                setStatusTitle(data?.shippingStatus);
+              }}
+            >
+              {data?.shippingStatus}
+            </div>
             <div id="status">
               <span className="font-bold">Ordered on: </span>{' '}
               {formatDate(data?.createdAt)}
