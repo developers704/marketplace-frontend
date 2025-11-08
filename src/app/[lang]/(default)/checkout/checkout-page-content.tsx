@@ -178,6 +178,7 @@ useEffect(() => {
           </div>
         </div>
         <CheckoutCalculationBox
+          warehouse={warehouse}
           productsPrice={productsPrice}
           walletBalance={walletBalance}
           storeWalletBalance={storeWalletBalance}

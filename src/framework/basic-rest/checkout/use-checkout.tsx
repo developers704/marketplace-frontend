@@ -1,5 +1,6 @@
 // import { useMutation } from '@tanstack/react-query';
 
+import { Warehouse } from 'lucide-react';
 import { getToken } from '../utils/get-token';
 
 // export interface CheckoutInputType {
@@ -28,11 +29,12 @@ import { getToken } from '../utils/get-token';
 //   });
 // };
 
-export async function checkout(cartId: any, paymentMethod: any = 'wallet') {
+export async function checkout(cartId: any, warehouse: any , paymentMethod: any = 'wallet' ) {
   //   console.log(cartItem, '===>>> cartItem');
   // const { id, itemType, quantity, price } = cartItem;
   const body = {
     cartId,
+    warehouse,
     paymentMethod,
     specialInstructions: 'Please deliver between 5 PM and 6 PM',
     cityId: '67400e8a7b963a1282d218b5',
