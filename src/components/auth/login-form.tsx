@@ -31,9 +31,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
         const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
         const res = await fetch(`${BASE_API}/api/warehouses`);
         const data = await res.json();
-        if (res.ok) {
-          setWarehouses(data);
-        }
+        if (res.ok) setWarehouses(data);
       } catch (err) {
         console.error(err);
         toast.error('Failed to fetch warehouses');
@@ -49,15 +47,13 @@ const LoginForm = ({ lang }: { lang: string }) => {
     }
 
     setIsLoading(true);
-    // find the full warehouse object and persist it locally so other parts of app can read it
     const warehouseObj = warehouses.find((w) => w._id === selectedWarehouse);
     if (warehouseObj) {
       try {
         localStorage.setItem('selectedWarehouse', JSON.stringify(warehouseObj));
-      } catch (err) {
-        console.log("yaha pr error h", err);
+      } catch (err : any) {
         
-        toast.error('Failed to save selected warehouse.');
+        toast.error(err.message || 'Failed to save selected warehouse.');
       }
     }
 
@@ -65,79 +61,76 @@ const LoginForm = ({ lang }: { lang: string }) => {
 
     try {
       const response = await login(loginData, setPermissions);
-      console.log(response, '===>>> response login');
-      
       if (response?.token) {
-        // Direct login success
         authorize();
         router.push(`/${lang}/`);
       } else if (response?.requireOTP) {
-        // OTP required - show modal
         setShowOTPModal(true);
       }
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
+      const message = error.message || 'Login failed';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  /* ────── OTP HANDLERS ────── */
   const handleOTPVerification = async (otp: string, email: string) => {
     return await verifyOTP({ otpCode: otp, email }, setPermissions);
   };
-
   const handleResendOTP = async (email: string) => {
     return await resendOTP({ email });
   };
-
   const handleOTPSuccess = () => {
     setShowOTPModal(false);
     authorize();
     router.push(`/${lang}/`);
   };
+  const handleCloseOTPModal = () => setShowOTPModal(false);
 
-  const handleCloseOTPModal = () => {
-    setShowOTPModal(false);
-  };
-
+  /* ────── RENDER ────── */
   return (
-    <div className="flex items-center justify-center">
-      <div className="bg-red-50 p-8 rounded-2xl shadow-2xl w-[500px] text-center flex flex-col gap-3">
-        <h2 className="text-[40px] font-bold mb-2">Welcome</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-100 to-teal-50 p-4">
+      {/* ───── RIGHT PANEL (FORM) ───── */}
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+        <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">Sign in</h2>
 
-        {/* Email Input */}
+        {/* Email */}
         <div className="mb-4">
           <input
             type="email"
-            placeholder="Email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Enter your email"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
           />
         </div>
 
-        {/* Password Input */}
-        <div className="mb-4 relative">
+        {/* Password */}
+        <div className="relative mb-4">
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Enter password"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute top-3 right-4 text-gray-500"
+            className="absolute inset-y-0 right-3 flex items-center text-gray-500"
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
 
-        {/* ✅ Warehouse Dropdown */}
-        <div className="mb-4">
+        {/* Warehouse Dropdown */}
+        <div className="mb-6">
           <select
             value={selectedWarehouse}
             onChange={(e) => setSelectedWarehouse(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
           >
             <option value="">Select Warehouse</option>
             {warehouses.map((w) => (
@@ -150,15 +143,18 @@ const LoginForm = ({ lang }: { lang: string }) => {
 
         {/* Login Button */}
         <button
-          className="w-full bg-blue-400 text-white py-3 rounded-tr-[30px] rounded-bl-[30px] text-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleSubmit}
           disabled={isLoading}
+          className="w-full rounded-tr-3xl rounded-bl-3xl bg-teal-500 py-3.5 text-lg font-medium text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Signing in...' : 'Sign in'}
         </button>
+
+        {/* Divider */}
+   
       </div>
 
-      {/* OTP Verification Modal */}
+      {/* OTP Modal */}
       <OTPVerificationModal
         isOpen={showOTPModal}
         onClose={handleCloseOTPModal}

@@ -1,5 +1,6 @@
 import LoginForm from '@components/auth/login-form';
 import { Metadata } from 'next';
+import Image from 'next/image';
 // import signInBg from '@public/assets/images/signin.jpeg';
 
 export const metadata: Metadata = {
@@ -15,20 +16,20 @@ export default async function Page({
 }) {
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-full max-w-md">
+      <div className="">
+            <LoginForm lang={lang} />
+        {/* <div className="w-full max-w-md bg-red-400">
           <div className="rounded-lg flex items-center justify-center w-full">
-            {/* <Image
+            <Image
               src={'/assets/images/resetPassDone.jpeg'}
               alt="image"
               fill
               className="object-cover"
-            /> */}
-            <div className="">
-              <LoginForm lang={lang} />
+            />
+            <div className="bg-red-900">
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   );
