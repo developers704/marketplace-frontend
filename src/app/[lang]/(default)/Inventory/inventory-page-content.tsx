@@ -1,15 +1,57 @@
 'use client';
 import ProductListCard from '@/components/cards/product-list-card';
+
+interface Variant {
+  _id: string;
+  variantName: {
+    _id: string;
+    name: string;
+    parentVariant?: {
+      _id: string;
+      name: string;
+    };
+  };
+  value: string;
+}
+
+interface Price {
+  amount: number;
+  salePrice?: number;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  [key: string]: any;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  sku: string;
+  image: string;
+  gallery: string[];
+  prices: Price[];
+  variants: Variant[];
+  category: Category;
+  subcategory: Category;
+}
+
+interface InventoryItem {
+  _id: string;
+  product: Product;
+  quantity: number;
+  stockAlertThreshold: number;
+  barcode: string;
+  warehouse: any[];
+}
 import DebounceSearch from '@/components/common/debounceSearch';
 import Accordion from '@/components/ui/accordion';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import Container from '@/components/ui/container';
 import { ProductListSkeleton } from '@/components/ui/skeletons';
 import { fetchProductsVariants } from '@/framework/basic-rest/filtration/useFiltration';
-import {
-  useProducts,
-  // useProductsByCategoryQuery,
-} from '@/framework/basic-rest/product/get-products-by-category';
+import { useInventories, isLowStock, getWarehouseDisplayName } from '@/framework/basic-rest/inventory/use-inventories';
 import { getWishListItem } from '@/framework/basic-rest/wishlist/get-wishlist';
 import { useWarehousesQuery } from '@/framework/basic-rest/warehouse/get-all-warehouses';
 import PreventScreenCapture from '@/utils/PreventScreenShots';
@@ -17,18 +59,16 @@ import { useParams, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 // import { XCircle } from "lucide-react";
 
-const ItemListPageContent = ({ lang }: any) => {
-  const [wishlistProductIds, setWishlistProductIds] = useState<any>();
-  const [wishlist, setWishlist] = useState<any>();
-  const [updateList, setUpdateList] = useState<boolean | any>(false);
-  const [varinats, setVarinats] = useState<any[]>([]);
-  const [groupedVariantsArray, setGroupedVariantsArray] = useState<any>();
-  const [selectedFilters, setSelectedFilters] = useState<
-    Record<string, string[]>
-  >({});
+const ItemListPageContent = ({ lang }: { lang: string }) => {
+  const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
+  const [wishlist, setWishlist] = useState<any[]>([]);
+  const [updateList, setUpdateList] = useState<boolean>(false);
+  const [variants, setVariants] = useState<Variant[]>([]);
+  const [groupedVariantsArray, setGroupedVariantsArray] = useState<[string, string[]][]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const [searchQuery, setSearchQuery] = useState<string | any>('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [warehouseFilter, setWarehouseFilter] = useState<string>('main-warehouse'); 
+  const [warehouseFilter, setWarehouseFilter] = useState<string>('main-warehouse');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [productsPerPage, setProductsPerPage] = useState<number>(20);
@@ -45,20 +85,47 @@ const ItemListPageContent = ({ lang }: any) => {
   // Fetch warehouses
   const { data: warehouses, isLoading: isLoadingWarehouses } = useWarehousesQuery();
   
-  // Fetch products with warehouse filters and pagination
-  const { data: productsData, isLoading, error } = useProducts(
-    selectedWarehouseId ? undefined : (warehouseFilter || undefined), // Use warehouseFilter only if no specific warehouse selected
-    selectedWarehouseId || undefined,
-    currentPage,
-    productsPerPage
-  );
+  // Fetch all inventories
+  const { data: inventories, isLoading } = useInventories();
 
-  const categoryProducts = productsData?.products || [];
-  const pagination = productsData?.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 };
+  // Filter and sort inventories based on warehouse filter
+  const filteredInventories = React.useMemo(() => {
+    if (!inventories) return [];
+    
+    let filtered = [...inventories];
 
-  const activeProducts = categoryProducts?.filter((item: any) => {
-    return item?.lifecycleStage === 'active';
-  });
+    // Apply warehouse filter
+    if (selectedWarehouseId) {
+      filtered = filtered.filter(inv => 
+        inv.warehouse?.some(w => w._id === selectedWarehouseId)
+      );
+    } else {
+      switch (warehouseFilter) {
+        case 'main-warehouse':
+          filtered = filtered.filter(inv => 
+            inv.warehouse?.some(w => w.isMain)
+          );
+          break;
+        case 'out-to-store':
+          filtered = filtered.filter(inv => 
+            inv.warehouse?.some(w => !w.isMain)
+          );
+          break;
+        // 'warehouse-plus-store' shows all
+      }
+    }
+
+    // Sort by low stock first
+    filtered.sort((a, b) => {
+      const aIsLow = isLowStock(a);
+      const bIsLow = isLowStock(b);
+      if (aIsLow && !bIsLow) return -1;
+      if (!aIsLow && bIsLow) return 1;
+      return 0;
+    });
+
+    return filtered;
+  }, [inventories, selectedWarehouseId, warehouseFilter]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -107,118 +174,92 @@ const ItemListPageContent = ({ lang }: any) => {
     });
   };
 
-  const filterProductsByFilters = (products: any, selectedFilters: any) => {
-    // console.log(products, '===>>> products');
+  const filterProductsByFilters = (
+    inventories: InventoryItem[],
+    selectedFilters: Record<string, string[]>
+  ) => {
     if (!selectedFilters || Object.keys(selectedFilters).length === 0) {
-      return products; // ✅ Return all products if no filters are selected
+      return inventories;
     }
 
-    let filteredProducts = filterByPriceAndOffers(products, selectedFilters);
+    return inventories.filter(inventory => {
+      const product = inventory.product;
+      if (!product) return false;
+      // Offers filter: if Discounted selected, product must have a salePrice > 0
+      if (selectedFilters.Offers?.includes('Discounted')) {
+        const hasOnSale = product.prices?.some((p: Price) => (p.salePrice ?? 0) > 0);
+        if (!hasOnSale) return false;
+      }
 
-    // 🔹 Step 2: Apply other filters (e.g., variants, categories)
-    return filteredProducts?.filter((product: any) => {
-      return Object.entries(selectedFilters)
-        ?.filter(
-          ([filterType]) => filterType !== 'Offers' && filterType !== 'Price',
-        ) // ✅ Ignore 'offers' & 'price'
-        ?.every(([filterType, values]: any) => {
-          return product?.variants?.some(
-            (variant: any) =>
-              variant?.variantName?.name === filterType &&
-              values?.includes(variant?.value),
-          );
+      // Price filter
+      if (selectedFilters.Price?.length) {
+        const hasMatchingPrice = product.prices?.some(price => {
+          const amount = price.amount;
+          return selectedFilters.Price.some(priceRange => {
+            const [min, max] = priceRange
+              .replace(/[$,]/g, '')
+              .split('-')
+              .map(n => parseInt(n.trim()));
+            return amount >= min && amount <= max;
+          });
         });
+        if (!hasMatchingPrice) return false;
+      }
+
+      // Variant filters
+      const variantFilters = Object.entries(selectedFilters)
+        .filter(([filterType]) => filterType !== 'Price' && filterType !== 'Offers');
+      
+      if (variantFilters.length === 0) return true;
+
+      return variantFilters.every(([filterType, values]) => {
+        if (!Array.isArray(values)) return false;
+        return product.variants?.some(variant => 
+          variant?.variantName?.name === filterType &&
+          values.includes(variant?.value)
+        );
+      });
     });
   };
 
-  // Example Usage:
-  const filteredProductsArray = filterProductsByFilters(
-    activeProducts,
-    selectedFilters,
-  );
+  // Apply selected filters locally (no new API call) and then apply search on top
+  const filteredBySelectedFilters = React.useMemo(() => {
+    if (!selectedFilters || Object.keys(selectedFilters).length === 0) return filteredInventories;
+    // inventories from hook may not match our strict InventoryItem type, cast to any to avoid TS mismatch
+    return filterProductsByFilters(filteredInventories as any, selectedFilters);
+  }, [filteredInventories, selectedFilters]);
 
-  // console.log(categoryProducts, '===>>> categoryProducts');
+  const searchFilteredInventories = React.useMemo(() => {
+    const base = filteredBySelectedFilters || [];
+    if (!debouncedQuery) return base;
 
-  const getProductVarinats = async () => {
-    try {
-      const response = await fetchProductsVariants();
-      if (response && response?.length > 0) {
-        setVarinats(response);
-      } else {
-        // console.log('No Variants Found');
-        setVarinats([]);
-      }
-    } catch (error) {
-      // console.log(error, '===>>> error');
-    }
-  };
-
-  const groupVariants = (variants: any[]) => {
-    return variants.reduce(
-      (acc, variant) => {
-        const key = variant?.variantName?.name; // Group by variantName
-        if (!acc[key]) {
-          acc[key] = []; // Initialize array if not exists
-        }
-        acc[key].push(variant?.value); // Push the value (e.g., Gold, Silver)
-        return acc;
-      },
-      {
-        Offers: ['Discounted'],
-        Price: [
-          '$0 - $5000',
-          '$5000 - $10000',
-          '$10000 - $15000',
-          '$15000 - $20000',
-          '$20000 - $25000',
-          '$25000 - $30000',
-          '$30000 - $35000',
-          '$35000 - $40000',
-        ],
-      } as Record<string, string[]>,
-    ); // Define return type as { [key: string]: string[] }
-  };
-
-  // console.log(selectedFilters, '===>>> selectedFilters');
+    const q = debouncedQuery.toLowerCase();
+    return base.filter((inventory) => {
+      const invAny: any = inventory;
+      const name = String(invAny.product?.name || invAny.productInfo?.name || '').toLowerCase();
+      const sku = String(invAny.product?.sku || invAny.productInfo?.sku || '').toLowerCase();
+      return name.includes(q) || sku.includes(q);
+    });
+  }, [filteredBySelectedFilters, debouncedQuery]);
 
   useEffect(() => {
-    const fetchWishlist = async () => {
-      const response = await getWishListItem(); // Fetch wishlist API
-      // setWishlist(response); // ✅ Update state
-
-      if (response) {
-        // setProducts(response.products);
-        setWishlistProductIds(
-          response?.products?.map((item: any) => item.product._id) || [],
-        );
-        setWishlist(response.products);
+    const fetchVariants = async () => {
+      try {
+        const response = await fetch('https://backend.vallianimarketplace.com/api/variants/product-variants');
+        if (!response.ok) throw new Error('Failed to fetch variants');
+        const data = await response.json();
+        setVariants(data);
+        
+        // Group variants using the fetched data
+        const grouped = groupVariants(data);
+        setGroupedVariantsArray(Object.entries(grouped));
+      } catch (error) {
+        console.error('Error fetching variants:', error);
       }
     };
-    fetchWishlist();
-  }, [updateList]);
 
-  useEffect(() => {
-    getProductVarinats();
+    fetchVariants();
   }, []);
-
-  useEffect(() => {
-    if (varinats.length > 0) {
-      const groupedVariants = groupVariants(varinats);
-      // console.log(groupedVariants, '===>>> groupedVariants');
-      if (groupedVariants) {
-        setGroupedVariantsArray(Object.entries(groupedVariants));
-      } else {
-        // console.log('No Variants Found');
-        setGroupedVariantsArray([]);
-      }
-    }
-  }, [varinats]);
-
-  const filteredProducts = filteredProductsArray?.filter((product: any) => {
-    if (product?.lifecycleStage === 'active') {
-      return product.name.toLowerCase().includes(debouncedQuery.toLowerCase());
-    }
-  });
 
   if (isLoading) return <ProductListSkeleton />;
 
@@ -334,78 +375,80 @@ const ItemListPageContent = ({ lang }: any) => {
           >
             {isLoading ? (
               'Loading...'
-            ) : activeProducts?.length === 0 ? (
-              'No Products Found'
+            ) : searchFilteredInventories.length === 0 ? (
+              'No Inventory Items Found'
             ) : (
               <>
-                {(debouncedQuery ? filteredProducts : filteredProductsArray)
-                  ?.slice()
-                  ?.reverse()
-                  .map((item: any) => {
-                    const isInWishlist = wishlistProductIds?.includes(item._id);
-                    return (
-                      <ProductListCard
-                        key={item._id}
-                        lang={lang}
-                        data={item}
-                        type="STANDARD"
-                        isInWishlist={isInWishlist}
-                        setUpdateList={setUpdateList}
-                        updateList={updateList}
-                        wishlist={wishlist}
-                        setWishlist={setWishlist}
-                      />
-                    );
-                  })}
+                {searchFilteredInventories.map((inventory) => (
+                  <ProductListCard
+                    key={inventory._id}
+                    data={{
+                      ...inventory.product,
+                      quantity: inventory.quantity,
+                      stockAlert: inventory.stockAlertThreshold,
+                      barcode: inventory.barcode,
+                      warehouses: inventory.warehouse,
+                      isOutOfStock: inventory.quantity <= 0
+                    }}
+                    type="STANDARD" // Change from INVENTORY to STANDARD type
+                    isInWishlist={wishlistProductIds?.includes(inventory.product._id)}
+                    setUpdateList={setUpdateList}
+                    updateList={updateList}
+                    wishlist={wishlist}
+                    setWishlist={setWishlist}
+                    lang={lang}
+                  />
+                ))}
               </>
             )}
           </div>
         </div>
-        
-        {/* Pagination Controls */}
-        {!isLoading && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8 mb-4">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              type="button"
-            >
-              Previous
-            </button>
-            
-            <span className="px-4 py-2 text-sm">
-              Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
-            </span>
-            
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
-              disabled={currentPage >= pagination.totalPages}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              type="button"
-            >
-              Next
-            </button>
-            
-            {/* Page Size Selector */}
-            <select
-              value={productsPerPage}
-              onChange={(e) => {
-                setProductsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ml-4"
-            >
-              <option value={10}>10 per page</option>
-              <option value={20}>20 per page</option>
-              <option value={50}>50 per page</option>
-              <option value={100}>100 per page</option>
-            </select>
-          </div>
-        )}
       </section>
     </Container>
   );
+};
+
+// Helper function to group variants by name and add price/offer filters
+const groupVariants = (variants: Variant[]) => {
+  if (!Array.isArray(variants)) return {};
+  
+  const grouped: Record<string, Set<string>> = variants.reduce((acc, variant) => {
+    if (!variant?.variantName?.name) return acc;
+    
+    const key = variant.variantName.name;
+    if (!acc[key]) {
+      acc[key] = new Set(); // Use Set for automatic uniqueness
+    }
+    
+    if (variant.value) {
+      acc[key].add(variant.value);
+    }
+    
+    return acc;
+  }, {} as Record<string, Set<string>>);
+
+  // Convert all Sets to Arrays and add default filters
+  const result: Record<string, string[]> = {
+    ...Object.fromEntries(
+      Object.entries(grouped).map(([key, valueSet]) => [
+        key,
+        Array.from(valueSet as Set<string>).sort()
+      ])
+    ),
+    Offers: ['Discounted'],
+    Price: [
+      '$0 - $5000',
+      '$5000 - $10000',
+      '$10000 - $15000',
+      '$15000 - $20000',
+      '$20000 - $25000',
+      '$25000 - $30000',
+      '$30000 - $35000',
+      '$35000 - $40000',
+    ],
+  };
+
+  return result;
 };
 
 export default ItemListPageContent;

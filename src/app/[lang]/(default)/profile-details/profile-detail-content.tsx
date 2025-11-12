@@ -5,6 +5,7 @@ import PersonalInfo from './personal-info';
 import MyOrder from './my-order';
 import MyWallet from './my-wallet';
 import MyCourses from './my-courses';
+import Approvals from './approvals';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Breadcrumb from '@/components/ui/breadcrumb';
@@ -23,7 +24,12 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
   const key = 'Cart'; 
   // console.log(user, 'user warehouse');
 
-  const options = [
+  // Get user role
+  const userRole = user?.role?.role_name || 'User';
+  const isApprover = userRole === 'district manager' || userRole === 'corporate manager';
+
+  // Build options dynamically based on role
+  const baseOptions = [
     {
       id: 1,
       title: 'Personal Info',
@@ -36,11 +42,14 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
       id: 4,
       title: 'Store Wallet',
     },
-    // {
-    //   id: 5,
-    //   title: 'My Course',
-    // },
+    {
+      id: 5,
+      title: 'My Course',
+    },
   ];
+
+  // Add Approvals tab only for DM and CM
+  const options = isApprover ? [...baseOptions, { id: 6, title: 'Approvals' }] : baseOptions;
 
   const handleOptionClick = (title: string) => {
     router.push(`/${lang}/profile-details?option=${title}`);
@@ -108,8 +117,9 @@ useEffect(() => {
             ) : selectedOption === 'Store Wallet' ? (
               <MyWallet warehouse={warehouse} />
             ) : selectedOption === 'My Course' ? (
-              // <MyCourses />
-              ''
+              <MyCourses />
+            ) : selectedOption === 'Approvals' ? (
+              <Approvals lang={lang} />
             ) : (
               ''
             )}
