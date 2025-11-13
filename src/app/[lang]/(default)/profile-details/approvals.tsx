@@ -56,7 +56,7 @@ const Approvals = ({ lang }: { lang: string }) => {
   const { data: user, isLoading: userLoading } = useUserDataQuery();
   const router = useRouter();
 
-  const BASE_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const BASE_API = process.env.NEXT_PUBLIC_BASE_API|| 'http://localhost:5000';
 
   const userRole = user?.role?.role_name || 'User';
   const isApprover = userRole === 'district manager' || userRole === 'corporate manager';
