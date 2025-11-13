@@ -31,7 +31,7 @@ export async function login(input: LoginInputType & { warehouseId?: string }, se
       const errorMessage = data.message || 'Login failed';
       const error = new Error(errorMessage);
       (error as any).statusCode = response.status;
-      (error as any).data = data; 
+      (error as any).data = data;
 
       throw error;
     }

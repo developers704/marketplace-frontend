@@ -61,17 +61,17 @@ const CheckoutCalculationBox = ({
     try {
       const response = await checkout(cart._id, warehouse?._id);
       // console.log(response, '===>>> checkout response from checkout handler');
-      if (response.message === 'Order placed successfully') {
+      if (response.message === 'Order placed successfully and awaiting approval') {
         setLoader(false);
         // Swal.fire('Success!', 'Order placed successfully', 'success');
         Swal.fire({
           title: 'Success!',
-          text: 'Order placed successfully',
+          text: 'Order placed successfully and awaiting approval',
           icon: 'success',
           confirmButtonText: 'Ok',
         }).then((result) => {
           if (result.isConfirmed) {
-            router.push(`/${lang}/profile-details?option=My Order`); // Replace with your actual route
+            router.push(`/${lang}/profile-details?option=My Order`); 
           }
         });
       } else if (
