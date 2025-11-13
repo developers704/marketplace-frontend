@@ -8,6 +8,8 @@ import { PermissionsContext } from '@/contexts/permissionsContext';
 import { useUI } from '@/contexts/ui.context';
 import OTPVerificationModal from './otp-verification-modal';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
+
 
 const LoginForm = ({ lang }: { lang: string }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -69,7 +71,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
       }
     } catch (error: any) {
       const message = error.message || 'Login failed';
-      toast.error(message);
+      // toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -91,9 +93,23 @@ const LoginForm = ({ lang }: { lang: string }) => {
 
   /* ────── RENDER ────── */
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-teal-100 to-teal-50 p-4">
-      {/* ───── RIGHT PANEL (FORM) ───── */}
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+    // HIGHLIGHT: Yeh parent div ab relative hai
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+      
+      {/* HIGHLIGHT: Background Image - Full Screen */}
+      <Image
+        src="/assets/images/store.jpg"
+        alt="Login background"
+        fill
+        className="object-cover"
+        priority
+      />
+
+      {/* HIGHLIGHT: Optional Dark Overlay (text readable rahe) */}
+      <div className="absolute inset-0 bg-black/70" />
+
+      {/* HIGHLIGHT: Login Form - Upar dikhega */}
+      <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
         <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">Sign in</h2>
 
         {/* Email */}
