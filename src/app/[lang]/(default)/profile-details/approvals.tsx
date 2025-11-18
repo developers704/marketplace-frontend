@@ -158,15 +158,17 @@ const Approvals = ({ lang }: { lang: string }) => {
       });
 
       if (!response.ok) throw new Error('Failed to update');
+      toast.success(`Order ${approvalAction === 'APPROVE' ? 'approved' : 'rejected'} successfully!`);
 
-      alert(`Order ${approvalAction === 'APPROVE' ? 'approved' : 'rejected'} successfully!`);
+      // alert(`Order ${approvalAction === 'APPROVE' ? 'approved' : 'rejected'} successfully!`);
       await fetchOrders();
       setShowApprovalModal(false);
       setSelectedOrder(null);
       setApprovalAction(null);
       setRemarks('');
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+       toast.error(error.message);
+      // alert(`Error: ${error.message}`);
     } finally {
       setSubmitting(false);
     }
