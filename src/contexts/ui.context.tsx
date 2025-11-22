@@ -17,6 +17,7 @@ export interface State {
   toastText: string;
   isStickyheader: boolean;
   data?: any;
+  user: any;
 }
 
 const initialState = {
@@ -31,6 +32,7 @@ const initialState = {
   toastText: '',
   isStickyheader: false,
   data: null,
+  user: null,
 };
 
 type Action =
@@ -100,7 +102,11 @@ type Action =
     }
   | {
       type: 'DISABLE_STICKY_HEADER';
-    };
+    }
+  | {
+    type: 'SET_USER';
+    user: any;
+  };
 
 type DRAWER_VIEWS = 'CART_SIDEBAR' | 'MOBILE_MENU' | 'ORDER_DETAILS';
 type ToastText = string;
@@ -241,11 +247,18 @@ function uiReducer(state: State, action: Action) {
         isStickyheader: false,
       };
     }
+  case 'SET_USER': {
+  return {
+    ...state,
+    user: action.user,
+  };
+}
   }
 }
 
 export function UIProvider(props: React.PropsWithChildren<any>) {
   const [state, dispatch] = React.useReducer(uiReducer, initialState);
+  const setUser = (user: any) => dispatch({ type: 'SET_USER', user });
 
   const authorize = () => dispatch({ type: 'SET_AUTHORIZED' });
   const unauthorize = () => dispatch({ type: 'SET_UNAUTHORIZED' });
@@ -318,6 +331,7 @@ export function UIProvider(props: React.PropsWithChildren<any>) {
       setUserAvatar,
       enableStickyHeader,
       disableStickyHeader,
+      setUser,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state],

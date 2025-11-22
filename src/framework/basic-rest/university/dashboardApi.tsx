@@ -310,15 +310,40 @@ export const requestCertificate = async (
   }
 };
 
+// export const fetchUniversityPolicy = async (
+//   roleId: string,
+//   warehouseId: string,
+//   customerId: string,
+// ) => {
+//   const token = getToken();
+//   try {
+//     const response = await axios.get(
+//       `${BASE_API}/api/policy/applicable/${roleId}/${warehouseId}?customerId=${customerId}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       },
+//     );
+
+//     return response.data;
+//   } catch (error: any) {
+//     const errorMessage =
+//       error.response?.data?.message ||
+//       'Something went wrong. Please try again later.';
+//     console.log(errorMessage, 'errorMessage');
+//     // throw new Error(errorMessage);
+//   }
+// };
 export const fetchUniversityPolicy = async (
-  roleId: string,
-  warehouseId: string,
-  customerId: string,
+  // roleId: string,
+  // warehouseId: string,
+  // customerId: string,
 ) => {
   const token = getToken();
   try {
     const response = await axios.get(
-      `${BASE_API}/api/policy/applicable/priority/${roleId}/${warehouseId}?customerId=${customerId}`,
+      `${BASE_API}/api/policy/pending`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

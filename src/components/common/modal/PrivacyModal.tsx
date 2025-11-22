@@ -8,57 +8,50 @@ import { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { useUI } from '@/contexts/ui.context'; 
 import { toast } from 'react-toastify';
+import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 
 export default function PrivacyPolicyModal() {
   const [showModal, setShowModal] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const { data, isLoading, error } = useMainPolicyDataQuery();
   const { isAuthorized } = useUI(); 
+  const { user, setUser,   } = useUI();
+  const { data: users, isLoading: userLoading } = useUserDataQuery();
 
-  useEffect(() => {
-    if (!isAuthorized) {
-      setShowModal(false);
-      return;
+  
+
+    useEffect(() => {
+    if (!userLoading && users) {
+      setShowModal(!users?.termsAccepted);
     }
-    if (typeof window !== 'undefined') {
-      const agreed = localStorage.getItem('privacyPolicyAgreed');
-      const agreedAt = localStorage.getItem('privacyPolicyAgreedAt');
-      if (agreed && agreedAt) {
-        const agreedTime = new Date(agreedAt).getTime();
-        const now = new Date().getTime();
-        const hours24 = 24 * 60 * 60 * 1000;
-        if (now - agreedTime <= hours24) {
-          setShowModal(false);
-          return;
-        } else {
-          localStorage.removeItem('privacyPolicyAgreed');
-          localStorage.removeItem('privacyPolicyAgreedAt');
-        }
-      }
-    }
-    setShowModal(true);
-  }, [isAuthorized]);
+  }, [users]);
 
   const handleAgree = async () => {
     if (isChecked) {
       const res = await acceptTermsAndConditions();
       toast.success(res.message);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('privacyPolicyAgreed', 'true');
-        localStorage.setItem('privacyPolicyAgreedAt', new Date().toISOString());
+        setUser({
+        ...user?.customer,
+        termsAccepted: true,
+        termsAcceptedDate: new Date().toISOString(),
+});
       }
       setShowModal(false);
     }
   };
 
-  if (!isAuthorized || !showModal) return null;
   if (isLoading) return <p>Loading...</p>;
-
+  
   // API returns an array with a single object; normalize it
   const policy = Array.isArray(data) ? data[0] : data;
   const isActive = policy?.isActive;
   const safeHTML = DOMPurify.sanitize(policy?.content);
+  // console.log("privacy modal con",showModal , users ,user);
+  
+  if (!isAuthorized || !showModal ||!isActive) return null;
 
+  
   return (
   <>
   {/* Show T&C only when policy is active (isActive === true) */}

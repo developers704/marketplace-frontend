@@ -4,14 +4,16 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
+
 export interface LoginInputType {
   email: string;
   password: string;
   remember_me: boolean;
+  setUser?: (user: any) => void
 }
-export async function login(input: LoginInputType & { warehouseId?: string }, setPermissions: any) {
+export async function login(input: LoginInputType & { warehouseId?: string }, setPermissions: any,  setUser?: (user: any) => void) {
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
-
+  // const { setUser } = useUI();
   try {
     const response = await fetch(`${BASE_API}/api/auth/customer/login`, {
       method: 'POST',
@@ -40,6 +42,9 @@ export async function login(input: LoginInputType & { warehouseId?: string }, se
     if (data.token) {
       Cookies.set('auth_token', data.token);
       localStorage.setItem('auth_token', data.token);
+      if (data && setUser) {
+      setUser(data); 
+      }
 
       if (data.selectedWarehouse) {
         localStorage.setItem('selectedWarehouse', JSON.stringify(data.selectedWarehouse));

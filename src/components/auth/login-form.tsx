@@ -12,6 +12,7 @@ import Image from 'next/image';
 
 
 const LoginForm = ({ lang }: { lang: string }) => {
+   const { setUser } = useUI();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,10 +60,10 @@ const LoginForm = ({ lang }: { lang: string }) => {
       }
     }
 
-    const loginData = { email, password, remember_me, warehouseId: selectedWarehouse };
+    const loginData = { email, password, remember_me, warehouseId: selectedWarehouse , setUser};
 
     try {
-      const response = await login(loginData, setPermissions);
+      const response = await login(loginData, setPermissions, setUser);
       if (response?.token) {
         authorize();
         router.push(`/${lang}/`);

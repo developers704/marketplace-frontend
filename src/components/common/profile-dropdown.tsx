@@ -41,7 +41,7 @@ const ProfileDropdownComp = ({
 
   return (
     <div className="w-[300px] h-[300px] bg-white !z-[10000] shadow-lg absolute py-[20px] px-[15px] top-10 right-[75%] rounded">
-      {isAuthorized ? (
+      {isAuthorized && (
         <>
           <div className="flex gap-4 items-center border-b py-3">
             {/* <Image
@@ -92,15 +92,6 @@ const ProfileDropdownComp = ({
             </div>
           </div>
         </>
-      ) : (
-        <div className="w-full flex items-center justify-center h-full">
-          <div
-            className="text-brand-dark border rounded-lg border-brand-muted py-2 px-4 cursor-pointer hover:bg-brand-muted hover:text-white transition-all duration-200 ease-in-out"
-            onClick={() => router.push(`/${lang}/signin`)}
-          >
-            Login to continue
-          </div>
-        </div>
       )}
     </div>
   );

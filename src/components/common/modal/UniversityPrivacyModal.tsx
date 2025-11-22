@@ -1,133 +1,3 @@
-// 'use client';
-
-// import {
-//   acceptTermsAndConditions,
-//   useMainPolicyDataQuery,
-// } from '@/framework/basic-rest/auth/use-policies';
-// import { useEffect, useState } from 'react';
-// import DOMPurify from 'dompurify';
-// import { useUI } from '@/contexts/ui.context'; // ✅ Import this
-// import { toast } from 'react-toastify';
-// import {
-//   fetchUniversityPolicy,
-//   useUniversityPolicyDataQuery,
-// } from '@/framework/basic-rest/university/dashboardApi';
-// import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
-
-// export default function UniversityPrivacyModal() {
-//   const [showModal, setShowModal] = useState(false);
-//   const [isChecked, setIsChecked] = useState(false);
-//   const [policy, setPolicy] = useState('');
-//   const {
-//     data: userData,
-//     isLoading: userLoading,
-//     error: userError,
-//   } = useUserDataQuery();
-//   // const { data, isLoading, error } = useUniversityPolicyDataQuery();
-//   const { isAuthorized } = useUI(); // ✅ Access isAuthorized
-
-//   const getPolicy = async (roleId: string, warehouseId: string) => {
-//     const res = await fetchUniversityPolicy(roleId, warehouseId);
-//     console.log(res, 'poloioasd');
-//     setPolicy(res?.policy?.content);
-//     return res;
-//   };
-//   useEffect(() => {
-//     if (!userLoading && userData) {
-//       getPolicy(userData?.role?._id, userData?.warehouse?._id);
-//     }
-//   }, [userData, userLoading]);
-
-//   useEffect(() => {
-//     if (!isAuthorized) {
-//       setShowModal(false);
-//       return;
-//     }
-//     if (typeof window !== 'undefined') {
-//       // const agreed = localStorage.getItem('UniversityPrivacyPolicyAgreed');
-//       // const agreedAt = localStorage.getItem('UniversityPrivacyPolicyAgreedAt');
-//       // if (agreed && agreedAt) {
-//       //   const agreedTime = new Date(agreedAt).getTime();
-//       //   const now = new Date().getTime();
-//       //   const hours24 = 24 * 60 * 60 * 1000;
-//       //   if (now - agreedTime <= hours24) {
-//       //     setShowModal(false);
-//       //     return;
-//       //   } else {
-//       //     localStorage.removeItem('UniversityPrivacyPolicyAgreed');
-//       //     localStorage.removeItem('UniversityPrivacyPolicyAgreedAt');
-//       //   }
-//       // }
-//     }
-//     setShowModal(true);
-//   }, [isAuthorized]);
-
-//   const handleAgree = async () => {
-//     if (isChecked) {
-//       //   const res = await acceptTermsAndConditions();
-//       toast.success('Agreed to the terms and conditions');
-//       if (typeof window !== 'undefined') {
-//         // localStorage.setItem('UniversityPrivacyPolicyAgreed', 'true');
-//         // localStorage.setItem(
-//         //   'UniversityPrivacyPolicyAgreedAt',
-//         //   new Date().toISOString(),
-//         // );
-//       }
-//       setShowModal(false);
-//     }
-//   };
-
-//   if (!isAuthorized || !showModal) return null;
-//   if (userLoading) return <p>Loading...</p>;
-
-//   const safeHTML = DOMPurify.sanitize(policy);
-
-//   return (
-//     <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50">
-//       <div className="bg-[#dedede] rounded-xl shadow-2xl p-6 w-[90%] max-w-3xl max-h-[90vh] flex flex-col">
-//         <h2 className="text-[32px] font-semibold mb-4 text-center">
-//           University Privacy Policy
-//         </h2>
-
-//         <div
-//           className="overflow-y-auto pr-3 mb-4"
-//           style={{ maxHeight: '60vh' }}
-//         >
-//           <section className="text-sm text-gray-800 space-y-6">
-//             <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
-//           </section>
-//         </div>
-
-//         <label className="flex items-start gap-2 text-sm text-gray-700 mb-4 cursor-pointer">
-//           <input
-//             type="checkbox"
-//             checked={isChecked}
-//             onChange={(e) => setIsChecked(e.target.checked)}
-//             className="mt-1 accent-blue-600"
-//           />
-//           <span>
-//             I have read and agreed to the <strong>Privacy Policy</strong>.
-//           </span>
-//         </label>
-
-//         <div className="flex justify-end">
-//           <button
-//             onClick={handleAgree}
-//             disabled={!isChecked}
-//             className={`px-5 py-2 rounded-md transition text-white ${
-//               isChecked
-//                 ? 'bg-blue-600 hover:bg-blue-700'
-//                 : 'bg-gray-400 cursor-not-allowed'
-//             }`}
-//           >
-//             I Agree
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -141,78 +11,111 @@ import {
 } from '@/framework/basic-rest/university/dashboardApi';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 
+interface Policy {
+  _id: string;
+  title: string;
+  policyType?: string;
+  content: string;
+  version?: number;
+  picture?: string;
+  isActive?: boolean;
+  showFirst?: boolean;
+  sequence?: number;
+  applicableRoles?: Array<{ _id: string; role_name: string }>;
+  applicableWarehouses?: Array<{ _id: string; name: string; location: string }>;
+  forceForUsers?: any[];
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+  isSigned?: boolean; 
+}
+
 export default function UniversityPrivacyModal() {
   const [showModal, setShowModal] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
-  const [policy, setPolicy] = useState<any>();
+  const [policies, setPolicies] = useState<any[]>([]);
+  const [currentPolicyIndex, setCurrentPolicyIndex] = useState(0);
+  const [warehouse, setWarehouse] = useState<any>();
+  // const [modalShown, setModalShown] = useState(false);
+
   const sigCanvasRef = useRef<any>(null);
-  const { isAuthorized } = useUI();
+  const { isAuthorized, user, setUser } = useUI();
+
+  // console.log("policy set in ke lengtj", policies.length);
+  const currentPolicy = policies[currentPolicyIndex];
+  
+  console.log("current policy ke length currentPolicy", currentPolicy);
+  console.log('isAuthorized:', isAuthorized, 'showModal:', showModal, 'warehouse:', warehouse);
+console.log('currentPolicyIndex:', currentPolicyIndex, 'currentPolicy:', currentPolicy);
 
   const { data: userData, isLoading: userLoading } = useUserDataQuery();
+  // console.log("user data is here in uni",user);
 
-  const getPolicy = async (
+  // console.log("warehouses data in uni ",warehouse);
+  
+  
+
+useEffect(() => {
+  if (!userLoading) {
+    const savedWarehouse = localStorage.getItem('selectedWarehouse');
+
+    if (savedWarehouse) {
+      try {
+        const parsedWarehouse = JSON.parse(savedWarehouse);
+        setWarehouse(parsedWarehouse);
+      } catch (error) {
+        console.error("Failed to parse saved warehouse:", error);
+        setWarehouse(null);
+      }
+    } else {
+      console.warn("No saved warehouse found in localStorage.");
+      setWarehouse(null);
+    }
+  }
+}, [userLoading]);
+  
+
+const getPolicy = async (
     roleId: string,
     warehouseId: string,
     customerId: string,
   ) => {
-    const res = await fetchUniversityPolicy(roleId, warehouseId, customerId);
-    setPolicy(res?.policy);
-    if (res?.policy?.isSigned) {
+    if (!roleId || !warehouseId || !customerId) {
+    console.warn("Missing parameters", { roleId, warehouseId, customerId });
+    return;
+  }
+
+    console.log("fetching uni policy with ", roleId, warehouseId, customerId);
+    const res : { pending : Policy[] }= await fetchUniversityPolicy();
+    console.log("uni response here ",res);
+    
+    const pendingPolicies : Policy[] = (res.pending  || []).filter(p => p.isActive && !p.isSigned);
+    
+    setPolicies(pendingPolicies);  
+    setCurrentPolicyIndex(0);
+    if (pendingPolicies.length === 0) {
       setShowModal(false);
     }
     return res;
   };
 
-  // useEffect(() => {
-  //   if (!isAuthorized) {
-  //     setShowModal(false);
-  //     return;
-  //   }
-  //   if (typeof window !== 'undefined') {
-  //     const agreed = localStorage.getItem('UniversityPrivacyPolicyAgreed');
-  //     const agreedAt = localStorage.getItem('UniversityPrivacyPolicyAgreedAt');
-  //     if (agreed && agreedAt) {
-  //       const agreedTime = new Date(agreedAt).getTime();
-  //       const now = new Date().getTime();
-  //       const hours24 = 24 * 60 * 60 * 1000;
-  //       if (now - agreedTime <= hours24) {
-  //         setShowModal(false);
-  //         return;
-  //       } else {
-  //         localStorage.removeItem('UniversityPrivacyPolicyAgreed');
-  //         localStorage.removeItem('UniversityPrivacyPolicyAgreedAt');
-  //       }
-  //     }
-  //   }
-  //   setShowModal(true);
-  // }, [isAuthorized]);
-
   useEffect(() => {
-    if (!userLoading && userData) {
-      getPolicy(userData?.role?._id, userData?.warehouse?._id, userData?._id);
+    if (!userLoading && userData && warehouse?._id) {
+      getPolicy(userData?.role?._id, warehouse?._id, userData?._id);
     }
-  }, [userData, userLoading]);
+  }, [userData, userLoading, warehouse]);
 
-  useEffect(() => {
-    if (!isAuthorized) {
-      setShowModal(false);
-      return;
-    }
+
+  
+useEffect(() => {
+  if (isAuthorized && policies.length > 0) {
     setShowModal(true);
-  }, [isAuthorized]);
+  } else {
+    setShowModal(false);
+  }
+}, [isAuthorized, policies]);
 
-  // const handleAgree = async () => {
-  //   if (isSigned) {
-  //     const signatureImage = sigCanvasRef.current
-  //       .getTrimmedCanvas()
-  //       .toDataURL('image/png');
-  //     console.log('User Signature Image Data:', signatureImage); // ✅ You can send this to backend if needed
 
-  //     // Call your API here
-  //     toast.success('Agreed to the terms and conditions');
-  //     setShowModal(false);
-  //   }
-  // };
 
   function dataURLtoFile(dataUrl: string, filename: string): File {
     const arr = dataUrl.split(',');
@@ -234,27 +137,21 @@ export default function UniversityPrivacyModal() {
       const signatureDataURL = sigCanvasRef.current.toDataURL('image/png');
       const signImage = dataURLtoFile(signatureDataURL, 'signature.png');
 
-      // 2. Convert to Blob
-      // const blob = await (await fetch(signatureDataURL)).blob();
-
-      // 4. Send to API
       try {
-        const response = await signPolicy(policy?._id, signImage);
-        console.log('API Response:', response);
+        const response = await signPolicy(currentPolicy?._id, signImage);
+        // console.log('API Response:', response);
 
-        // if (!response.ok) throw new Error('Upload failed');
 
-        toast.success('Signature submitted successfully!');
-        // if (typeof window !== 'undefined') {
-        //   localStorage.setItem('UniversityPrivacyPolicyAgreed', 'true');
-        //   localStorage.setItem(
-        //     'UniversityPrivacyPolicyAgreedAt',
-        //     new Date().toISOString(),
-        //   );
-        // }
+        toast.success(response?.data?.message || "Policy  signed successfully!");
+   
+        if (currentPolicyIndex < policies.length - 1) {
+        setCurrentPolicyIndex(prev => prev + 1);
+        clearSignature(); 
+      } else {
         setShowModal(false);
-      } catch (error) {
-        toast.error('Failed to submit signature.');
+      }
+      } catch (error : any) {
+        toast.error(error.response?.data?.message || 'Failed to submit signature.');
         console.error(error);
       }
     }
@@ -274,7 +171,7 @@ export default function UniversityPrivacyModal() {
   if (!isAuthorized || !showModal) return null;
   if (userLoading) return <p>Loading...</p>;
 
-  const safeHTML = DOMPurify.sanitize(policy?.content || '');
+  const safeHTML = DOMPurify.sanitize(currentPolicy?.content || '');
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50">
@@ -293,9 +190,9 @@ export default function UniversityPrivacyModal() {
         </div>
 
         <div className="mb-4">
-          <p className="text-sm text-gray-700 mb-2">
-            Please sign below to agree:
-          </p>
+         <p className="text-sm text-gray-700 mb-2">
+        Policy {currentPolicyIndex + 1} of {policies.length}: Please sign below to agree:
+        </p>
           <div className="border border-gray-400 rounded bg-white">
             <SignatureCanvas
               penColor="black"
