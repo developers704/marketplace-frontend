@@ -12,7 +12,7 @@ const Logo: React.FC<React.AnchorHTMLAttributes<{}>> = ({
     <Link
       href={href}
       className={cn(
-        'inline-block focus:outline-none max-w-[500px] w-full',
+        'inline-block focus:outline-none ',
         className,
       )}
       {...props}

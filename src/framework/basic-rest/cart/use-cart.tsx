@@ -1,7 +1,11 @@
+import { Warehouse } from 'lucide-react';
 import { getToken } from '../utils/get-token';
 
-export async function addToCartApi(cartItem: any) {
+export async function addToCartApi(cartItem: any, isMainFlag: any) {
   //   console.log(cartItem, '===>>> cartItem');
+  const isMain = isMainFlag?.warehouses?.isMain
+  const sellerWarehouseId = isMainFlag?.warehouses?._id
+  
   const { id, itemType, quantity, price, color } = cartItem;
   const body = {
     itemId: id,
@@ -9,6 +13,51 @@ export async function addToCartApi(cartItem: any) {
     quantity,
     price,
     color,
+    isMain,
+    sellerWarehouseId,
+  };
+
+  //   console.log(body, '===>>> body');
+  const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+  const token = getToken();
+  const response = await fetch(`${BASE_API}/api/cart/add`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+  console.log(data, '===>>> cart response Data item');
+
+  if (!response.ok) {
+    const errorMessage =
+      data.message || 'Something went wrong. Please try again later.';
+    // throw new Error(errorMessage);
+    console.log(errorMessage, '===>>> error message');
+    return { message: errorMessage };
+  }
+  // console.log('response from login api is ', data);
+  return data;
+}
+
+export async function addToCartApiWishlist(cartItem: any, isMainFlag: any) {
+
+    console.log("ismainflag new setpu check",isMainFlag);
+  const isMain = isMainFlag?.isMain
+  const sellerWarehouseId = isMainFlag?.sellerWarehouseId
+  
+  const { id, itemType, quantity, price, color } = cartItem;
+  const body = {
+    itemId: id,
+    itemType,
+    quantity,
+    price,
+    color,
+    isMain,
+    sellerWarehouseId,
   };
 
   //   console.log(body, '===>>> body');

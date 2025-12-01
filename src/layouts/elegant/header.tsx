@@ -183,8 +183,8 @@ function Header({ lang }: { lang: string }) {
     // console.log(response, '====>>>> fetchAllCartItems');
     if (response.items) {
       // setAllCart(response);
-      addAllToCart(response.items);
-      setCartCounter(response.items.length || 0);
+      addAllToCart(response?.items);
+      setCartCounter(response?.items.length || 0);
     }
   };
 
@@ -224,9 +224,9 @@ function Header({ lang }: { lang: string }) {
           lang={lang}
         />
         {/* End of Mobile search */}
-        <Container className="flex items-center justify-between h-20 py-7 border-b top-bar lg:h-auto border-border-base">
-          <div>
-            <div ref={parentRef} className="relative shrink-0 lg:invisible">
+        <Container className="flex items-center justify-between h-20 py-7 border-b top-bar lg:h-auto border-border-base ">
+          <div >
+            <div ref={parentRef} className="relative shrink-0 lg:invisible ">
               <button
                 className="border border-border-base rounded-md focus:outline-none shrink-0 text-sm lg:text-15px font-medium text-brand-dark px-2.5 md:px-3 lg:px-[18px] py-2 md:py-2.5 lg:py-3 flex items-center transition-all hover:border-border-four"
                 onClick={handleCategoryMenu}
@@ -244,7 +244,7 @@ function Header({ lang }: { lang: string }) {
           {/* End of Category */}
           {/* logo will change here */}
           <div className="lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 relative">
-            <Logo className="logo -mt-1.5 md:-mt-1 md:mx-auto ltr:pl-3 rtl:pr-3 md:ltr:pl-0 md:rtl:pr-0 lg:mx-0 w-full lg:w-[450px] md:w-[350px] sm:w-auto " />
+            <Logo className="logo -mt-1.5 md:mt-2 md:mx-auto ltr:pl-3 rtl:pr-3 md:ltr:pl-0 md:rtl:pr-0 lg:mx-0  sm:w-[200px] md:w-[250px] lg:w-[320px]   " />
           </div>
           {/* End of logo */}
           {/* <LocationSelector /> */}

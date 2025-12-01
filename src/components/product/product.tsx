@@ -29,6 +29,9 @@ import { PermissionsContext } from '@/contexts/permissionsContext';
 import { FaRegHeart } from 'react-icons/fa';
 import { deleteWishlistItem } from '@/framework/basic-rest/wishlist/delete-wishlist-item';
 import { addWishListItem } from '@/framework/basic-rest/wishlist/add-wishlist';
+import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
+// import { useRouter } from 'next/router';
+import { useRouter, useSearchParams } from 'next/navigation';
 // import ReactImageMagnify from 'react-image-magnify';
 
 export const ColorFilterCompBig = ({
@@ -83,6 +86,13 @@ const ProductSingleDetails: React.FC<{
   productId?: string;
   params?: any;
 }> = ({ lang, type, params, productId }) => {
+   const router = useRouter();
+   const searchParams = useSearchParams();
+   const id = searchParams.get('id');
+   const sellerWarehouseId = searchParams.get('sellerWarehouseId');
+  //  const isMainCheck = searchParams.get('m');
+
+  // const { id, sellerWarehouseId } = router.query;
   const { t } = useTranslation(lang, 'common');
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   // const params = useParams();
@@ -93,8 +103,8 @@ const ProductSingleDetails: React.FC<{
   // const { product } = params;
   // console.log(product, "===>>> product")
   const { width } = useWindowSize();
-  const { data, isLoading } = useProductQuery(productId as string);
-  // console.log(data, '====>>> pppp');
+  const { data, isLoading } = useProductQuery(id as string);
+  
   // const { addItemToCart, isInCart, getItemFromCart, isInStock } = useCart();
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [attributes, setAttributes] = useState<{ [key: string]: string }>({});
@@ -111,7 +121,10 @@ const ProductSingleDetails: React.FC<{
   const [btnDisable, setBtnDisable] = useState<boolean | any>(false);
   const [wishlistBtnText, setWishlistBtnText] =
     useState<string>('Add to Wishlist');
+      const [loginWarehouse, setLoginWarehouse] = useState<any>();   
+    const {isLoading: userLoading } = useUserDataQuery()
   const key = 'Cart';
+
 
   const {
     wishlist: wishlistContext,
@@ -120,9 +133,31 @@ const ProductSingleDetails: React.FC<{
   } = useWishlist();
 
   // console.log(wishlistContext, '===> wishlistContext');
-
   const [isWishlist, setIsWishlist] = useState<boolean | any>(false);
 
+
+
+
+  useEffect(() => {
+          if (!userLoading) {
+          const savedWarehouse = localStorage.getItem('selectedWarehouse');
+    
+          if (savedWarehouse) {
+          try {
+            const parsedWarehouse = JSON.parse(savedWarehouse);
+            setLoginWarehouse(parsedWarehouse);
+          } catch (error) {
+            console.error("Failed to parse saved warehouse:", error);
+            setLoginWarehouse(null);
+          }
+        } else {
+          console.warn("No saved warehouse found in localStorage.");
+          setLoginWarehouse(null);
+        }
+      }
+    }, [userLoading]);
+        
+   
   // const getColors = () => {
   //   const filterColors = data?.variants?.filter((item: any) => {
   //     return item?.variantName?.name === 'Color';
@@ -160,6 +195,13 @@ const ProductSingleDetails: React.FC<{
       getColors();
     }
   }, [data]);
+    const isMyWarehouseProduct = sellerWarehouseId === loginWarehouse?._id;
+    // console.log("warehouse id is isMyWarehouseProduct" , isMyWarehouseProduct)
+    // console.log(data, '====>>> pppp');
+    // console.log("login warehouse id is here ", loginWarehouse?._id);
+    // console.log("login warehouse here ", isMyWarehouseProduct);
+    // console.log("product warehoiuse id", sellerWarehouseId);
+
 
   const handleChange = () => {
     setShareButtonStatus(!shareButtonStatus);
@@ -184,7 +226,7 @@ const ProductSingleDetails: React.FC<{
     }
   }, [wishlistContext]);
 
-  if (isLoading) return <SingleSpecialProductSkeletons />;
+  if (isLoading || !data) return <SingleSpecialProductSkeletons />;
 
   const groupVariantsByParent = (variants: any) => {
     return variants?.reduce((acc: any, variant: any) => {
@@ -452,8 +494,12 @@ const ProductSingleDetails: React.FC<{
               />
             </div>
           </div>
-
-          <div className="space-y-2.5 md:space-y-3.5 flex flex-col lg:flex-row lg:items-center gap-4">
+            {isMyWarehouseProduct ? (
+            <div className="p-3 bg-green-100 text-green-700 rounded-md w-[200px]">
+            Available in My Store
+            </div>
+            ) : (
+            <div className="space-y-2.5 md:space-y-3.5 flex flex-col lg:flex-row lg:items-center gap-4">
             <Counter
               variant="single"
               value={selectedQuantity}
@@ -507,6 +553,7 @@ const ProductSingleDetails: React.FC<{
               ''
             )}
           </div>
+          )}
         </div>
       </div>
       {type === 'JEWELRY' && (

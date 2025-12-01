@@ -13,7 +13,7 @@ const LogoWhite: React.FC<React.AnchorHTMLAttributes<{}>> = ({
         <Link
             href={href}
             className={cn(
-                'inline-block focus:outline-none max-w-44 w-full',
+                'inline-block focus:outline-none max-w-16  w-full',
                 className,
             )}
             {...props}

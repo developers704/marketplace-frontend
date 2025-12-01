@@ -43,7 +43,7 @@ interface InventoryItem {
   quantity: number;
   stockAlertThreshold: number;
   barcode: string;
-  warehouse: any[];
+  warehouse: { _id: string; name: string; isMain: boolean};
 }
 import DebounceSearch from '@/components/common/debounceSearch';
 import Accordion from '@/components/ui/accordion';
@@ -57,6 +57,7 @@ import { useWarehousesQuery } from '@/framework/basic-rest/warehouse/get-all-war
 import PreventScreenCapture from '@/utils/PreventScreenShots';
 import { useParams, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 // import { XCircle } from "lucide-react";
 
 const ItemListPageContent = ({ lang }: { lang: string }) => {
@@ -73,7 +74,30 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [productsPerPage, setProductsPerPage] = useState<number>(20);
   // const [productsFilter, setProductsFilter] = useState<any>([]);
+    const [loginWarehouse, setLoginWarehouse] = useState<any>();
+    const { data: user, isLoading: userLoading } = useUserDataQuery();
+  
+  
 
+      console.log("user login warehouse is here", loginWarehouse)
+      useEffect(() => {
+      if (!userLoading) {
+      const savedWarehouse = localStorage.getItem('selectedWarehouse');
+
+      if (savedWarehouse) {
+      try {
+        const parsedWarehouse = JSON.parse(savedWarehouse);
+        setLoginWarehouse(parsedWarehouse);
+      } catch (error) {
+        console.error("Failed to parse saved warehouse:", error);
+        setLoginWarehouse(null);
+      }
+    } else {
+      console.warn("No saved warehouse found in localStorage.");
+      setLoginWarehouse(null);
+    }
+  }
+}, [userLoading]);
   const params = useParams();
   const searchParams = useSearchParams();
   const queryId = searchParams.get('id');
@@ -88,30 +112,42 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
   // Fetch all inventories
   const { data: inventories, isLoading } = useInventories();
 
+  console.log(inventories, '===>>> inventories');
+  
+
   // Filter and sort inventories based on warehouse filter
   const filteredInventories = React.useMemo(() => {
     if (!inventories) return [];
     
     let filtered = [...inventories];
+    // console.log(filtered, '===>>> filtered before warehouse');
 
     // Apply warehouse filter
     if (selectedWarehouseId) {
-      filtered = filtered.filter(inv => 
-        inv.warehouse?.some(w => w._id === selectedWarehouseId)
-      );
+        filtered = filtered.filter(inv =>  inv.warehouse?._id === selectedWarehouseId);
     } else {
       switch (warehouseFilter) {
         case 'main-warehouse':
-          filtered = filtered.filter(inv => 
-            inv.warehouse?.some(w => w.isMain)
-          );
-          break;
+        filtered = filtered.filter(inv => inv.warehouse?.isMain);
+        break;
         case 'out-to-store':
-          filtered = filtered.filter(inv => 
-            inv.warehouse?.some(w => !w.isMain)
-          );
+        filtered = filtered.filter(
+        inv => 
+        !inv.warehouse?.isMain &&               // store only
+        inv.warehouse?._id !== loginWarehouse?._id // exclude my store
+      );
           break;
-        // 'warehouse-plus-store' shows all
+          case "warehouse-plus-store":
+            filtered = filtered.filter(
+              inv =>
+                inv.warehouse?._id !== loginWarehouse?._id
+            );
+            
+          break;
+          case "my-store-inventory":
+          filtered = filtered.filter(inv => inv.warehouse?._id === loginWarehouse?._id);
+          break;
+    
       }
     }
 
@@ -245,7 +281,7 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
   useEffect(() => {
     const fetchVariants = async () => {
       try {
-        const response = await fetch('https://backend.vallianimarketplace.com/api/variants/product-variants');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants`);
         if (!response.ok) throw new Error('Failed to fetch variants');
         const data = await response.json();
         setVariants(data);
@@ -288,58 +324,19 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
                 value={warehouseFilter}
                 onChange={(e) => {
                   setWarehouseFilter(e.target.value);
-                  setSelectedWarehouseId(''); // Clear specific warehouse when filter changes
+                  setSelectedWarehouseId(''); 
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
               >
                 <option value="main-warehouse">Available</option>
                 <option value="out-to-store">Out to Store</option>
+                <option value="my-store-inventory">My Store Inventory</option>
                 <option value="warehouse-plus-store">All</option>
+
               </select>
             </div>
 
-            {/* Store/Warehouse Dropdown */}
-            {/* <div className="flex items-center gap-2">
-              <label htmlFor="warehouseSelect" className="text-sm font-medium whitespace-nowrap">
-                Store:
-              </label>
-              <select
-                id="warehouseSelect"
-                value={selectedWarehouseId}
-                onChange={(e) => {
-                  setSelectedWarehouseId(e.target.value);
-                  if (e.target.value) {
-                    setWarehouseFilter(''); // Clear filter when specific warehouse selected
-                  } else {
-                    setWarehouseFilter('main-warehouse'); // Reset to default when "All Stores" selected
-                  }
-                }}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
-              >
-                <option value="">All Stores</option>
-                {warehouses?.map((warehouse: any) => (
-                  <option key={warehouse._id} value={warehouse._id}>
-                    {warehouse.name} {warehouse.isMain ? '(Main)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-            
-
-            {/* Clear Filter Button */}
-            {/* {(warehouseFilter !== 'main-warehouse' || selectedWarehouseId) && (
-              <button
-                onClick={() => {
-                  setWarehouseFilter('main-warehouse');
-                  setSelectedWarehouseId('');
-                }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors whitespace-nowrap"
-                type="button"
-              >
-                <XCircle size={18} />
-              </button>
-            )} */}
-
+  
             <DebounceSearch
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -388,6 +385,7 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
                       stockAlert: inventory.stockAlertThreshold,
                       barcode: inventory.barcode,
                       warehouses: inventory.warehouse,
+                     loginWarehouse:loginWarehouse,
                       isOutOfStock: inventory.quantity <= 0
                     }}
                     type="STANDARD" // Change from INVENTORY to STANDARD type

@@ -35,7 +35,7 @@ const CheckoutCalculationBox = ({
   const [isGWPItem, setIsGWPItem] = useState(false);
   const [loader, setLoader] = useState(false);
 
-  console.log(cart, '===>>> cart');
+  // console.log(cart, '===>>> cart is here in checkout cal box');
 
   const checkForSpecialItem = (cart: any): boolean => {
     return (
@@ -56,91 +56,58 @@ const CheckoutCalculationBox = ({
     }
   };
 
-  const checkoutHandler = async () => {
-    setLoader(true);
-    try {
-      const response = await checkout(cart._id, warehouse?._id);
-      // console.log(response, '===>>> checkout response from checkout handler');
-      if (response.message === 'Order placed successfully and awaiting approval') {
-        setLoader(false);
-        // Swal.fire('Success!', 'Order placed successfully', 'success');
-        Swal.fire({
-          title: 'Success!',
-          text: 'Order placed successfully and awaiting approval',
-          icon: 'success',
-          confirmButtonText: 'Ok',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push(`/${lang}/profile-details?option=My Order`); 
-          }
-        });
-      } else if (
-        response.message === 'Insufficient inventory wallet balance' ||
-        response.message === 'Insufficient supplies wallet balance'
-      ) {
-        setLoader(false);
-        Swal.fire({
-          title: 'Warning!',
-          text: 'Insufficient wallet balance',
-          icon: 'warning',
-          confirmButtonText: 'Go to Wallet',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push(`/${lang}/profile-details?option=Store Wallet`); // Replace with your actual route
-          }
-        });
-      } else if (
-        response.message ===
-        'Insufficient quantity for product undefined in main warehouse'
-      ) {
-        setLoader(false);
-        Swal.fire({
-          title: 'Warning!',
-          text: 'Insufficient quantity for product in main warehouse',
-          icon: 'warning',
-          confirmButtonText: 'Go to Store',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push(`/${lang}/`); // Replace with your actual route
-          }
-        });
-      } else if (
-        response.message ===
-        'Normal and other products cannot be ordered together'
-      ) {
-        setLoader(false);
-        // Swal.fire('Error!', response.message, 'error');
-        Swal.fire({
-          title: 'Warning!',
-          text: response.message,
-          icon: 'warning',
-          confirmButtonText: 'Ok',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push(`/${lang}/cart`); // Replace with your actual route
-          }
-        });
-      } else if (response.message === 'Insufficient warehouse wallet balance') {
-        setLoader(false);
-        Swal.fire({
-          title: 'Warning!',
-          text: 'Insufficient warehouse wallet balance',
-          icon: 'warning',
-          confirmButtonText: 'Go to Wallet',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push(`/${lang}/profile-details?option=Store Wallet`); // Replace with your actual route
-          }
-        });
-      } else {
-        setLoader(false);
-        Swal.fire('Error!', response.message, 'error');
-      }
-    } catch (error) {
-      setLoader(false);
-      console.log(error, '===>>> error from checkout handler');
+const checkoutHandler = async () => {
+  setLoader(true);
+
+  try {
+    const response = await checkout(cart._id, warehouse?._id, cart);
+    const { mainResult, storeResult } = response;
+
+    
+    let successMessages = [];
+    let errorMessages = [];
+    
+    
+   // MAIN RESULT
+    if (mainResult?.order) {
+      successMessages.push(`✔️ Main: ${mainResult?.message || ""}`);
+    } else {
+      errorMessages.push(` ${mainResult?.error || ""} `);
     }
-  };
+
+    // STORE RESULT
+    if (storeResult?.order) {
+      successMessages.push(`✔️ Store: ${storeResult?.message || ""}`);
+    } else {
+      errorMessages.push(` ${storeResult?.error || ""}`);
+    }
+
+    setLoader(false);
+
+    // Show combined Swal
+       // 🔥 COMBINE ALL MESSAGES
+    const finalHtml = `
+      ${successMessages?.length ? `<b>Success:</b><br>${successMessages?.join("<br/>")}<br><br>` : ""}
+      ${errorMessages?.length ? `<b>Errors:</b><br>${errorMessages?.join("<br/>")}` : ""}
+    `;
+
+    // 🔥 ALWAYS ONE SWAL — Always Runs
+    return Swal.fire({
+      title: "Order Status",
+      html: finalHtml,
+      icon: errorMessages?.length ? "warning" : "success",
+      confirmButtonText: "Ok",
+    }).then(() => {
+      router.push(`/${lang}/profile-details?option=My%20Order`);
+    });
+  } catch (error) {
+    setLoader(false);
+    // console.log(error, "===>>> checkout handler error");
+
+    Swal.fire("Something went wrong during checkout");
+  }
+};
+
 
   const walletAmonutHandler = (wallet: any) => {
     // console.log(typeof totalAmount, typeof walletBalance);

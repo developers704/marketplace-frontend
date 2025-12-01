@@ -55,7 +55,6 @@ const showCreditRequestModal = (targetWallet: any) => {
       const selectedWarehouse = localStorage.getItem("selectedWarehouse");
       const warehouseData = selectedWarehouse ? JSON.parse(selectedWarehouse) : null;
       const selectedWarehouseId = warehouseData?._id;
-      // ✅ Call requestWalletCredit function when confirmed
       const response = await requestWalletCredit(amount, reason, targetWallet, selectedWarehouseId );
 
       if (response) {
@@ -77,30 +76,10 @@ const MyWallet = ({ warehouse }: any) => {
   // const [warehouseWalletBalance, setWarehouseWalletBalance] = useState<any>(0);
   const { permissions } = useContext(PermissionsContext);
   const key = 'Cart';
-  console.log(warehouse, '===>>> warehouse my wallet');
-
-  // console.log(permissions[key]?.View, '===>>> permissions');
-  // const fetchUserWallet = async () => {
-  //   const response = await getUserWallet();
-
-  //   if (response.message === 'Wallet data retrieved successfully') {
-  //     // console.log(response.message, '===>>> response message');
-  //     setWalletBalance(response.wallet.balance);
-  //   }
-  //   // console.log(response, '===>>> response');
-  // };
-
-  // const fetchStoreWallet = async (warehouseId: any) => {
-  //   const response = await getStoreWallet(warehouseId);
-
-  //   // console.log(response, '===>>> response message store');
-  //   if (response) {
-  //     setStoreWalletBalance(response.balance);
-  //   }
-  //   // console.log(response, '===>>> response');
-  // };
 
   const fetchWarehouseWallet = async (warehouseId: any) => {
+
+    if (!warehouseId) return;
     const response = await getWarehouseWallet(warehouseId);
 
     // console.log(response, '===>>> response message store');
@@ -113,11 +92,11 @@ const MyWallet = ({ warehouse }: any) => {
   };
 
   useEffect(() => {
-    // fetchUserWallet();
-    // fetchStoreWallet(warehouse?._id);
-    fetchWarehouseWallet(warehouse?._id);
-  }, [warehouse]);
-
+  if (!warehouse?._id) return;
+  fetchWarehouseWallet(warehouse._id);
+  }, [warehouse?._id]);
+  
+  
   const handleCreditRequest = (targetWallet: any) => {
     showCreditRequestModal(targetWallet);
   };

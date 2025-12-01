@@ -20,7 +20,7 @@ export const siteSettings = {
     href: '/en',
     // width: 60,
     // height: 50,
-    width: 500,
+    width: 220,
     height: 50,
   },
   defaultLanguage: 'en',

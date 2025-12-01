@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { getToken } from '../utils/get-token';
 
-export async function addWishListItem( productId: any, productType: any) {
+export async function addWishListItem( productId: any, productType: any, dataIsmain: any) {
   //   console.log(options, '===>>> id in fetchAllSubCategories');
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+  const isMain = dataIsmain.warehouses?.isMain 
+  const sellerWarehouseId = dataIsmain?.warehouses?._id
+
+  console.log("ismaincheck", isMain)
   const token = getToken();
   const response = await fetch(`${BASE_API}/api/wishlist/`, {
     method: 'POST',
@@ -14,6 +18,8 @@ export async function addWishListItem( productId: any, productType: any) {
     body: JSON.stringify({
       productId,
       productType,
+      isMain,
+      sellerWarehouseId
     }),
   });
 

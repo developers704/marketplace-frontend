@@ -102,24 +102,24 @@ const CartItemComp = ({
           objectFit="contain"
         />
         <div className="flex flex-col">
-          <span className="font-bold text-[20px]">{item?.item?.name}</span>
+          <span className="font-bold text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg">{item?.item?.name}</span>
           {/* text-brand-mute */}
-          <p className="text-[14px] text-brand-muted">SKU: {item?.item?.sku}</p>
+          <p className="text-brand-muted text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg">SKU: {item?.item?.sku}</p>
           {item?.color && (
-            <p className="text-[14px] text-brand-muted">
+            <p className="text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-brand-muted">
               Color: {item?.color || 'N/A'}
             </p>
           )}
         </div>
       </div>
 
-      <div className="flex-1 w-full text-center text-[20px]">
+      <div className="flex-1 w-full text-center text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg">
         $ {item?.price}.00
       </div>
-      <div className="flex-1 w-full text-center flex items-center justify-center">
+      <div className="flex-1 w-full text-center flex items-center justify-center text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg">
         <QuantityCounter quantity={item?.quantity} setQuantity={setQuantity} />
       </div>
-      <div className="flex-1 w-full text-center text-[20px]">
+      <div className="flex-1 w-full text-center text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg">
         $ {item?.price * quantity}
       </div>
       <div className="flex-1 w-full flex items-center justify-center gap-4">

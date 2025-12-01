@@ -1,7 +1,7 @@
 'use client';
 import { CartContext } from '@/contexts/cart/cart.context';
 import { PermissionsContext } from '@/contexts/permissionsContext';
-import { addToCartApi } from '@/framework/basic-rest/cart/use-cart';
+import { addToCartApiWishlist } from '@/framework/basic-rest/cart/use-cart';
 import { deleteWishlistItem } from '@/framework/basic-rest/wishlist/delete-wishlist-item';
 import { generateCartItem } from '@/utils/generate-cart-item';
 import Image from 'next/image';
@@ -15,8 +15,10 @@ const WishlistItem = ({
   setUpdateList,
   updateList,
   removeFromWishlist,
+  sellerWarehouseId,
+  isMain
 }: any) => {
-  // console.log(product, '===>>> product');
+  // console.log('product wishlist is here',product);
   const {
     addToCart: addToCartContext,
     //  removeSingleItem,
@@ -26,6 +28,8 @@ const WishlistItem = ({
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   const { permissions } = useContext(PermissionsContext);
   const key = 'Cart';
+  const  isMainFlag = {sellerWarehouseId, isMain}  
+// console.log("ismainflag new setpu check 2", isMainFlag)
 
   const handleRemove = async (productId: any) => {
     if (Object.keys(product).includes('specialCategory')) {
@@ -47,11 +51,13 @@ const WishlistItem = ({
 
   const item = generateCartItem(product, 1);
 
+  // console.log("item in add to wishlisht", item)
+
   async function addToCart() {
     // console.log(selectedQuantity, '===> selectedQuantity');
     // console.log(item, '===> cart items');
     if (item) {
-      const response = await addToCartApi(item);
+      const response = await addToCartApiWishlist(item , isMainFlag );
       // console.log(response, '===> response');
       if (response.items.length > 0) {
         toast.success('Added to cart', {

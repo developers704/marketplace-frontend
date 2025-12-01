@@ -59,41 +59,16 @@ useEffect(() => {
     }
   }, [cartState.cartItems]);
 
-  // console.log(cartTotal, 'cartTotal');
-
-  // const fetchWalletBalance = async () => {
-  //   const response = await getUserWallet();
-  //   if (response.message === 'Wallet data retrieved successfully') {
-  //     setBalance(response.wallet.balance);
-  //   }
-  // };
-
-  // const fetchStoreWallet = async (warehouseId: any) => {
-  //   const response = await getStoreWallet(warehouseId);
-
-  //   // console.log(response, '===>>> response message store');
-  //   if (response) {
-  //     setStoreWalletBalance(response.balance);
-  //   }
-  //   // console.log(response, '===>>> response');
-  // };
-
   const fetchWarehouseWallet = async (warehouseId: any) => {
     const response = await getWarehouseWallet(warehouseId);
-
-    // console.log(response, '===>>> response message store');
     if (response) {
       setBalance(response?.inventoryWallet?.balance);
       setStoreWalletBalance(response?.suppliesWallet?.balance);
-      // setWarehouseWalletBalance(response.balance);
     }
-    // console.log(response, '===>>> response');
   };
 
   useEffect(() => {
     if (isAuthorized && warehouse?._id) {
-      // fetchWalletBalance();
-      // fetchStoreWallet(warehouse?._id);
       fetchWarehouseWallet(warehouse?._id);
     } else {
       setBalance('0');

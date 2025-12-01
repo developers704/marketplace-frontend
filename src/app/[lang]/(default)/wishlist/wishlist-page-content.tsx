@@ -26,10 +26,14 @@ const WishlistPageContent = ({ lang }: { lang: string }) => {
       if (response) {
         setProducts(response.products);
       }
+      // console.log("WishlistItem response", response)
+
     };
 
     fetchWishlist();
   }, [updateList]);
+      // console.log("WishlistItem products", products)
+
 
   // useEffect(() => {
   //   if (!isLoading) {
@@ -95,6 +99,8 @@ const WishlistPageContent = ({ lang }: { lang: string }) => {
                           setUpdateList={setUpdateList}
                           updateList={updateList}
                           removeFromWishlist={removeFromWishlist}
+                          sellerWarehouseId={item?.sellerWarehouseId}
+                          isMain={item?.isMain}
                         />
                       ))}
                 </div>

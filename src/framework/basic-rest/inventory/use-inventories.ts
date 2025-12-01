@@ -20,7 +20,7 @@ export interface Inventory {
   _id: string;
   product: InventoryProduct;
   productType: string;
-  warehouse: WarehouseInfo[];
+  warehouse: WarehouseInfo;
   city: {
     _id: string;
     name: string;

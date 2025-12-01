@@ -22,7 +22,7 @@ const NewFooter = ({ lang }: any) => {
           {t(`VALLIANI FOR BETTER FUTURE`)}
         </div> */}
         <div className="">
-          <Logo className="logo -mt-1.5 md:-mt-1 md:mx-auto ltr:pl-3 rtl:pr-3 md:ltr:pl-0 md:rtl:pr-0 lg:mx-0 w-full lg:w-[450px] md:w-[350px] sm:w-auto " />
+          <Logo className="logo -mt-1.5 md:-mt-1 md:mx-auto ltr:pl-3 rtl:pr-3 md:ltr:pl-0 md:rtl:pr-0 lg:mx-0 w-full lg:w-[320px] md:w-[250px] sm:w-auto " />
         </div>
         {/* <div className="lg:text-[14px] text-[10px] font-medium flex flex-col gap-4 items-center justify-center mt-4">
           &copy; {new Date().getFullYear()} 3PL, LLC
