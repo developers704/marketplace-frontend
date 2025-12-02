@@ -18,7 +18,7 @@ import { useTranslation } from 'src/app/i18n/client';
 import { MdOutlineShoppingCart } from 'react-icons/md';
 import Ratings from '../reviews/ratings';
 import DOMPurify from 'dompurify';
-import { addToCartApi } from '@/framework/basic-rest/cart/use-cart';
+import { addToCartViewPageApi } from '@/framework/basic-rest/cart/use-cart';
 import ProductDetailsComp from './product-details/productDetailsComp';
 import ProductsDetailAccordion from '../ui/productsDetailAccordion';
 import { useWishlist } from '@/contexts/wishlistContext';
@@ -28,7 +28,7 @@ import Breadcrumb from '../ui/breadcrumb';
 import { PermissionsContext } from '@/contexts/permissionsContext';
 import { FaRegHeart } from 'react-icons/fa';
 import { deleteWishlistItem } from '@/framework/basic-rest/wishlist/delete-wishlist-item';
-import { addWishListItem } from '@/framework/basic-rest/wishlist/add-wishlist';
+import {  addWishListItemViewPage } from '@/framework/basic-rest/wishlist/add-wishlist';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 // import { useRouter } from 'next/router';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -90,29 +90,20 @@ const ProductSingleDetails: React.FC<{
    const searchParams = useSearchParams();
    const id = searchParams.get('id');
    const sellerWarehouseId = searchParams.get('sellerWarehouseId');
-  //  const isMainCheck = searchParams.get('m');
-
-  // const { id, sellerWarehouseId } = router.query;
+   const isMainCheck = searchParams.get('m');
   const { t } = useTranslation(lang, 'common');
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
-  // const params = useParams();
   const pathname = usePathname();
   const splitedPath = pathname.split('/');
-  // console.log(productId, '===> params');
-  // console.log(splitedPath.includes('supplies'), '===> pathname');
-  // const { product } = params;
-  // console.log(product, "===>>> product")
   const { width } = useWindowSize();
   const { data, isLoading } = useProductQuery(id as string);
   
-  // const { addItemToCart, isInCart, getItemFromCart, isInStock } = useCart();
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [attributes, setAttributes] = useState<{ [key: string]: string }>({});
   const [addToCartLoader, setAddToCartLoader] = useState<boolean>(false);
   const [shareButtonStatus, setShareButtonStatus] = useState<boolean>(false);
   const {
-    addToCart: addToCartContext,
-    // getCartLength,
+  addToCart: addToCartContext,
   } = useContext(CartContext);
   const { permissions } = useContext(PermissionsContext);
   const [colorVariants, setColorVariants] = useState<any>([]);
@@ -276,7 +267,7 @@ const ProductSingleDetails: React.FC<{
       setTimeout(() => {
         setAddToCartLoader(false);
       }, 1500);
-      const response = await addToCartApi(item);
+      const response = await addToCartViewPageApi(item , sellerWarehouseId , isMainCheck);
 
       // console.log(response, '===> response');
     
@@ -357,7 +348,7 @@ const ProductSingleDetails: React.FC<{
       } else {
         // Add to wishlist
 
-        const response = await addWishListItem(productId, productType);
+        const response = await addWishListItemViewPage(productId, productType, sellerWarehouseId , isMainCheck );
 
         if (response.message === `Invalid token. Please log in again.`) {
           toast.error(`Please log in to add item to wishlist.`, {

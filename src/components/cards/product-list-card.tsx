@@ -409,7 +409,7 @@ const { data: user, isLoading: userLoading } = useUserDataQuery()
               // href={`/${lang}`}
               href={{
               pathname: `/${lang}/${categoryName}/${subcategoryName}/${data?.name || "product"}`,
-              query: { id: data?._id, sellerWarehouseId: data?.warehouses?._id },
+              query: { id: data?._id, sellerWarehouseId: data?.warehouses?._id, m: data?.warehouses?.isMain},
             }}
             >
               <Image
