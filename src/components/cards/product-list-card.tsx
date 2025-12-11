@@ -186,23 +186,25 @@ const { data: user, isLoading: userLoading } = useUserDataQuery()
 
   // console.log(data, 'data');
 
-  const getColors = () => {
-    const filterColors = data?.variants?.filter(
-      (item: any) => item?.variantName?.name === 'Color',
+const getColors = () => {
+  if (!data?.variants) return;
+
+  const filterColors = data.variants.filter((item: any) => {
+    const variantName = item?.variantName?.name;
+    return typeof variantName === "string" && variantName.toLowerCase() === "color";
+  });
+
+  if (filterColors.length > 0) {
+    const uniqueColors = new Set(
+      filterColors.map((item: any) => {
+        const val = item?.value?.[0];
+        return typeof val === "string" ? val.toLowerCase() : val;
+      })
     );
 
-    if (filterColors?.length > 0) {
-      // Get unique colors using Set
-      const uniqueColors = new Set(
-        filterColors.map((item: any) => item?.value[0]),
-      );
-
-      // Update state with unique values only
-      setColorVariants(Array.from(uniqueColors));
-    }
-
-    // console.log(filterColors, '===>>> filterColors');
-  };
+    setColorVariants(Array.from(uniqueColors));
+  }
+};
 
   useEffect(() => {
     if (data) {

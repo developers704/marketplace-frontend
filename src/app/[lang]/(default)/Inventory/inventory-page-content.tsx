@@ -272,8 +272,8 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
     const q = debouncedQuery.toLowerCase();
     return base.filter((inventory) => {
       const invAny: any = inventory;
-      const name = String(invAny.product?.name || invAny.productInfo?.name || '').toLowerCase();
-      const sku = String(invAny.product?.sku || invAny.productInfo?.sku || '').toLowerCase();
+      const name = String(invAny?.product?.name || invAny?.productInfo?.name || '').toLowerCase();
+      const sku = String(invAny?.product?.sku || invAny?.productInfo?.sku || '').toLowerCase();
       return name.includes(q) || sku.includes(q);
     });
   }, [filteredBySelectedFilters, debouncedQuery]);
@@ -282,7 +282,7 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
     const fetchVariants = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants`);
-        if (!response.ok) throw new Error('Failed to fetch variants');
+        if (!response?.ok) throw new Error('Failed to fetch variants');
         const data = await response.json();
         setVariants(data);
         
@@ -354,7 +354,7 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
             className="w-[250px] md:w-[300px] shrink-0 max-h-[600px] overflow-auto"
           >
             {groupedVariantsArray?.length > 0
-              ? groupedVariantsArray.map((item: any, index: number) => (
+              ? groupedVariantsArray?.map((item: any, index: number) => (
                   <Accordion
                     key={index}
                     item={item}
@@ -372,24 +372,24 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
           >
             {isLoading ? (
               'Loading...'
-            ) : searchFilteredInventories.length === 0 ? (
+            ) : searchFilteredInventories?.length === 0 ? (
               'No Inventory Items Found'
             ) : (
               <>
-                {searchFilteredInventories.map((inventory) => (
+                {searchFilteredInventories?.map((inventory) => (
                   <ProductListCard
-                    key={inventory._id}
+                    key={inventory?._id}
                     data={{
-                      ...inventory.product,
-                      quantity: inventory.quantity,
-                      stockAlert: inventory.stockAlertThreshold,
-                      barcode: inventory.barcode,
-                      warehouses: inventory.warehouse,
+                      ...inventory?.product,
+                      quantity: inventory?.quantity,
+                      stockAlert: inventory?.stockAlertThreshold,
+                      barcode: inventory?.barcode,
+                      warehouses: inventory?.warehouse,
                      loginWarehouse:loginWarehouse,
-                      isOutOfStock: inventory.quantity <= 0
+                      isOutOfStock: inventory?.quantity <= 0
                     }}
                     type="STANDARD" // Change from INVENTORY to STANDARD type
-                    isInWishlist={wishlistProductIds?.includes(inventory.product._id)}
+                    isInWishlist={wishlistProductIds?.includes(inventory?.product?._id)}
                     setUpdateList={setUpdateList}
                     updateList={updateList}
                     wishlist={wishlist}
@@ -413,13 +413,13 @@ const groupVariants = (variants: Variant[]) => {
   const grouped: Record<string, Set<string>> = variants.reduce((acc, variant) => {
     if (!variant?.variantName?.name) return acc;
     
-    const key = variant.variantName.name;
+    const key = variant?.variantName?.name;
     if (!acc[key]) {
       acc[key] = new Set(); // Use Set for automatic uniqueness
     }
     
     if (variant.value) {
-      acc[key].add(variant.value);
+      acc[key].add(variant?.value);
     }
     
     return acc;

@@ -13,6 +13,10 @@ module.exports = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'vallianimarketplace.com',
+      },
+      {
+        protocol: 'https',
         hostname: '2pl.app.boundlesstechnologies.net',
       },
       {

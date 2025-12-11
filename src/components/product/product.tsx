@@ -42,11 +42,11 @@ export const ColorFilterCompBig = ({
   // const [colorVariants, setColorVariants] = useState<any>([]);
   // const [selectedColor, setSelectedColor] = useState<any>('Y');
 
-  // console.log(selectedColor, '===> selectedColor');
+  console.log(selectedColor,colorVariants, setSelectedColor, '===> selectedColor');
 
   return (
     <>
-      {colorVariants.length > 0 ? (
+      {colorVariants?.length > 0 ? (
         colorVariants?.map((item: any) => {
           const isSelected = selectedColor === item;
           return (
@@ -105,7 +105,7 @@ const ProductSingleDetails: React.FC<{
   const {
   addToCart: addToCartContext,
   } = useContext(CartContext);
-  const { permissions } = useContext(PermissionsContext);
+  const { permissions } = useContext(PermissionsContext);``
   const [colorVariants, setColorVariants] = useState<any>([]);
   const [selectedColor, setSelectedColor] = useState<any>('W');
   const [updateList, setUpdateList] = useState<boolean | any>(false);
@@ -163,23 +163,25 @@ const ProductSingleDetails: React.FC<{
   //   console.log(filterColors, '===>>> filterColors');
   // };
 
-  const getColors = () => {
-    const filterColors = data?.variants?.filter(
-      (item: any) => item?.variantName?.name === 'Color',
+const getColors = () => {
+  if (!data?.variants) return;
+
+  const filterColors = data.variants.filter((item: any) => {
+    const variantName = item?.variantName?.name;
+    return typeof variantName === "string" && variantName.toLowerCase() === "color";
+  });
+
+  if (filterColors.length > 0) {
+    const uniqueColors = new Set(
+      filterColors.map((item: any) => {
+        const val = item?.value?.[0];
+        return typeof val === "string" ? val.toLowerCase() : val;
+      })
     );
 
-    if (filterColors?.length > 0) {
-      // Get unique colors using Set
-      const uniqueColors = new Set(
-        filterColors.map((item: any) => item?.value[0]),
-      );
-
-      // Update state with unique values only
-      setColorVariants(Array.from(uniqueColors));
-    }
-
-    // console.log(filterColors, '===>>> filterColors');
-  };
+    setColorVariants(Array.from(uniqueColors));
+  }
+};
 
   useEffect(() => {
     if (data) {
@@ -256,7 +258,7 @@ const ProductSingleDetails: React.FC<{
   }
 
   const item = generateCartItem(data, selectedQuantity, selectedColor);
-  // const outOfStock = isInCart(item.id) && !isInStock(item.id);
+ 
 
   async function addToCart() {
     // console.log(selectedQuantity, '===> selectedQuantity  items');
