@@ -87,8 +87,8 @@ const checkoutHandler = async () => {
     // Show combined Swal
        // 🔥 COMBINE ALL MESSAGES
     const finalHtml = `
-      ${successMessages?.length ? `<b>Success:</b><br>${successMessages?.join("<br/>")}<br><br>` : ""}
-      ${errorMessages?.length ? `<b>Errors:</b><br>${errorMessages?.join("<br/>")}` : ""}
+      ${successMessages?.length ? `<br>${successMessages?.join("<br/>")}` : ""}
+      ${errorMessages?.length ? `<br>${errorMessages?.join("<br/>")}` : ""}
     `;
 
     // 🔥 ALWAYS ONE SWAL — Always Runs

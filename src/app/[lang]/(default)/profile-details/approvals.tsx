@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { CheckCircle, Eye, XCircle } from 'lucide-react';
 
 interface ApprovalOrder {
   _id: string;
@@ -250,8 +251,8 @@ const Approvals = ({ lang }: { lang: string }) => {
         >
           <option value="all">All Orders</option>
           <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="disapproved">Disapproved</option>
+          {/* <option value="approved">Approved</option> */}
+          {/* <option value="disapproved">Disapproved</option> */}
         </select>
       </div>
 
@@ -325,6 +326,7 @@ const Approvals = ({ lang }: { lang: string }) => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
+                      <div className='flex align-items-center'>
                       <button
                         onClick={() => {
                           setSelectedOrder(order);
@@ -332,7 +334,9 @@ const Approvals = ({ lang }: { lang: string }) => {
                         }}
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
-                        <i className="ri-eye-line mr-1"></i> View
+                        {/* <i className="ri-eye-line mr-1"></i> */}
+                        
+                          <Eye className="text-blue-500" size={24} />
                       </button>
                       {order?.approvalStatus === 'PENDING' && (
                         <>
@@ -344,7 +348,8 @@ const Approvals = ({ lang }: { lang: string }) => {
                             }}
                             className="ml-3 text-green-600 hover:text-green-800 text-sm font-medium"
                           >
-                            <i className="ri-check-line mr-1"></i> Approve
+                         <CheckCircle className="text-green-500" size={24} />
+                         
                           </button>
                           <button
                             onClick={() => {
@@ -354,10 +359,13 @@ const Approvals = ({ lang }: { lang: string }) => {
                             }}
                             className="ml-3 text-red-600 hover:text-red-800 text-sm font-medium"
                           >
-                            <i className="ri-close-line mr-1"></i> Reject
+                            
+                          <XCircle className="text-red-500" size={24} />
                           </button>
                         </>
                       )}
+                      </div>
+                     
                     </td>
                   </tr>
                 ))
@@ -430,9 +438,9 @@ const Approvals = ({ lang }: { lang: string }) => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center">
-                    <i className="ri-user-line mr-2 text-green-600"></i> Customer
+                    <i className="ri-user-line mr-2 text-green-600"></i>Customer
                   </h4>
-                  <div className="space-y-1 text-sm">
+                  <div className="space-y-1 text-sm ml-2 ">
                     <p><strong>Name:</strong> {selectedOrder?.customer?.username || "-"}</p>
                     <p><strong>Email:</strong> {selectedOrder?.customer?.email || "-"}</p>
                     <p><strong>Phone:</strong> {selectedOrder?.customer?.phone_number || "-"}</p>
@@ -440,7 +448,7 @@ const Approvals = ({ lang }: { lang: string }) => {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center">
-                    <i className="ri-store-line mr-2 text-purple-600"></i> Store
+                    <i className="ri-store-line  text-purple-600"></i>Store
                   </h4>
                   <div className="space-y-1 text-sm">
                     <p><strong>Store:</strong> {selectedOrder?.warehouse?.name || "-"}</p>
