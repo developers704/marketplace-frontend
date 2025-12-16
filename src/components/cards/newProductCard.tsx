@@ -135,10 +135,13 @@ const NewProductCard = ({
               </div>
             </div>
           )} */}
-          <div>
+          <div className='flex  w-full align-center justify-between '>
             <p className="text-xl font-bold text-brand-blue">
             {data?.prices?.[0]?.amount ? `$${data?.prices[0]?.amount}` : 'Price not available'}
             </p>
+              <p className="">
+            {data?.sku || "-"}
+          </p>
           </div>
         </div>
         <button className="invisible group-hover:visible text-start w-fit py-3 px-4 text-lg font-semibold rounded-lg hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150">

@@ -60,7 +60,7 @@ export const ColorFilterCompBig = ({
         })
       ) : (
         <>
-          {/* <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
+          <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
             <p className="text-black">W</p>
             <div className="absolute w-[120%] h-[2px] bg-red-500 border-t-2 border-red-500 transform rotate-45"></div>
           </div>
@@ -73,7 +73,7 @@ export const ColorFilterCompBig = ({
           <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
             <p className="text-black">R</p>
             <div className="absolute w-[120%] h-[2px] bg-red-500 border-t-2 border-red-500 transform rotate-45"></div>
-          </div> */}
+          </div>
         </>
       )}
     </>
@@ -163,31 +163,43 @@ const ProductSingleDetails: React.FC<{
   //   console.log(filterColors, '===>>> filterColors');
   // };
 
+// const getColors = () => {
+//   if (!data?.variants) return;
+
+//   const filterColors = data.variants.filter((item: any) => {
+//     const variantName = item?.variantName?.name;
+//     return typeof variantName === "string" && variantName.toLowerCase() === "color";
+//   });
+
+//   if (filterColors.length > 0) {
+//     const uniqueColors = new Set(
+//       filterColors.map((item: any) => {
+//         const val = item?.value?.[0];
+//         return typeof val === "string" ? val.toLowerCase() : val;
+//       })
+//     );
+
+//     setColorVariants(Array.from(uniqueColors));
+//   }
+// };
+
+const colorOrder = ["w", "y", "r"];
+
 const getColors = () => {
-  if (!data?.variants) return;
+  if (!Array.isArray(data?.metal_color)) return;
 
-  const filterColors = data.variants.filter((item: any) => {
-    const variantName = item?.variantName?.name;
-    return typeof variantName === "string" && variantName.toLowerCase() === "color";
-  });
+  const colors = (Array.from(
+    new Set(data.metal_color.map((c: string) => c.toUpperCase()))
+  ) as string[]).sort((a: string, b: string) => colorOrder.indexOf(a) - colorOrder.indexOf(b));
 
-  if (filterColors.length > 0) {
-    const uniqueColors = new Set(
-      filterColors.map((item: any) => {
-        const val = item?.value?.[0];
-        return typeof val === "string" ? val.toLowerCase() : val;
-      })
-    );
-
-    setColorVariants(Array.from(uniqueColors));
-  }
+  setColorVariants(colors);
 };
 
-  useEffect(() => {
-    if (data) {
-      getColors();
-    }
-  }, [data]);
+useEffect(() => {
+  if (Array.isArray(data?.metal_color)) {
+    getColors();
+  }
+}, [data?.metal_color]);
     const isMyWarehouseProduct = sellerWarehouseId === loginWarehouse?._id;
     // console.log("warehouse id is isMyWarehouseProduct" , isMyWarehouseProduct)
     // console.log(data, '====>>> pppp');

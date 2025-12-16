@@ -186,25 +186,18 @@ const { data: user, isLoading: userLoading } = useUserDataQuery()
 
   // console.log(data, 'data');
 
+const colorOrder = ["w", "y", "r"];
+
 const getColors = () => {
-  if (!data?.variants) return;
+  if (!Array.isArray(data?.metal_color)) return;
 
-  const filterColors = data.variants.filter((item: any) => {
-    const variantName = item?.variantName?.name;
-    return typeof variantName === "string" && variantName.toLowerCase() === "color";
-  });
+  const colors = (Array.from(
+    new Set(data.metal_color.map((c: string) => c.toUpperCase()))
+  ) as string[]).sort((a: string, b: string) => colorOrder.indexOf(a) - colorOrder.indexOf(b));
 
-  if (filterColors.length > 0) {
-    const uniqueColors = new Set(
-      filterColors.map((item: any) => {
-        const val = item?.value?.[0];
-        return typeof val === "string" ? val.toLowerCase() : val;
-      })
-    );
-
-    setColorVariants(Array.from(uniqueColors));
-  }
+  setColorVariants(colors);
 };
+
 
   useEffect(() => {
     if (data) {
@@ -451,7 +444,7 @@ const getColors = () => {
                     const isSelected = selectedColor === item;
                     return (
                       <div
-                        className={`w-7 h-7 rounded-md flex justify-center capitalize items-center ${isSelected ? 'bg-black' : 'bg-white'}  ${isSelected ? 'text-white' : 'text-black'}  p-2`}
+                        className={`w-10 h-7  rounded-md flex justify-center capitalize items-center ${isSelected ? 'bg-black ' : 'bg-white'}  ${isSelected ? 'text-white ' : 'text-black'}  p-2`}
                         onClick={() => setSelectedColor(item)}
                       >
                         <p className="">{item}</p>
