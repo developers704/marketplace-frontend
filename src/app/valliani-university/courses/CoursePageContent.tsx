@@ -38,25 +38,21 @@ const CoursePageContent = () => {
         />
       </div>
       <div>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {courseIsLoading ? (
-            [1, 2, 3, 4].map((_, index) => (
-              <>
-                <SingleCardSkeletons key={index} />
-              </>
-            ))
-          ) : userCourses?.data.length > 0 ? (
-            userCourses?.data
-              ?.slice(0, 3)
-              ?.map((course: any) => (
-                <CourseCard2 key={course._id} data={course} />
-              ))
-          ) : (
-            <div className="text-center text-brand-muted">
-              No Courses Available
-            </div>
-          )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+      {courseIsLoading ? (
+        Array.from({ length: 6 }).map((_, index) => (
+          <SingleCardSkeletons key={index} />
+        ))
+      ) : userCourses?.data?.length > 0 ? (
+        userCourses?.data?.map((course: any) => (
+          <CourseCard2 key={course?._id} data={course} />
+        ))
+      ) : (
+        <div className="col-span-full flex justify-center items-center py-10 text-brand-muted">
+          No Courses Available
         </div>
+      )}
+    </div>
       </div>
     </div>
   );

@@ -62,7 +62,7 @@ const ProductsCategory = ({ lang }: ProductsCategoryProps) => {
   };
 
   // Function to filter products & categories based on search input
-  const filteredCategories = allCategories?.filter((category) =>
+  const filteredCategories = allCategories?.filter((category:any) =>
     category.name.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
 

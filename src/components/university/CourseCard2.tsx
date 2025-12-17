@@ -14,7 +14,7 @@ const CourseCard2 = ({ data }: any) => {
 
   return (
     <div
-      className="w-[250px] p-3 border-[2px] border-[#CCCCCC] bg-white rounded-xl cursor-pointer hover:border-brand-blue hover:shadow-md"
+      className="flex flex-col h-full border-2 border-[#CCCCCC] rounded-xl cursor-pointer hover:border-brand-blue hover:shadow-md transition bg-white"
       onClick={() => {
         if (data?.canAccess) {
           router.push(`/valliani-university/courses/chapters/${data?._id}`);
@@ -23,28 +23,33 @@ const CourseCard2 = ({ data }: any) => {
         }
       }}
     >
-      <div className="relative rounded-2xl aspect-square">
+      {/* Image */}
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden">
         <Image
-          src={getImageUrl(BASE_API as string, data?.thumbnail, '/assets/images/Course2.jpg')}
-          alt={'image'}
+          src={getImageUrl(
+            BASE_API as string,
+            data?.thumbnail,
+            '/assets/images/Course2.jpg'
+          )}
+          alt={data?.name}
           fill
-          className="object-cover rounded-2xl"
+          className="object-cover"
         />
       </div>
-      <div
-        id="text"
-        className="flex flex-col items-start justify-between gap-3 p-3 w-fit"
-      >
-        <h2 className="text-xl font-bold text-black text-wrap">{data?.name}</h2>
-        {/* <p className="text-[#0081FE] font-bold">
-          Approx. {`${'data?.approximateHours'}`} hours
-        </p> */}
-        
-        <h4 className="text-base font-bold text-black text-wrap">Course Duration: {data?.courseDuration} Min</h4>
-        <div className="flex items-center justify-between w-full">
-          <div className="font-bold text-brand-muted">
-            {`${data?.totalVideos}`} videos
-          </div>
+      {/* Content */}
+      <div className="flex flex-col justify-between flex-1 p-3 gap-2">
+        <h2 className="text-base md:text-lg font-bold text-black line-clamp-2">
+          {data?.name}
+        </h2>
+
+        <h4 className="text-sm font-semibold text-gray-700">
+          Course Duration: {data?.courseDuration} Min
+        </h4>
+
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-sm font-bold text-brand-muted">
+            {data?.totalVideos} videos
+          </span>
           {!data?.canAccess && <FaLock className="text-brand-muted" />}
         </div>
       </div>

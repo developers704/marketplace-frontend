@@ -480,7 +480,7 @@ const getColors = () => {
               </div>
               <div className="flex align-items-center justify-between ">
                 <p className="  text-brand-blue">
-                  Store {data?.warehouses.name || "N/A"} 
+                  Store {data?.warehouses?.name || "N/A"}
                 </p>
                 <p className="  text-brand-blue">
                    SKU {data?.sku || "N/A"} 
