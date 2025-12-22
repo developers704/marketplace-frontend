@@ -45,9 +45,10 @@ const ProductListCard = ({
   wishlist,
   setWishlist,
 }: ProductListCardProps) => {
-  const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+  const BASE_API = process.env.NEXT_PUBLIC_BASE_API as string;
   const [isWishlist, setIsWishlist] = useState<boolean | any>(false);
   const [colorVariants, setColorVariants] = useState<any>([]);
+  const [qty, setQty] = useState<number>(1);
   const [selectedColor, setSelectedColor] = useState<any>('W');
   const { permissions } = useContext(PermissionsContext);
   const [loginWarehouse, setLoginWarehouse] = useState<any>();
@@ -57,6 +58,19 @@ const categoryName = data?.category?.[0]?.name || 'uncategorized';
 const subcategoryName = data?.subcategory?.[0]?.name || 'general';
 
 const { data: user, isLoading: userLoading } = useUserDataQuery()
+// console.log(data, '===>>> user data in product list card');
+
+const increaseQty = () => {
+  if (qty < (data?.quantity || 99)) {
+    setQty(prev => prev + 1);
+  }
+};
+
+const decreaseQty = () => {
+  if (qty > 1) {
+    setQty(prev => prev - 1);
+  }
+};
 
 
   const {
@@ -80,14 +94,14 @@ const { data: user, isLoading: userLoading } = useUserDataQuery()
     const productId = data?._id
     try {
       const isInWishlist = wishlist?.some(
-        (item: any) => item?.product._id === productId,
+        (item: any) => item?.product?._id === productId,
       );
       
       if (isInWishlist) {
         // Remove from wishlist
         const response = await deleteWishlistItem(productId);
 
-        if (response.message === 'Product removed from wishlist') {
+        if (response?.message === 'Product removed from wishlist') {
           toast.success(`Item removed from wishlist.`, {
             position: 'bottom-right',
           });
@@ -125,7 +139,38 @@ const { data: user, isLoading: userLoading } = useUserDataQuery()
     }
   };
 
-  const item = generateCartItem(data, 1, selectedColor);
+  const item = generateCartItem(data, qty, selectedColor);
+  // Normalize seller/warehouse info to match addToCartApi expectations
+  const getSellerFlag = (product: any) => {
+    if (!product) return undefined;
+
+    // If backend already provides sellerWarehouseId, prefer that
+    if (product?.sellerWarehouseId) {
+      return {
+        warehouses: { _id: product?.sellerWarehouseId, isMain: product?.sellerIsMain ?? product?.isMain },
+        sellerWarehouseId: product?.sellerWarehouseId,
+        isMain: product?.sellerIsMain ?? product?.isMain,
+      };
+    }
+
+    // If warehouses is an array, choose the main warehouse or first
+    if (Array.isArray(product?.warehouses) && product?.warehouses.length > 0) {
+      const main = product?.warehouses.find((w: any) => w?.isMain) || product?.warehouses[0];
+      return { warehouses: main, sellerWarehouseId: main?._id, isMain: !!main?.isMain };
+    }
+
+    // If warehouses is an object (single warehouse)
+    if (product?.warehouses && typeof product?.warehouses === 'object') {
+      return { warehouses: product?.warehouses, sellerWarehouseId: product?.warehouses?._id, isMain: product?.warehouses?.isMain };
+    }
+
+    // Fallback to warehouse field
+    if (product?.warehouse && typeof product?.warehouse === 'object') {
+      return { warehouses: product?.warehouse, sellerWarehouseId: product?.warehouse?._id, isMain: product?.warehouse?.isMain };
+    }
+
+    return undefined;
+  };
   // console.log(item, '===> item to add to cart is here ');
   async function addToCart(isMainFlag: any) {
     try {
@@ -192,8 +237,8 @@ const getColors = () => {
   if (!Array.isArray(data?.metal_color)) return;
 
   const colors = (Array.from(
-    new Set(data.metal_color.map((c: string) => c.toUpperCase()))
-  ) as string[]).sort((a: string, b: string) => colorOrder.indexOf(a) - colorOrder.indexOf(b));
+    new Set(data?.metal_color?.map((c: string) => c.toUpperCase()))
+  ) as string[]).sort((a: string, b: string) => colorOrder?.indexOf(a) - colorOrder?.indexOf(b));
 
   setColorVariants(colors);
 };
@@ -207,7 +252,7 @@ const getColors = () => {
   
         useEffect(() => {
         if (!userLoading) {
-        const savedWarehouse = localStorage.getItem('selectedWarehouse');
+        const savedWarehouse = localStorage?.getItem('selectedWarehouse');
   
         if (savedWarehouse) {
         try {
@@ -224,7 +269,7 @@ const getColors = () => {
     }
   }, [userLoading]);
 
-  const isMyWarehouseProduct = data?.warehouses?._id === loginWarehouse?._id;
+  const isMyWarehouseProduct = getSellerFlag(data)?.sellerWarehouseId === loginWarehouse?._id;
 
 
   // console.log(colorVariants, '===>>> colorVariants');
@@ -404,7 +449,7 @@ const getColors = () => {
               // href={`/${lang}`}
               href={{
               pathname: `/${lang}/${categoryName}/${subcategoryName}/${data?.name || "product"}`,
-              query: { id: data?._id, sellerWarehouseId: data?.warehouses?._id, m: data?.warehouses?.isMain},
+              query: { id: data?._id, sellerWarehouseId: getSellerFlag(data)?.sellerWarehouseId, m: getSellerFlag(data)?.isMain },
             }}
             >
               <Image
@@ -429,7 +474,7 @@ const getColors = () => {
              <Link
              href={{
              pathname: `/${lang}/${categoryName}/${subcategoryName}/${data?.name || "product"}`,
-            query: { id: data?._id, sellerWarehouseId: data?.warehouses?._id },
+            query: { id: data?._id, sellerWarehouseId: getSellerFlag(data)?.sellerWarehouseId },
             }}
             >
                 <p className="text-xl font-semibold truncate whitespace-nowrap mb-3">
@@ -439,7 +484,7 @@ const getColors = () => {
             )}
             <div className="flex h-9 flex-col group-hover:flex-col  transition ease-in-out duration-150 mb-10">
               <div className="flex gap-2 group-hover:justify-end group-hover:items-end">
-                {!data?.isOutOfStock && colorVariants.length > 0 ? (
+                {!data?.isOutOfStock && colorVariants?.length > 0 ? (
                   colorVariants?.map((item: any) => {
                     const isSelected = selectedColor === item;
                     return (
@@ -475,17 +520,64 @@ const getColors = () => {
                   $ {data?.prices[0]?.amount || "N/A"} 
                 </p>
                 <p className="  text-brand-blue">
-                   Qty {data?.quantity || "N/A"} 
+                   Qty {data?.quantity} 
                 </p>
               </div>
               <div className="flex align-items-center justify-between ">
                 <p className="  text-brand-blue">
-                  Store {data?.warehouses?.name || "N/A"}
+                  Store {data?.warehouses?.name || data?.warehouse?.name || "N/A"}
                 </p>
                 <p className="  text-brand-blue">
                    SKU {data?.sku || "N/A"} 
                 </p>
               </div>
+              <div className="flex items-center justify-end mt-3">
+              <div className="flex items-center  border-gray-300 rounded-lg overflow-hidden">
+
+                {/* Decrease */}
+                <button
+                  onClick={decreaseQty}
+                  disabled={qty <= 1}
+                  className="w-8 h-8 flex items-center justify-center border-r disabled:opacity-40"
+                >
+                  −
+                </button>
+
+                {/* Normal Input (NO arrows) */}
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={qty}
+                  onChange={(e) => {
+                    const value = e.target?.value.replace(/\D/g, '');
+
+                    if (!value) {
+                      setQty(1);
+                      return;
+                    }
+
+                    let num = Number(value);
+
+                    if (num < 1) num = 1;
+                    if (num > data?.quantity) num = data?.quantity;
+
+                    setQty(num);
+                  }}
+                  className="w-12 h-8 text-center outline-none text-sm font-semibold"
+                />
+
+                {/* Increase */}
+                <button
+                  onClick={increaseQty}
+                  disabled={qty >= data?.quantity}
+                  className="w-8 h-8 flex items-center justify-center border-l disabled:opacity-40"
+                >
+                  +
+                </button>
+
+              </div>
+            </div>
             </div>
               {!data?.isOutOfStock && permissions[key]?.View ? (
               isMyWarehouseProduct  ? (
@@ -494,19 +586,19 @@ const getColors = () => {
                   // onClick={ () => addToCart(data)}
                   // onClick={ () => alert("allready available in your store")}
                 >
-                      Available in My Store
+                Available in My Store
                 </button>
-              ) : data.warehouses?.isMain ? (
+              ) : (getSellerFlag(data)?.warehouses?.isMain) ? (
                 <button
                   className="invisible group-hover:visible text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
-                  onClick={ () => addToCart(data)}
+                  onClick={ () => addToCart(getSellerFlag(data))}
                 >
                   Add To Cart
                 </button>
               ) : (
                 <button
                   className="invisible group-hover:visible text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
-                  onClick={ () => addToCart(data)}
+                  onClick={ () => addToCart(getSellerFlag(data))}
                 >
                 
                   Request to Admin
@@ -524,18 +616,18 @@ const getColors = () => {
         </div>
       ) : type === 'INVENTORY' ? (
         <div className="cursor-pointer group relative w-full flex flex-col py-4 transition ease-in-out duration-150 hover:shadow-md hover:shadow-neutral-300 rounded-lg border-[0.5px] border-gray-300">
-          {data.isOutOfStock && (
+          {data?.isOutOfStock && (
             <div className="absolute top-2 left-2 z-20 bg-red-500 text-white px-3 py-1 rounded-md text-sm font-semibold">
               Out of Stock
             </div>
           )}
           <div className="flex items-center justify-end absolute w-full rounded-lg bg-white top-0 py-2 px-4 z-10">
-            <span className="text-sm font-medium text-gray-600">SKU: {data.sku}</span>
+            <span className="text-sm font-medium text-gray-600">SKU: {data?.sku}</span>
           </div>
           <div id="top" className="w-full h-[200px] object-contain relative">
             <Image
-              src={data.image || `/assets/images/inventory/item2.png`}
-              alt={data.name}
+              src={data?.image || `/assets/images/inventory/item2.png`}
+              alt={data?.name}
               fill
               objectFit="contain"
             />
@@ -545,27 +637,27 @@ const getColors = () => {
             className="flex flex-col justify-center px-4 py-3 gap-2"
           >
             <div>
-              <p className="text-xl font-bold mb-2">{data.name}</p>
+              <p className="text-xl font-bold mb-2">{data?.name}</p>
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-semibold">Quantity:</span>
-                <span className={`text-lg font-bold ${Number(data.prices[0]?.amount) <= data.stockAlert ? 'text-red-600' : 'text-green-600'}`}>
-                  {data.prices[0]?.amount || 0}
+                <span className={`text-lg font-bold ${Number(data?.prices[0]?.amount) <= data?.stockAlert ? 'text-red-600' : 'text-green-600'}`}>
+                  {data?.prices[0]?.amount || 0}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-semibold">Alert Threshold:</span>
-                <span className="text-sm text-gray-600">{data.stockAlert}</span>
+                <span className="text-sm text-gray-600">{data?.stockAlert}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-semibold">Location:</span>
-                <span className="text-sm text-gray-600">{data.locationWithinWarehouse || 'N/A'}</span>
+                <span className="text-sm text-gray-600">{data?.locationWithinWarehouse || 'N/A'}</span>
               </div>
-              {data.barcode && (
+              {data?.barcode && (
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-semibold">Barcode:</span>
-                  <span className="text-sm text-gray-600">{data.barcode}</span>
+                  <span className="text-sm text-gray-600">{data?.barcode}</span>
                 </div>
               )}
               <div className="mt-2 pt-2 border-t">
@@ -577,7 +669,7 @@ const getColors = () => {
                     </span>
                   ))} */}
                   <span  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {data.warehouse?.name || 'N/A'}
+                    {data?.warehouse?.name || 'N/A'}
                   </span>
                 </div>
               </div>

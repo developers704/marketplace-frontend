@@ -120,7 +120,7 @@ const GlobalSearch = ({
                   item?.productType === 'Special'
                     ? `/${lang}/specialProducts/${item?._id}`
                     : item?.productType === 'Regular'
-                      ? `/${lang}/${item?.category[0].name}/${item?.subcategory[0]?.name}/${item?.name}?id=${item?._id}`
+                      ? `/${lang}/${item?.category?.name}/${item?.subcategory?.name}/${item?.name}?id=${item?._id}`
                       : ''
                 }
                 key={index}

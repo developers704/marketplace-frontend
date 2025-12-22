@@ -1,5 +1,6 @@
 'use client';
 import ProductListCard from '@/components/cards/product-list-card';
+import AppLoader from '@/components/common/AppLoader';
 import DebounceSearch from '@/components/common/debounceSearch';
 import Accordion from '@/components/ui/accordion';
 import Breadcrumb from '@/components/ui/breadcrumb';
@@ -9,14 +10,17 @@ import { fetchProductsVariants } from '@/framework/basic-rest/filtration/useFilt
 import { useProductsByCategoryQuery } from '@/framework/basic-rest/product/get-products-by-category';
 import { getWishListItem } from '@/framework/basic-rest/wishlist/get-wishlist';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useWarehousesQuery } from '@/framework/basic-rest/warehouse/get-all-warehouses';
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ItemListPageContent = ({ lang }: any) => {
   const [wishlistProductIds, setWishlistProductIds] = useState<any>();
   const [wishlist, setWishlist] = useState<any>();
   const [updateList, setUpdateList] = useState<boolean | any>(false);
-  const [varinats, setVarinats] = useState<any[]>([]);
+  const [varinats, setVariants] = useState<any[]>([]);
   const [groupedVariantsArray, setGroupedVariantsArray] = useState<any>();
+   const [isVariantsLoading, setIsVariantsLoading] = useState<boolean>(false);
   const [selectedFilters, setSelectedFilters] = useState<
     Record<string, string[]>
   >({});
@@ -30,6 +34,23 @@ const ItemListPageContent = ({ lang }: any) => {
   const parentCateId = queryId?.split(',')[0];
   const { itemlist: categoryId, category } = params;
   const PageTitle = decodeURIComponent(`${category}`);
+
+  const [warehouseFilter, setWarehouseFilter] = useState<string>('main-warehouse');
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
+  const [loginWarehouse, setLoginWarehouse] = useState<any>();
+  const { data: warehouses, isLoading: isLoadingWarehouses } = useWarehousesQuery();
+  const [isWarehouseOpen, setIsWarehouseOpen] = useState(false);
+  
+  useEffect(() => {
+    const savedWarehouse = localStorage.getItem('selectedWarehouse');
+    if (savedWarehouse) {
+      try {
+        setLoginWarehouse(JSON.parse(savedWarehouse));
+      } catch (err) {
+        setLoginWarehouse(null);
+      }
+    } else setLoginWarehouse(null);
+  }, []);
 
   const {
     data: categoryProducts,
@@ -128,23 +149,68 @@ const ItemListPageContent = ({ lang }: any) => {
 
   // Example Usage:
   const filteredProductsArray = filterProductsByFilters(
-    categoryProducts?.data,
+    categoryProducts?.data || [],
     selectedFilters,
-  );
+  ) || [];
 
-  const getProductVarinats = async () => {
-    try {
-      const response = await fetchProductsVariants();
-      if (response && response?.length > 0) {
-        setVarinats(response);
-      } else {
-        console.log('No Variants Found');
-        setVarinats([]);
-      }
-    } catch (error) {
-      console.log(error, '===>>> error');
+  const filterCategoryProductsByWarehouse = (products: any[] = []) => {
+    if (!Array.isArray(products)) return [];
+
+    if (selectedWarehouseId) {
+      return products.filter((p: any) => {
+        if (Array.isArray(p.inventory)) {
+          return p.inventory.some((it: any) => it?.warehouse?._id === selectedWarehouseId);
+        }
+        return p?.warehouse?._id === selectedWarehouseId;
+      });
+    }
+
+    switch (warehouseFilter) {
+      case 'main-warehouse':
+        return products.filter((p: any) => {
+          if (Array.isArray(p.inventory)) return p.inventory.some((it: any) => it?.warehouse?.isMain);
+          return p?.warehouse?.isMain;
+        });
+      case 'out-to-store':
+        return products.filter((p: any) => {
+          if (Array.isArray(p.inventory))
+            return p.inventory.some((it: any) => !it?.warehouse?.isMain && it?.warehouse?._id !== loginWarehouse?._id);
+          return !p?.warehouse?.isMain && p?.warehouse?._id !== loginWarehouse?._id;
+        });
+      case 'warehouse-plus-store':
+        return products.filter((p: any) => {
+          if (Array.isArray(p.inventory)) return p.inventory.some((it: any) => it?.warehouse?._id !== loginWarehouse?._id);
+          return p?.warehouse?._id !== loginWarehouse?._id;
+        });
+      case 'my-store-inventory':
+        return products.filter((p: any) => {
+          if (Array.isArray(p.inventory)) return p.inventory.some((it: any) => it?.warehouse?._id === loginWarehouse?._id);
+          return p?.warehouse?._id === loginWarehouse?._id;
+        });
+      default:
+        return products;
     }
   };
+
+const getProductVarinats = async () => {
+  try {
+    setIsVariantsLoading(true);
+
+    const response = await fetchProductsVariants();
+
+    if (response && response.length > 0) {
+      setVariants(response);
+    } else {
+      console.log('No Variants Found');
+      setVariants([]);
+    }
+  } catch (error) {
+    console.log(error, '===>>> error');
+    setVariants([]);
+  } finally {
+    setIsVariantsLoading(false); 
+  }
+};
 
   const groupVariants = (variants: any[]) => {
     return variants.reduce(
@@ -205,7 +271,7 @@ const ItemListPageContent = ({ lang }: any) => {
     }
   }, [varinats]);
 
-  const filteredProducts = filteredProductsArray?.filter((product: any) =>
+  const filteredProducts = (filteredProductsArray || [])?.filter((product: any) =>
     product.name.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
 
@@ -225,7 +291,30 @@ const ItemListPageContent = ({ lang }: any) => {
               {PageTitle}
             </h1>
           </div>
-          <div className="rightSide flex items-center justify-center space-x-4">
+          <div className="rightSide flex items-center justify-center space-x-4 flex-wrap gap-2">
+          
+      
+        <div className="flex items-center gap-2">
+              <label htmlFor="warehouseFilter" className="text-sm font-medium whitespace-nowrap">
+                
+              </label>
+              <select
+                id="warehouseFilter"
+                value={warehouseFilter}
+                onChange={(e) => {
+                  setWarehouseFilter(e.target.value);
+                  setSelectedWarehouseId(''); 
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+              >
+                <option value="main-warehouse">Available</option>
+                <option value="out-to-store">Out to Store</option>
+                <option value="my-store-inventory">My Store Inventory</option>
+                <option value="warehouse-plus-store">All</option>
+
+              </select>
+            </div>
+           
             <DebounceSearch
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -242,7 +331,8 @@ const ItemListPageContent = ({ lang }: any) => {
             id="filterContainer"
             className="w-[250px] md:w-[300px] shrink-0 max-h-[600px] overflow-auto"
           >
-            {groupedVariantsArray?.length > 0
+            {isVariantsLoading ? 
+            (<AppLoader label=' ' />) : groupedVariantsArray?.length > 0
               ? groupedVariantsArray.map((item: any, index: number) => (
                   <Accordion
                     key={index}
@@ -252,8 +342,11 @@ const ItemListPageContent = ({ lang }: any) => {
                     selectedFilters={selectedFilters}
                     setSelectedFilters={setSelectedFilters}
                   />
-                ))
-              : 'No Variants Found'}
+                )): (
+
+                   'No Variants Found'
+                  )
+                }
           </div>
           <div
             id="itemListContainer"
@@ -265,14 +358,15 @@ const ItemListPageContent = ({ lang }: any) => {
               'No Products Found'
             ) : (
               <>
-                {(debouncedQuery ? filteredProducts : filteredProductsArray)
+                {(debouncedQuery ? filteredProducts || [] : filteredProductsArray || [])
                   .slice()
                   .reverse()
+                  .filter((p: any) => filterCategoryProductsByWarehouse([p]).length > 0)
                   .map((item: any) => {
-                    const isInWishlist = wishlistProductIds?.includes(item._id);
+                    const isInWishlist = wishlistProductIds?.includes(item?._id);
                     return (
                       <ProductListCard
-                        key={item._id}
+                        key={item?._id}
                         lang={lang}
                         data={item}
                         type="STANDARD"

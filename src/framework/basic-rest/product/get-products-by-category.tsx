@@ -117,6 +117,7 @@ export const useProductsByCategoryQuery = (
   return useQuery({
     queryKey: ['products-by-category', categoryId, subCategoryId],
     queryFn: () => fetchProductsByCategory(categoryId, subCategoryId),
+    enabled: !!categoryId,
   });
 };
 

@@ -109,14 +109,14 @@ const InventoryPageContent = ({ lang }: { lang: string }) => {
           </div>
           <div className="rightSide flex items-center justify-center space-x-4">
             {specialCategory?.map((item: any) => {
-              const isSelected = selectedCategory === item.name;
+              const isSelected = selectedCategory === item?.name;
               return (
                 <div
                   className={`cursor-pointer  ${isSelected ? 'bg-brand-blue' : 'bg-transparent'} ${isSelected ? 'text-white' : 'text-black'} border-[1px] border-[#92898266] py-[10px] px-[15px] whitespace-nowrap`}
                   onClick={() => filterCateBySpecialCategory(item)}
-                  key={item.id}
+                  key={item?.id}
                 >
-                  {item.name}
+                  {item?.name}
                 </div>
               );
             })}

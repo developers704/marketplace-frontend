@@ -4,6 +4,14 @@ interface InventoryProduct {
   _id: string;
   name: string;
   sku: string;
+    category: {
+    _id: string;
+    name: string;
+  };
+  subcategory: {
+    _id: string;
+    name: string;
+  };
 }
 
 export interface WarehouseInfo {
