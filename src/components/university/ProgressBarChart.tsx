@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import AppLoader from '../common/AppLoader';
 
 interface GraphItem {
   period: string;
@@ -54,7 +55,7 @@ export function WeeklyProgressChart({
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20 text-gray-400">Loading...</div>
+        <div className="text-center py-28 text-gray-400"><AppLoader  label=' '/></div>        
       ) : (
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={transformedData}>

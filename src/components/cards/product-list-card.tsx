@@ -538,7 +538,7 @@ const getColors = () => {
                 <button
                   onClick={decreaseQty}
                   disabled={qty <= 1}
-                  className="w-8 h-8 flex items-center justify-center border-r disabled:opacity-40"
+                  className="w-6 h-6 bg-black text-white font-bold  hover:bg-red-600  rounded-full flex items-center justify-center border-r disabled:opacity-40"
                 >
                   −
                 </button>
@@ -564,14 +564,14 @@ const getColors = () => {
 
                     setQty(num);
                   }}
-                  className="w-12 h-8 text-center outline-none text-sm font-semibold"
+                  className="w-12 h-8  text-center border-none text-sm font-semibold"
                 />
 
                 {/* Increase */}
                 <button
                   onClick={increaseQty}
                   disabled={qty >= data?.quantity}
-                  className="w-8 h-8 flex items-center justify-center border-l disabled:opacity-40"
+                  className="w-6 h-6 bg-black hover:bg-green-200 hover:text-black text-white font-bold rounded-full flex items-center justify-center border-l disabled:opacity-40"
                 >
                   +
                 </button>
