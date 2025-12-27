@@ -15,6 +15,7 @@ export function StatCard({ icon, label, value }: StatCardProps) {
           alt={label}
           width={40}
           height={40}
+          unoptimized
           className="w-full h-full object-contain"
         />
       </div>
