@@ -32,13 +32,14 @@ const PolicyCard = ({ data, onOpen }: any) => {
         </h3>
         {/* Policy Badge */}
         <div className="flex items-center gap-2 mt-2">
-          {data?.isSigned && (
-            <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-              ✓ Signed
-            </span>
-          )}
+          <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+          {data?.isSigned ? 'Accepted' : 'Not Accepted'}
+          </span>
           <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full capitalize">
-            {data?.policyType}
+           {data?.policyType}
+          </span>
+          <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full capitalize">
+            Policy Version {data?.policyVersion || 'N/A'}
           </span>
         </div>
       </div>

@@ -60,7 +60,7 @@ export const ColorFilterCompBig = ({
         })
       ) : (
         <>
-          <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
+          {/* <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
             <p className="text-black">W</p>
             <div className="absolute w-[120%] h-[2px] bg-red-500 border-t-2 border-red-500 transform rotate-45"></div>
           </div>
@@ -73,7 +73,7 @@ export const ColorFilterCompBig = ({
           <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
             <p className="text-black">R</p>
             <div className="absolute w-[120%] h-[2px] bg-red-500 border-t-2 border-red-500 transform rotate-45"></div>
-          </div>
+          </div> */}
         </>
       )}
     </>

@@ -1,5 +1,6 @@
 'use client';
 import { PermissionsContext } from '@/contexts/permissionsContext';
+import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import {
   // getStoreWallet,
   // getUserWallet,
@@ -75,6 +76,7 @@ const MyWallet = ({ warehouse }: any) => {
   const [storeWalletBalance, setStoreWalletBalance] = useState<any>(0);
   // const [warehouseWalletBalance, setWarehouseWalletBalance] = useState<any>(0);
   const { permissions } = useContext(PermissionsContext);
+   const { data: user, isLoading } = useUserDataQuery();
   const key = 'Cart';
 
   const fetchWarehouseWallet = async (warehouseId: any) => {
@@ -118,12 +120,14 @@ const MyWallet = ({ warehouse }: any) => {
               <span className="text-lg font-normal">{`(Total)`}</span>
             </h1>
             <div className="flex gap-4 items-center ">
+             {user?.role?.role_name.toLowerCase() !== "emp" && permissions[key]?.View && (<>
               <button
                 className="bg-[#34A853] rounded-lg px-10 py-3 text-white w-fit"
                 onClick={() => showCreditRequestModal('inventory')}
               >
                 Request Credit
-              </button>
+              </button>             
+             </> ) }
               {/* <button className="bg-[#0081FE] rounded-lg px-10 py-3 text-white w-fit">
                 Use it now
               </button> */}
@@ -147,12 +151,16 @@ const MyWallet = ({ warehouse }: any) => {
                   <span className="text-lg font-normal">{`(Total)`}</span>
                 </h1>
                 <div className="flex gap-4 items-center ">
+
+                    {user?.role?.role_name.toLowerCase() !== "emp" && ( 
                   <button
                     className="bg-[#34A853] rounded-lg px-10 py-3 text-white w-fit"
                     onClick={() => showCreditRequestModal('supplies')}
                   >
                     Request Credit
                   </button>
+
+                     )}
                   {/* <button className="bg-[#0081FE] rounded-lg px-10 py-3 text-white w-fit">
                     Use it now
                   </button> */}

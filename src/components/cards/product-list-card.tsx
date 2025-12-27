@@ -498,7 +498,7 @@ const getColors = () => {
                   })
                 ) : (
                   <>
-                    <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
+                    {/* <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
                       <p className="text-black">W</p>
                       <div className="absolute w-[120%] h-[2px] bg-red-500 border-t-2 border-red-500 transform rotate-45"></div>
                     </div>
@@ -511,7 +511,7 @@ const getColors = () => {
                     <div className="w-7 h-7 border border-black rounded-md flex justify-center items-center relative">
                       <p className="text-black">R</p>
                       <div className="absolute w-[120%] h-[2px] bg-red-500 border-t-2 border-red-500 transform rotate-45"></div>
-                    </div>
+                    </div> */}
                   </>
                 )}
               </div>
@@ -579,39 +579,47 @@ const getColors = () => {
               </div>
             </div>
             </div>
-              {!data?.isOutOfStock && permissions[key]?.View ? (
-              isMyWarehouseProduct  ? (
-                <button
-                  className="invisible group-hover:visible cursor-not-allowed text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
-                  // onClick={ () => addToCart(data)}
-                  // onClick={ () => alert("allready available in your store")}
-                >
-                Available in My Store
-                </button>
-              ) : (getSellerFlag(data)?.warehouses?.isMain) ? (
-                <button
-                  className="invisible group-hover:visible text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
-                  onClick={ () => addToCart(getSellerFlag(data))}
-                >
-                  Add To Cart
-                </button>
-              ) : (
-                <button
-                  className="invisible group-hover:visible text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
-                  onClick={ () => addToCart(getSellerFlag(data))}
-                >
-                
-                  Request to Admin
-                </button>
-              )
-            ) : (
-              <button
-                className="text-start w-fit py-3 px-4 text-lg font-semibold rounded-tr-[20px] rounded-bl-[20px] bg-gray-300 text-gray-500 cursor-not-allowed"
-                disabled
-              >
-                Out of Stock
-              </button>
-            )}
+                  {data?.isOutOfStock ? (
+            // Product is out of stock
+            <button
+              className="text-start w-fit py-3 px-4 text-lg font-semibold rounded-tr-[20px] rounded-bl-[20px] bg-gray-300 text-gray-500 cursor-not-allowed"
+              disabled
+            >
+              Out of Stock
+            </button>
+          ) : !permissions[key]?.View ? (
+            // User has no permission to view
+            <button
+              className="text-start w-fit py-3 px-4 text-lg font-semibold rounded-tr-[20px] rounded-bl-[20px] bg-gray-300 text-gray-500 cursor-not-allowed"
+              disabled
+            >
+              No Permission
+            </button>
+          ) : isMyWarehouseProduct ? (
+            // Product is in user's warehouse
+            <button
+              className="invisible group-hover:visible cursor-not-allowed text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
+            >
+              Available in My Store
+            </button>
+          ) : getSellerFlag(data)?.warehouses?.isMain ? (
+            // Product in main warehouse → Add to cart
+            <button
+              className="invisible group-hover:visible text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
+              onClick={() => addToCart(getSellerFlag(data))}
+            >
+              Add To Cart
+            </button>
+          ) : (
+            // Product in another warehouse → Request to Admin
+            <button
+              className="invisible group-hover:visible text-start w-fit py-3 px-4 text-sm font-semibold rounded-tr-[20px] rounded-bl-[20px] hover:bg-black hover:text-white border-black border-[1px] transition ease-in-out duration-150"
+              onClick={() => addToCart(getSellerFlag(data))}
+            >
+              Request to Admin
+            </button>
+          )}
+
           </div>
         </div>
       ) : type === 'INVENTORY' ? (

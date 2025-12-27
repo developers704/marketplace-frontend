@@ -79,6 +79,11 @@ const HeaderMenu: React.FC<MenuProps> = ({
       path: `/${lang}/GWP`,
       label: 'GWP',
     },
+    {
+      id: 8,
+      path: `${lang}/GWP/`,
+      label: 'Special Order',
+    },
   ];
 
   // console.log(path)

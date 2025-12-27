@@ -80,7 +80,11 @@ useEffect(() => {
     <div className="xl:mx-3.5 mx-2.5">
       <div className="relative group">
         <button className="flex items-center gap-2">
+          {user?.role?.role_name.toLowerCase() !== "salesman" && permissions[key]?.View && (
+            <>
           <LuWallet className="w-[28px] h-[28px] text-opacity-40 text-brand-dark" />
+            </>
+          ) }       
           {/* <span className="text-sm font-medium">
             {permissions[key]?.View
               ? `$${storeWalletBalance?.toLocaleString() || 0}`

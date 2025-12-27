@@ -153,7 +153,6 @@ export default function InfoBox() {
     isLoading: sidebarDataIsLoading,
     error: sidebarDataError,
   } = useGetRightSidebarDataQuery();
-  console.log(sidebarData, 'sidebarData');
 
   return (
     <div className="max-w-md bg-gray-50 rounded-lg">

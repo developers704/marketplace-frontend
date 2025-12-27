@@ -37,17 +37,17 @@ const TaskPageContent = () => {
         />
       </div>
       <div>
-        <h1 className="text-[28px] font-bold">Courses</h1>
+        {/* <h1 className="text-[28px] font-bold">Courses</h1> */}
         {shortCourse?.data?.length <= 0 ? (
           <>
-            <p className="text-center w-full font-semibold text-gray-600 text-2xl">
+            <p className="text-center w-full font-semibold text-gray-600  text-2xl">
               {shortCourse?.message}
             </p>
           </>
         ) : (
           shortCourse?.data?.shortCourses?.map((item: any, index: number) => {
             return (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                 <div key={`${item}-${index}`} className="mb-4">
                   <CourseCard2 data={item} />
                 </div>
@@ -55,10 +55,12 @@ const TaskPageContent = () => {
             );
           })
         )}
-        {/* {[1, 2, 3, 4, 5, 6, 7, 8]?.map((item, index) => {
+        {/* {[1, 2, 3, 4, 5, 6, 7, 8,9,10]?.map((item, index) => {
             return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
               <div key={`${item}-${index}`} className="mb-4">
                 <CourseCard2 />
+              </div>
               </div>
             );
           })} */}

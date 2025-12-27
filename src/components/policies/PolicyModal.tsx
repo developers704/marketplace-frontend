@@ -78,11 +78,27 @@ const PolicyModal: React.FC<PolicyModalProps> = ({
 
           {/* Signed Status */}
           {policy?.isSigned && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 font-semibold">✓ You have signed this policy</p>
-              <p className="text-green-700 text-sm">
-                Signed on: {new Date(policy?.signedAt).toLocaleDateString()}
+            <div className=" bg-white rounded-lg p-4">
+              <p className="text-gray-800 font-semibold text-center">You have signed this policy</p>
+              {policy?.picture && (
+            <div className="relative w-full h-[300px]  rounded-lg overflow-hidden mb-6">
+              <Image
+                src={`${baseApi}/${policy?.signedDocumentPath}`}
+                alt={policy?.documentUrl || '-'}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+               <div className="flex justify-center items-center">
+              <p className="text-gary-800 text-sm font-semibold">
+                Signed on: <span className="font-normal">
+                   {new Date(policy?.signedAt).toLocaleDateString()}
+                  
+                  </span>
               </p>
+                
+                </div> 
             </div>
           )}
         </div>

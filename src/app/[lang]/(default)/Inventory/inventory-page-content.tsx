@@ -90,7 +90,7 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
   
   
 
-      console.log("user login warehouse is here", loginWarehouse)
+    
       useEffect(() => {
       if (!userLoading) {
       const savedWarehouse = localStorage.getItem('selectedWarehouse');
@@ -347,6 +347,14 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
             return p.inventory.some((it: any) => !it?.warehouse?.isMain && it?.warehouse?._id !== loginWarehouse?._id);
           return !p?.warehouse?.isMain && p?.warehouse?._id !== loginWarehouse?._id;
         });
+      case 'out-of-stock':
+        return products.filter((p: any) => {
+          if (Array.isArray(p.inventory)) {
+            const totalQty = p.inventory.reduce((s: number, it: any) => s + (it?.quantity || 0), 0);
+            return totalQty <= 0;
+          }
+          return (p?.quantity || 0) <= 0;
+        });
       case 'warehouse-plus-store':
         return products.filter((p: any) => {
           if (Array.isArray(p.inventory)) return p.inventory.some((it: any) => it?.warehouse?._id !== loginWarehouse?._id);
@@ -382,45 +390,54 @@ const ItemListPageContent = ({ lang }: { lang: string }) => {
     });
   }, [filteredBySelectedFilters, debouncedQuery]);
 
-useEffect(() => {
-  let isMounted = true; // safety to avoid setState on unmounted component
+  useEffect(() => {
+    if (!parentCateId || !subCateId) return; 
 
-  const fetchVariants = async () => {
-    setIsVariantsLoading(true);
+    let isMounted = true;
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants`
-      );
+    const fetchVariants = async () => {
+      setIsVariantsLoading(true);
 
-      if (!response?.ok) {
-        throw new Error('Failed to fetch variants');
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants/categoryId/${parentCateId}/subcategory/${subCateId}`
+        );
+
+        if (!response?.ok) {
+          throw new Error('Failed to fetch variants');
+        }
+
+        const data = await response.json();
+
+        if (!isMounted) return;
+
+        // Handle both direct array and wrapped response format
+        const variantsData = Array.isArray(data) ? data : (data?.data || []);
+        
+        console.log("Fetched variants:", variantsData); // Debug log
+        setVariants(variantsData);
+
+        // Group variants
+        const grouped = groupVariants(variantsData);
+        console.log("Grouped variants:", grouped); // Debug log
+        setGroupedVariantsArray(Object.entries(grouped));
+      } catch (error) {
+        console.error('Error fetching variants:', error);
+      } finally {
+        if (isMounted) {
+          setIsVariantsLoading(false);
+        }
       }
+    };
 
-      const data = await response.json();
+    fetchVariants();
 
-      if (!isMounted) return;
+    return () => {
+      isMounted = false;
+    };
+  }, [parentCateId, subCateId]);
 
-      setVariants(data);
 
-      // Group variants
-      const grouped = groupVariants(data);
-      setGroupedVariantsArray(Object.entries(grouped));
-    } catch (error) {
-      console.error('Error fetching variants:', error);
-    } finally {
-      if (isMounted) {
-        setIsVariantsLoading(false);
-      }
-    }
-  };
-
-  fetchVariants();
-
-  return () => {
-    isMounted = false;
-  };
-}, []);
 
 // Prepare category-api products filtered by warehouse and search
 const searchFilteredCategoryProducts = React.useMemo(() => {
@@ -521,6 +538,7 @@ if (isLoadingProductsByCategory) return <ProductListSkeleton />;
                 <option value="main-warehouse">Available</option>
                 <option value="out-to-store">Out to Store</option>
                 <option value="my-store-inventory">My Store Inventory</option>
+                <option value="out-of-stock">Out Of Stock</option>
                 <option value="warehouse-plus-store">All</option>
 
               </select>
@@ -634,7 +652,7 @@ if (isLoadingProductsByCategory) return <ProductListSkeleton />;
               >
                 {isVariantsLoading ? (
                <AppLoader label=''/>
-                ) : groupedVariantsArray?.length > 0 ?  ( 
+                ) : groupedVariantsArray && groupedVariantsArray?.length > 0 ?  ( 
                   groupedVariantsArray?.map((item: any, index: number) => (
                       <Accordion
                         key={index}

@@ -177,6 +177,14 @@ const ItemListPageContent = ({ lang }: any) => {
             return p.inventory.some((it: any) => !it?.warehouse?.isMain && it?.warehouse?._id !== loginWarehouse?._id);
           return !p?.warehouse?.isMain && p?.warehouse?._id !== loginWarehouse?._id;
         });
+        case 'out-of-stock':
+        return products.filter((p: any) => {
+          if (Array.isArray(p?.inventory)) {
+            const totalQty = p?.inventory.reduce((s: number, it: any) => s + (it?.quantity || 0), 0);
+            return totalQty <= 0;
+          }
+          return (p?.quantity || 0) <= 0;
+        });
       case 'warehouse-plus-store':
         return products.filter((p: any) => {
           if (Array.isArray(p.inventory)) return p.inventory.some((it: any) => it?.warehouse?._id !== loginWarehouse?._id);
@@ -196,10 +204,29 @@ const getProductVarinats = async () => {
   try {
     setIsVariantsLoading(true);
 
-    const response = await fetchProductsVariants();
+    // Build URL with category and subcategory if available
+    let url = `${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants`;
+    if (parentCateId && subCateId) {
+      url = `${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants/categoryId/${parentCateId}/subcategory/${subCateId}`;
+    } else if (parentCateId) {
+      url = `${process.env.NEXT_PUBLIC_BASE_API}/api/variants/product-variants/categoryId/${parentCateId}`;
+    }
 
-    if (response && response.length > 0) {
-      setVariants(response);
+    const response = await fetch(url);
+
+    if (!response?.ok) {
+      throw new Error('Failed to fetch variants');
+    }
+
+    const data = await response.json();
+
+    // Handle both direct array and wrapped response format
+    const variantsData = Array.isArray(data) ? data : (data?.data || []);
+    
+    console.log("Fetched variants:", variantsData); // Debug log
+    
+    if (variantsData && variantsData.length > 0) {
+      setVariants(variantsData);
     } else {
       console.log('No Variants Found');
       setVariants([]);
@@ -255,8 +282,10 @@ const getProductVarinats = async () => {
   }, [updateList]);
 
   useEffect(() => {
-    getProductVarinats();
-  }, []);
+    if (parentCateId && subCateId) {
+      getProductVarinats();
+    }
+  }, [parentCateId, subCateId]);
 
   useEffect(() => {
     if (varinats.length > 0) {
@@ -310,6 +339,7 @@ const getProductVarinats = async () => {
                 <option value="main-warehouse">Available</option>
                 <option value="out-to-store">Out to Store</option>
                 <option value="my-store-inventory">My Store Inventory</option>
+                <option value="out-of-stock">Out Of Stock</option>
                 <option value="warehouse-plus-store">All</option>
 
               </select>
