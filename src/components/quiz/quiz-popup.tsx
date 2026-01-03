@@ -29,7 +29,7 @@ const questions: QuestionType[] = [
   // Add more questions...
 ];
 
-export default function QuizPage({ isCompleted, quizData }: any) {
+export default function QuizPage({ isCompleted, quizData, refetchChapters, refetchSectionData }: any) {
   const router = useRouter();
   // const totalTime = quizData?.timeLimit * 60; // in seconds
   const totalTime = quizData?.enableTimer ? quizData?.timeLimit * 60 : 0;
@@ -111,35 +111,18 @@ export default function QuizPage({ isCompleted, quizData }: any) {
     return selectedAnswers.map((ans) => current.options.indexOf(ans));
   };
 
-  // const saveAnswer = (answers: string[], questionIndex: number) => {
-  //   // const currentQ = quizData?.questions[questionIndex];
-  //   const currentQ = shuffledQuestions[questionIndex];
-  //   const answerIndexes =
-  //     currentQ.type === 'multiple'
-  //       ? answers
-  //           .map((ans) => currentQ.options.indexOf(ans))
-  //           .filter((i) => i !== -1)
-  //       : currentQ.options.indexOf(answers[0]);
-
-  //   const entry = {
-  //     questionIndex: currentQ.originalIndex,
-  //     selectedAnswer: answerIndexes,
-  //   };
-
-  //   setUserAnswers((prev) => [...prev, entry]);
-  // };
 
   const saveAnswer = (answers: string[], questionIndex: number) => {
     const currentQ = shuffledQuestions[questionIndex];
     const answerIndexes =
-      currentQ.type === 'multiple'
+      currentQ?.type === 'multiple'
         ? answers
             .map((ans) => currentQ.options.indexOf(ans))
             .filter((i) => i !== -1)
-        : currentQ.options.indexOf(answers[0]);
+        : currentQ?.options.indexOf(answers[0]);
 
     const entry = {
-      questionIndex: currentQ.originalIndex, // ✅ Use originalIndex here
+      questionIndex: currentQ?.originalIndex, // ✅ Use originalIndex here
       selectedAnswer: answerIndexes,
     };
 
@@ -155,7 +138,7 @@ export default function QuizPage({ isCompleted, quizData }: any) {
 
   const handleNext = () => {
     saveAnswer(selectedAnswers, currentQuestion);
-    if (currentQuestion < quizData?.questions.length - 1) {
+    if (currentQuestion < quizData?.questions?.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
       setSelectedAnswers([]); // reset for next question
       setIsSubmitted(false);
@@ -165,53 +148,18 @@ export default function QuizPage({ isCompleted, quizData }: any) {
     }
   };
 
-  // const handleEndQuiz = async () => {
-  //   // const currentQ = quizData?.questions[currentQuestion];
-  //   const currentQ = shuffledQuestions[currentQuestion];
-
-  //   const answerIndexes =
-  //     currentQ.type === 'multiple'
-  //       ? selectedAnswers
-  //           .map((ans) => currentQ.options.indexOf(ans))
-  //           .filter((i) => i !== -1)
-  //       : currentQ.options.indexOf(selectedAnswers[0]);
-
-  //   const lastEntry = {
-  //     questionIndex: currentQuestion,
-  //     selectedAnswer: answerIndexes,
-  //   };
-
-  //   const finalAnswers = [...userAnswers, lastEntry]; // ✅ create full array including last
-
-  //   const endTime = new Date().toISOString();
-  //   const payload = {
-  //     answers: finalAnswers,
-  //     startTime,
-  //     endTime,
-  //   };
-
-  //   console.log(payload, 'quizData payload'); // ✅ now includes all answers
-  //   if (payload) {
-  //     const res = await submitQuizApi(quizData?._id, payload);
-  //     setQuizResult(res);
-  //     // console.log(res, 'quizData res');
-  //   }
-
-  //   setUserAnswers(finalAnswers); // optional, if needed elsewhere
-  //   setCompleted(true);
-  // };
 
   const handleEndQuiz = async () => {
     const currentQ = shuffledQuestions[currentQuestion];
     const answerIndexes =
-      currentQ.type === 'multiple'
+      currentQ?.type === 'multiple'
         ? selectedAnswers
-            .map((ans) => currentQ.options.indexOf(ans))
+            .map((ans) => currentQ?.options?.indexOf(ans))
             .filter((i) => i !== -1)
-        : currentQ.options.indexOf(selectedAnswers[0]);
+        : currentQ?.options?.indexOf(selectedAnswers[0]);
 
     const lastEntry = {
-      questionIndex: currentQ.originalIndex, // ✅ Use originalIndex here
+      questionIndex: currentQ?.originalIndex, // ✅ Use originalIndex here
       selectedAnswer: answerIndexes,
     };
 
@@ -228,6 +176,20 @@ export default function QuizPage({ isCompleted, quizData }: any) {
     setQuizResult(res);
     setUserAnswers(finalAnswers);
     setCompleted(true);
+    
+    // Refresh section data and chapters to unlock next content
+    if (res?.success === true) {
+      try {
+        await refetchSectionData?.();
+      } catch (err) {
+        console.error('Error refetching section data:', err);
+      }
+      try {
+        await refetchChapters?.();
+      } catch (err) {
+        console.error('Error refetching chapters:', err);
+      }
+    }
   };
 
   // console.log(userAnswers, 'userAnswers quizData');
@@ -242,24 +204,24 @@ export default function QuizPage({ isCompleted, quizData }: any) {
   };
 
   if (completed) {
-    const percentage = ((score / questions.length) * 100).toFixed(2);
+    const percentage = ((score / questions?.length) * 100).toFixed(2);
     // setTimeout(() => {
     //   window.location.reload();
     // }, 5000);
     return (
       <div className="max-w-xl mx-auto p-6 text-center space-y-6">
         <h2 className="text-2xl font-bold">Quiz Submitted!</h2>
-        <p className="text-lg">{quizResult?.result.message}</p>
-        <p className="text-lg">Grade: {quizResult?.result.grade}</p>
-        <p className="text-lg">Percentage: {quizResult?.result.percentage}%</p>
+        <p className="text-lg">{quizResult?.result?.message}</p>
+        <p className="text-lg">Grade: {quizResult?.result?.grade}</p>
+        <p className="text-lg">Percentage: {quizResult?.result?.percentage}%</p>
         <p className="text-xl font-semibold">
-          Score: {quizResult?.result.score}
+          Score: {quizResult?.result?.score}
         </p>
         <button
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
           onClick={() => {
             isCompleted(false);
-            if (quizResult?.result.grade === 'F') {
+            if (quizResult?.result?.grade === 'F') {
               router.push(`/valliani-university/tasks`);
             } else {
               router.push(`/valliani-university/achievements`);
@@ -275,12 +237,9 @@ export default function QuizPage({ isCompleted, quizData }: any) {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-[25px] font-bold text-brand-blue">
+        <h2 className="text-[25px] font-bold text-gary-500">
           Question {currentQuestion + 1} of {quizData?.totalQuestions}
         </h2>
-        {/* <div className="text-[25px] bg-white px-2 py-1 rounded-lg shadow-md">
-          ⏱ {formatTime(timeLeft)}
-        </div> */}
         {quizData?.enableTimer && (
           <div className="text-[25px] bg-white px-2 py-1 rounded-lg shadow-md">
             ⏱ {formatTime(timeLeft)}
@@ -307,7 +266,7 @@ export default function QuizPage({ isCompleted, quizData }: any) {
                 
               `}
             >
-              {current.type === 'multiple' ? (
+              {current?.type === 'multiple' ? (
                 <input
                   type="checkbox"
                   disabled={isSubmitted}
@@ -333,7 +292,7 @@ export default function QuizPage({ isCompleted, quizData }: any) {
       </div>
 
       <div className="mt-6 flex justify-end">
-        {quizData?.questions.length - 1 === currentQuestion ? (
+        {quizData?.questions?.length - 1 === currentQuestion ? (
           <button
             onClick={handleNext}
             // onClick={() => {

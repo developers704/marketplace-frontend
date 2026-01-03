@@ -13,92 +13,115 @@ const VideoSectionContent = ({
 }: any) => {
   const [currentVideo, setCurrentVideo] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<any>(null);
-  const [likes, setLikes] = useState<any>(selectedVideo?.likes || 0);
-  const [dislikes, setDislikes] = useState<any>(selectedVideo?.dislikes || 0);
+  const [likes, setLikes] = useState<number>(0);
+  const [dislikes, setDislikes] = useState<number>(0);
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
   const [watchedVideos, setWatchedVideos] = useState<Record<number, boolean>>(
     {},
   );
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
-  // const courseVideos = [
-  //   { id: 1, url: 'https://youtu.be/moRqo158NGc?si=M8UqSqynEew-4MWq' },
-  //   { id: 2, url: 'https://www.example.com/video2.mp4' },
-  // ];
   const handleVideoComplete = () => {
     setWatchedVideos((prev) => ({ ...prev, [currentVideo]: true }));
   };
 
-  useEffect(() => {
-    const filterVideo = content?.filter((video: any) => video._id === videoId);
-    setSelectedVideo(filterVideo[0]);
-  }, [videoId]);
+ useEffect(() => {
+  if (!content || !videoId) return;
 
-  const likeHandler = async () => {
+  const video = content.find((v: any) => v?._id === videoId);
+
+  if (!video) return;
+
+  setSelectedVideo(video);
+  setLikes(video?.likes || 0);
+  setDislikes(video?.dislikes || 0);
+}, [videoId, content]);
+
+  const playSound = (url: string) => {
+  const audio = new Audio(url);
+  audio.play();
+  };
+
+
+const likeHandler = async () => {
+  playSound('/sounds/like-sound.mp3');
+
+  setLikes((prevLikes) => {
+    if (liked) return Math.max(prevLikes - 1, 0); // never below 0
+    return prevLikes + 1;
+  });
+
+  setLiked((prev) => !prev);
+
+  if (disliked) {
+    setDislikes((prevDislikes) => Math.max(prevDislikes - 1, 0));
+    setDisliked(false);
+  }
+
+  try {
     const res = await videoReactionHandler('like');
-    if (res?.success === true) {
-      toast.success(res?.message);
-      if (res?.message === 'Like removed') {
-        setLikes(likes - 1);
-      } else if (res?.message === 'Content liked') {
-        setLikes(likes + 1);
-      }
+    if (!res?.success) {
+      toast.error('Could not like the video');
+      // optionally refetch likes from server
     }
-    // console.log(res, 'res from next video');
-  };
+  } catch (err) {
+    toast.error('Something went wrong');
+  }
+};
 
-  const dislikeHandler = async () => {
+const dislikeHandler = async () => {
+  playSound('/sounds/like-sound.mp3');
+
+  setDislikes((prevDislikes) => {
+    if (disliked) return Math.max(prevDislikes - 1, 0);
+    return prevDislikes + 1;
+  });
+
+  setDisliked((prev) => !prev);
+
+  if (liked) {
+    setLikes((prevLikes) => Math.max(prevLikes - 1, 0));
+    setLiked(false);
+  }
+
+  try {
     const res = await videoReactionHandler('dislike');
-    if (res?.success === true) {
-      toast.success(res?.message);
-      if (res?.message === 'Content disliked') {
-        setDislikes(dislikes + 1);
-      } else if (res?.message === 'Dislike removed') {
-        setDislikes(dislikes - 1);
-      }
+    if (!res?.success) {
+      toast.error('Could not dislike the video');
     }
-    // console.log(res, 'res from next video');
-  };
+  } catch (err) {
+    toast.error('Something went wrong');
+  }
+};
 
-  useEffect(() => {
-    const refetchData = async () => {
-      const res = await refetchSectionData();
-      const filterVideo = res?.data?.data?.content?.filter(
-        (video: any) => video._id === videoId,
-      );
-      setSelectedVideo(filterVideo[0]);
-      setLikes(filterVideo[0]?.likes);
-      setDislikes(filterVideo[0]?.dislikes);
-      // console.log(res?.data?.data, 'refetchData');
-    };
-    refetchData();
-  }, [likes, dislikes]);
-  // console.log(content, '===>>>Content');
-  // console.log(videoId, '===>>>Content');
-  // console.log(selectedVideo, '===>>>Content');
-  // console.log(`${BASE_API}/${selectedVideo?.videoUrl}`, '===>>>Content');
+
+
+// Removed automatic refetch on mount to avoid loops. Parent controls refetching.
 
   return (
-    <div>
+    <div className=''>
       <div className="flex-[2] p-4 pt-0 flex flex-col">
         <div>
           <VideoPlayer
-            videoUrl={`${BASE_API}/${selectedVideo?.videoUrl}`}
+            videoUrl={`https://backend.vallianimarketplace.com/${selectedVideo?.videoUrl}`}
             onComplete={handleVideoComplete}
             setWatchedDuration={setWatchedDuration}
+            
           />
           <div className="flex items-center justify-between my-4">
             <h1 className="text-xl font-bold">{selectedVideo?.title}</h1>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 cursor-pointer">
+              <div onClick={() => likeHandler()} className="flex items-center gap-2 cursor-pointer">
+                
                 <AiOutlineLike
-                  className="text-2xl"
-                  onClick={() => likeHandler()}
-                />{' '}
+                  className={`text-2xl ${liked ? 'text-blue-600' : 'text-gray-700'}`}
+                />
                 <span className="text-xl"> {likes || 0}</span>
               </div>
               <div className="flex items-center gap-2 cursor-pointer">
                 <AiOutlineDislike
-                  className="text-2xl"
+                  className={`text-2xl ${disliked ? 'text-blue-600' : 'text-gray-700'}`}
                   onClick={dislikeHandler}
                 />{' '}
                 <span className="text-xl"> {dislikes || 0}</span>
@@ -106,10 +129,12 @@ const VideoSectionContent = ({
             </div>
           </div>
         </div>
-        <div className="my-4">
+        {selectedVideo?.description && (
+        <div className="">
           <p className="text-gray-800">{selectedVideo?.description}</p>
           <br />
         </div>
+        )}
       </div>
     </div>
   );

@@ -12,107 +12,9 @@ import {
 import { FaCheckCircle, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import DOMPurify from 'dompurify';
+import LoadingComp from '../common/loading';
 
-interface ContentSection {
-  title: string;
-  items: string[];
-}
 
-interface LessonContent {
-  title: string;
-  sections: ContentSection[];
-}
-
-const lessonContent: LessonContent = {
-  title: 'Sales Goals',
-  sections: [
-    {
-      title: 'Purpose/Benefit',
-      items: [
-        'To establish measurable targets for team success.',
-        'To keep Team Members accountable.',
-        'Help team members reach goals and feel accomplished.',
-      ],
-    },
-    {
-      title: 'Tools Needed',
-      items: ['POS', 'Calculator', 'Schedule', 'Sales Plan for Day and Month.'],
-    },
-    {
-      title: 'Completion Timeline',
-      items: [
-        'Daily - Sales goals entered every morning.',
-        'Weekly - Daily sales goals calculated weekly.',
-        'Monthly - Beginning of each month.',
-      ],
-    },
-    {
-      title: 'Key Information',
-      items: ['New hires sales goals started as they joined.'],
-    },
-  ],
-};
-
-const navigationItems = [
-  {
-    id: 1,
-    title: 'Introduction',
-    isActive: true,
-    hasSubItems: false,
-    subItems: [],
-  },
-  {
-    id: 2,
-    title: 'Objective',
-    isActive: false,
-    hasSubItems: false,
-    subItems: [
-      'Set clear and achievable sales goals.',
-      'Establish and maintain performance standards.',
-      'Explain and track incentive programs effectively.',
-      'Evaluate trade-ins to boost profitability.',
-      'Manage the store to optimize performance.',
-    ],
-  },
-  {
-    id: 3,
-    title: 'Videos',
-    isActive: false,
-    hasSubItems: true,
-    subItems: [
-      'Set clear and achievable sales goals.',
-      'Establish and maintain performance standards.',
-      'Explain and track incentive programs effectively.',
-      'Evaluate trade-ins to boost profitability.',
-      'Manage the store to optimize performance.',
-    ],
-  },
-  // {
-  //   id: 4,
-  //   title: 'Scan, Focus, Act',
-  //   isActive: false,
-  //   hasSubItems: false,
-  //   subItems: [],
-  // },
-  // {
-  //   id: 5,
-  //   title: 'The Strategy Session',
-  //   isActive: false,
-  //   hasSubItems: false,
-  //   subItems: [],
-  // },
-  // {
-  //   id: 6,
-  //   title: 'Sales - Summary',
-  //   isActive: false,
-  //   hasSubItems: false,
-  //   subItems: [],
-  // },
-];
-
-interface CourseContentProps {
-  onBack: () => void;
-}
 
 const IntroductionComp = ({ content }: any) => {
   const safeHTML = DOMPurify.sanitize(content);
@@ -127,35 +29,10 @@ const IntroductionComp = ({ content }: any) => {
               </h1>
 
               <div className="space-y-8">
-                {/* {lessonContent.sections.map((section, index) => (
-                  <div key={index}>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                      {section.title}
-                    </h2>
-                    <ul className="space-y-2">
-                      {section.items.map((item, itemIndex) => (
-                        <li key={itemIndex} className="flex items-start">
-                          <span className="text-gray-400 mr-3 mt-1">•</span>
-                          <span className="text-gray-700">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))} */}
-                {/* {content} */}
                 <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
               </div>
             </div>
 
-            {/* Illustration */}
-            {/* <div className="ml-8 flex-shrink-0">
-              <img
-                src={`/assets/images/contentImage.png`}
-                alt="Sales Goals Illustration"
-                className="w-[250px] h-auto object-contain"
-                style={{ opacity: 0.8 }}
-              />
-            </div> */}
           </div>
         </div>
       </div>
@@ -175,34 +52,10 @@ const ObjectiveComp = ({ content }: any) => {
               </h1>
 
               <div className="space-y-8">
-                {/* {lessonContent.sections.map((section, index) => (
-                  <div key={index}>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                      {section.title}
-                    </h2>
-                    <ul className="space-y-2">
-                      {section.items.map((item, itemIndex) => (
-                        <li key={itemIndex} className="flex items-start">
-                          <span className="text-gray-400 mr-3 mt-1">•</span>
-                          <span className="text-gray-700">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))} */}
+    
                 <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
               </div>
             </div>
-
-            {/* Illustration */}
-            {/* <div className="ml-8 flex-shrink-0">
-              <img
-                src={`/assets/images/contentImage.png`}
-                alt="Sales Goals Illustration"
-                className="w-[250px] h-auto object-contain"
-                style={{ opacity: 0.8 }}
-              />
-            </div> */}
           </div>
         </div>
       </div>
@@ -213,35 +66,54 @@ const ObjectiveComp = ({ content }: any) => {
 export default function CourseContent({
   sectionData,
   refetchSectionData,
+  refetchChapters,
+  courseId: propCourseId,
+  sectionsIsLoading
 }: any) {
   const params = useParams() as { chapterId: string; sectionId: string };
-  // console.log(params, 'params');
-  const { chapterId: courseId, sectionId } = params;
-  // Add this state to manage expanded sidebar items
+  // prefer courseId passed from parent (modal), fallback to URL param
+  
+  const paramCourseId = params?.chapterId;
+  const paramSectionId = params?.sectionId;
+  const courseId = propCourseId ?? paramCourseId;
+
+  // derive chapterId and sectionId for API calls from sectionData when available
+  const derivedChapterId =
+    sectionData?.chapterId || sectionData?.chapter?._id || sectionData?.chapter || null;
+  const derivedSectionId = sectionData?._id || paramSectionId || null;
+
   const [expandedSidebarItems, setExpandedSidebarItems] = useState<number[]>([
     2,
   ]);
   const [activeSidebar, setActiveSidebar] = useState<any>(1);
   const [selectedVideo, setSelectedVideo] = useState<any>(null);
   const [isQuizStarted, setIsQuizStarted] = useState<any>(false);
-  const [videoReaction, setVideoReaction] = useState<any>('');
+  // const [videoReaction, setVideoReaction] = useState<any>('');
   const [watchedDuration, setWatchedDuration] = useState<any>(0);
   const router = useRouter();
-  const toggleSidebarItem = (itemId: number) => {
-    setExpandedSidebarItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId],
-    );
-    setActiveSidebar(itemId);
-  };
+  // const toggleSidebarItem = (itemId: number) => {
+  //   setExpandedSidebarItems((prev) =>
+  //     prev.includes(itemId)
+  //       ? prev.filter((id) => id !== itemId)
+  //       : [...prev, itemId],
+  //   );
+  //   setActiveSidebar(itemId);
+  // };
 
-  // 🚫 Block browser reload/close
+  // Auto-select the first video when section data loads
+  useEffect(() => {
+    if (sectionData?.content && sectionData.content.length > 0) {
+      setSelectedVideo(sectionData.content[0]._id);
+    } else {
+      setSelectedVideo(null);
+    }
+  }, [sectionData?.content]);
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isQuizStarted) {
         e.preventDefault();
-        e.returnValue = ''; // required for Chrome
+        e.returnValue = ''; 
       }
     };
 
@@ -249,42 +121,66 @@ export default function CourseContent({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isQuizStarted]);
 
-  const nextVideoHandler = async () => {
-    const videoData = {
-      watchedDuration: watchedDuration,
-      completed: true,
-    };
+const nextVideoHandler = async () => {
+  const videoData = {
+    watchedDuration: watchedDuration,
+    completed: true,
+  };
+
+  if (!courseId || !derivedChapterId || !derivedSectionId) {
+    toast.error('Unable to mark video progress: missing identifiers');
+    return;
+  }
+
+  try {
     const res = await videoProgress(
       courseId,
-      sectionData?.chapterId,
-      sectionId,
+      derivedChapterId,
+      derivedSectionId,
       selectedVideo,
       videoData,
     );
-    if (res?.success === true) {
-      refetchSectionData();
+
+    if (res?.success) {
+      
+      toast.success(res?.message || 'Progress updated successfully');
+
+      await refetchSectionData?.();
+      await refetchChapters?.();
+
       if (res?.data?.nextContent?.navigationType === 'quiz') {
         setActiveSidebar('quiz');
       } else if (res?.data?.nextContent?.navigationType === 'content') {
         setSelectedVideo(res?.data?.nextContent?.content?._id);
         setActiveSidebar(3);
       }
+    } else {
+
+      toast.error(res?.message || 'fix');
     }
-    console.log(res, 'res from next video');
-  };
+  } catch (error:any) {
+     const errorMessage = error?.message || 'Failed to fetch section data';
+     toast.error(errorMessage || "Something went wrong while updating progress");
+  }
+};
+
 
   const videoReactionHandler = async (reaction: any) => {
     // const reaction = videoReaction
+    if (!courseId || !derivedChapterId || !derivedSectionId) {
+      toast.error('Unable to send reaction: missing identifiers');
+      return;
+    }
+
     const res = await toggleVideoReactions(
       courseId,
-      sectionData?.chapterId,
-      sectionId,
+      derivedChapterId,
+      derivedSectionId,
       selectedVideo,
       reaction,
     );
     return res;
   };
-
   const quizRouteHandler: any = () => {
     if (
       sectionData?.quiz?.userAttempts.passed ||
@@ -307,172 +203,104 @@ export default function CourseContent({
     }
   };
 
+    const hasIntroduction = !!sectionData?.introduction;
+    const hasObjective = !!sectionData?.objective;
+    const hasVideos = sectionData?.content && sectionData.content.length > 0;
+    const hasQuiz = !!sectionData?.quiz;
+
+    const hasAnyContent = hasIntroduction || hasObjective || hasVideos || hasQuiz;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex gap-5">
-      {/* Sidebar Navigation */}
-      <div className="w-64 h-fit bg-white shadow-md border-r rounded-lg border-gray-200">
-        <div className="p-4">
-          <nav className="space-y-1">
-            {navigationItems.map((item) => {
-              const isActive = activeSidebar === item.id;
-              return (
-                <div key={item.id}>
-                  <div
-                    className={`flex items-center px-3 py-2 text-sm rounded-md cursor-pointer ${
-                      isActive
-                        ? 'bg-gray-200 text-gray-900 font-medium'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                    onClick={() => {
-                      isQuizStarted
-                        ? alert('Quiz is in progress, finish the quiz!')
-                        : toggleSidebarItem(item.id);
-                    }}
-                  >
-                    <span className="mr-3 text-gray-400">{item.id}.</span>
-                    {item.title}
-                    {item.hasSubItems && (
-                      <ChevronDown
-                        className={`ml-auto w-4 h-4 transition-transform ${
-                          expandedSidebarItems.includes(item.id)
-                            ? 'transform rotate-180'
-                            : ''
-                        }`}
-                      />
-                    )}
-                  </div>
+    <div className="flex gap-5 shadow-xl rounded-lg m-4">
 
-                  {item.hasSubItems &&
-                    expandedSidebarItems.includes(item.id) && (
-                      <div className="ml-8 mt-2 space-y-1">
-                        {sectionData?.content?.map(
-                          (video: any, index: number) => (
-                            <div
-                              key={index}
-                              className={`text-blue-500 text-lg hover:text-blue-700 hover:underline text-left ${
-                                !sectionData.canAccess
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : 'cursor-pointer'
-                              }`}
-                              onClick={() => setSelectedVideo(video?._id)}
-                            >
-                              <span className="text-gray-400 mr-2 text-sm">
-                                {index + 1}.
-                              </span>
-                              <span className="text-gray-600 text-sm">
-                                {video?.title}
-                              </span>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    )}
-                </div>
-              );
-            })}
-
-            {/* Additional items */}
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <div
-                className="flex items-center justify-between px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer"
-                onClick={() => quizRouteHandler()}
-              >
-                Quiz
-                {/* {!sectionData?.quiz?.canAttempt &&
-                  !sectionData?.quiz?.userAttempts.passed &&
-                  sectionData?.quiz?.userAttempts.remainingAttempts === 0 &&
-                  sectionData?.quiz?.userAttempts.bestGrade === 'F' && (
-                    <FaLock />
-                  )} */}
-                {sectionData?.quiz?.userAttempts.passed ? (
-                  <FaCheckCircle className="text-green-500 ml-2" />
-                ) : !sectionData?.quiz?.canAttempt ? (
-                  <FaLock />
-                ) : (
-                  <></>
-                )}
-              </div>
-              {/* <div className="flex items-center px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
-                Scenario
-              </div> */}
-            </div>
-          </nav>
+      {sectionsIsLoading ? (
+        <div className='w-full flex justify-center items-center h-[600px]'>
+          <LoadingComp />
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-fit bg-white shadow-md rounded-lg">
-        {activeSidebar === 3 && selectedVideo ? (
-          <div className="pt-6">
-            <VideoSectionContent
-              videoId={selectedVideo}
-              content={sectionData?.content}
-              setWatchedDuration={setWatchedDuration}
-              videoReactionHandler={videoReactionHandler}
-              refetchSectionData={refetchSectionData}
-            />
-            <div className="rounded-lg bg-white px-8 py-4">
-              <div className="max-w-4xl mx-auto flex justify-between">
-                <button
-                  onClick={() => router.back()}
-                  className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        ): !hasAnyContent ? (
+        <div className="w-full flex flex-col justify-center items-center h-[600px] text-center">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+          No content available
+        </h2>
+        <p className="text-gray-500 max-w-md">
+          This chapter does not have any introduction, objective, videos, or quiz yet.
+          Please check back later.
+        </p>
+        </div>
+        ) : (
+          <div className="overflow-y-auto p-6">
+          { sectionData?.introduction && (
+        <IntroductionComp content={sectionData?.introduction} />
+          )}
+        
+         { sectionData?.objective && (
+         <ObjectiveComp content={sectionData?.objective} />
+      )}
+
+        <div className="">
+          {sectionData?.content && sectionData.content.length > 0 && (
+            <div className="space-y-4 mt-6 pl-6 pr-6">
+              <h2 className="text-2xl font-semibold mb-4">Videos</h2>
+              {sectionData.content.map((video: any, idx: number) => (
+                <div
+                  key={video._id || idx}
+                  className="p-4 flex items-center justify-between"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </button>
+                  <div className='flex items-center justify-between gap-2'>
+                    <div className="text-sm text-gray-500">{idx + 1}.</div>
+                    <div className="text-base font-medium text-gray-800">{video.title}</div>
+                    <div className="text-sm text-gray-500">{video.duration ? `${video.duration} sec` : ''}</div>
+                  </div>
+                  <div>
+                    {/* {selectedVideo === video._id ? (
+                      <span className="px-3 py-1 bg-gray-200 rounded text-sm">Playing</span>
+                    ) : null} */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) 
+          }
+
+
+          {selectedVideo && (
+              <div className="">
+              <VideoSectionContent
+                videoId={selectedVideo}
+                content={sectionData?.content}
+                setWatchedDuration={setWatchedDuration}
+                videoReactionHandler={videoReactionHandler}
+                refetchSectionData={refetchSectionData}
+              />
+              <div className="max-w-4xl mx-auto flex justify-end">
                 <button
                   onClick={() => nextVideoHandler()}
                   className="flex items-center px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                 >
-                  Next
+                  Submit
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
               </div>
             </div>
-          </div>
-        ) : activeSidebar === 'quiz' ? (
-          <>
+          )}
+        </div>
+
+        {sectionData?.quiz && (
+        <div className="mt-2 p-6">
             <QuizSection
               isQuizStarted={isQuizStarted}
               setIsQuizStarted={setIsQuizStarted}
               quizData={sectionData?.quiz}
               setActiveSidebar={setActiveSidebar}
+              refetchChapters={refetchChapters}
+              refetchSectionData={refetchSectionData}
             />
-          </>
-        ) : activeSidebar === 1 ? (
-          <IntroductionComp content={sectionData?.introduction} />
-        ) : activeSidebar === 2 ? (
-          <ObjectiveComp content={sectionData?.objective} />
-        ) : (
-          <>
-            <div className="flex-1 p-8">
-              <div className="max-w-4xl mx-auto">
-                <p>Select a video</p>
-              </div>
-            </div>
-          </>
-        )}
-        {/* Dynamic karni hy */}
-
-        {/* Navigation Footer */}
-        {/* {!isQuizStarted && (
-          <div className="rounded-lg bg-white px-8 py-4">
-            <div className="max-w-4xl mx-auto flex justify-between">
-              <button
-                onClick={() => router.back()}
-                className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </button>
-              <button className="flex items-center px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-                Next
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </div>
-        )} */}
+        </div>
+          )}
       </div>
+        )}
+      
     </div>
   );
 }

@@ -114,10 +114,10 @@ function CertificateSeal() {
         <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
           <div className="w-0 h-0 border-l-2 border-r-2 border-t-4 border-l-transparent border-r-transparent border-t-amber-600"></div>
         </div>
-        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 -translate-x-1">
+        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 ">
           <div className="w-0 h-0 border-l-2 border-r-2 border-t-4 border-l-transparent border-r-transparent border-t-amber-600"></div>
         </div>
-        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 translate-x-1">
+        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 ">
           <div className="w-0 h-0 border-l-2 border-r-2 border-t-4 border-l-transparent border-r-transparent border-t-amber-600"></div>
         </div>
       </div>

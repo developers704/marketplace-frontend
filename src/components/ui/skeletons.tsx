@@ -42,6 +42,38 @@ export const SingleCardSkeletons = () => {
   );
 };
 
+export const CourseCardSkeletons = () => {
+  return (
+    <div className="flex flex-col h-full border-2 border-[#CCCCCC] rounded-xl bg-white animate-pulse">
+      
+      {/* Image Skeleton */}
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-200" />
+
+      {/* Content Skeleton */}
+      <div className="flex flex-col justify-between flex-1 p-3 gap-3">
+        
+        {/* Title (2 lines) */}
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-full" />
+          <div className="h-4 bg-gray-200 rounded w-3/4" />
+        </div>
+
+        {/* Duration */}
+        <div className="h-3 bg-gray-200 rounded w-1/2" />
+
+        {/* Bottom row */}
+        <div className="flex items-center justify-between mt-auto">
+          <div className="h-3 bg-gray-200 rounded w-20" />
+          <div className="h-4 w-4 bg-gray-300 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
 export function StatCardSkeleton() {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm h-[130px] flex items-center gap-4 w-full animate-pulse">

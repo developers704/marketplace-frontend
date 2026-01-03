@@ -6,9 +6,8 @@ import QuizPage from '../quiz/quiz-popup';
 import { toast } from 'react-toastify';
 
 const QuizStart = ({ setIsQuizOpen, quizData, setActiveSidebar }: any) => {
-  // console.log(quizData, 'quizData');
   const quizStartHandler = () => {
-    if (quizData?.canAttempt) {
+    if (quizData.canAttempt) {
       setIsQuizOpen(true);
     } else {
       toast.error(
@@ -51,7 +50,7 @@ const QuizStart = ({ setIsQuizOpen, quizData, setActiveSidebar }: any) => {
 
       <button
         onClick={() => quizStartHandler()}
-        className="w-full bg-brand-blue hover:bg-[#152ca5] text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md flex items-center justify-center gap-2"
+        className="w-full bg-green-600 hover:bg-green-800 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md flex items-center justify-center gap-2"
       >
         <Play size={18} /> Start Quiz
       </button>
@@ -64,25 +63,32 @@ const QuizSection = ({
   setIsQuizStarted,
   quizData,
   setActiveSidebar,
+  refetchChapters,
+  refetchSectionData,
 }: any) => {
   
   return (
-    <div className="p-8">
+    <div className="">
       <div className="pb-6">
-        <h1 className="text-xl md:text-[26px] lg:text-[32px] font-bold capitalize">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Quiz
         </h1>
       </div>
       <div className="">
         {isQuizStarted ? (
           <>
-            <QuizPage isCompleted={setIsQuizStarted} quizData={quizData} />
+            <QuizPage 
+              isCompleted={setIsQuizStarted} 
+              quizData={quizData}
+              refetchChapters={refetchChapters}
+              refetchSectionData={refetchSectionData}
+            />
           </>
         ) : (
           <>
-            {quizData?.userAttempts.passed ? (
+            {quizData?.userAttempts?.passed ? (
               <>
-                <div className="max-w-xl mx-auto p-6 text-center space-y-6">
+                <div className="max-w-xl mx-auto p-6 text-center space-y-2">
                   <h2 className="text-2xl font-bold">Quiz Completed!</h2>
                   <p className="text-lg ">
                     <span className="font-semibold">Grade:</span>{' '}

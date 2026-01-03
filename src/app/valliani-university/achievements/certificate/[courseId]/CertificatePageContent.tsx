@@ -5,6 +5,8 @@ import { FiDownload } from 'react-icons/fi';
 import SignaturePad from '@/components/university/SignCanvas';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import { fetchUserCertificate } from '@/framework/basic-rest/university/dashboardApi';
+import { useGetCourseQuery } from '@/framework/basic-rest/courses/get-course-by-id';
+import { useGetCourseProgressQuery } from '@/framework/basic-rest/university/dashboardApi';
 
 const CertificatePage = () => {
   const {
@@ -13,11 +15,17 @@ const CertificatePage = () => {
     error: userError,
   } = useUserDataQuery();
 
+  const {
+    data: progressData,
+  } = useGetCourseProgressQuery();
+
   // console.log(userData, 'userData');
   const [signature, setSignature] = useState<any>(null);
   const [certificateStatus, setCertificateStatus] = useState<any>();
   const [presidentSignature, setPresidentSignature] = useState<any>();
   const [isCertificateApproved, setIsCertificateApproved] = useState<any>();
+  const [certificateData, setCertificateData] = useState<any>(null);
+  const [courseData, setCourseData] = useState<any>(null);
   const [usernamePostion, setUsernamePostion] = useState<any>('300px');
   const certificateRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -25,7 +33,7 @@ const CertificatePage = () => {
   const { courseId } = params as { courseId: string };
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
-  const userName = userData?.username;
+  // const userName = userData?.username;
 
   const downloadPDF = async () => {
     setUsernamePostion('270px');
@@ -36,7 +44,7 @@ const CertificatePage = () => {
 
       const opt = {
         margin: 0,
-        filename: 'certificate.pdf',
+        filename: `certificate-${courseData?.name || 'certificate'}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: {
           scale: 2,
@@ -62,6 +70,7 @@ const CertificatePage = () => {
   const getCertificate = async () => {
     const res = await fetchUserCertificate(courseId);
     if (res?.success) {
+      setCertificateData(res?.data);
       if (res?.data?.status === 'Approved') {
         setIsCertificateApproved('Approved');
         setPresidentSignature(
@@ -77,10 +86,23 @@ const CertificatePage = () => {
     }
     // console.log(res, 'from certificate api');
   };
-  // console.log(certificateStatus, "certificateStatus")
+
   useEffect(() => {
     getCertificate();
   }, []);
+
+  // Extract course data from progress data
+  useEffect(() => {
+    if (progressData?.data?.mainCourses) {
+      const course = progressData?.data?.mainCourses.find(
+        (c: any) => c?._id === courseId
+      );
+      if (course) {
+        setCourseData(course);
+        // console.log('Course Data:', course);
+      }
+    }
+  }, [progressData, courseId]);
 
   return (
     <div className="p-10">
@@ -91,7 +113,7 @@ const CertificatePage = () => {
           setCertificateStatus={setCertificateStatus}
         />
       ) : isCertificateApproved === 'Approved' ? (
-        <div className="bg-white rounded-xl shadow-md py-8">
+        <div className="flex flex-col justify-center items-center rounded-xl shadow-md py-8">
           <div
             ref={certificateRef}
             style={{
@@ -112,7 +134,7 @@ const CertificatePage = () => {
                 top: usernamePostion,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                fontSize: '75px',
+                fontSize: '40px',
                 letterSpacing: '8px',
                 fontWeight: 'bold',
                 color: '#A8772B',
@@ -120,8 +142,95 @@ const CertificatePage = () => {
               }}
               className="capitalize"
             >
-              {userName}
+              {userData?.username || 'Student'}
             </div>
+
+            {/* Course Name Position */}
+            {courseData?.name && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '360px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: '16px',
+                  letterSpacing: '2px',
+                  fontWeight: '600',
+                  color: '#4B5563',
+                  textAlign: 'center',
+                  maxWidth: '900px',
+                }}
+              >
+                {courseData?.name || "-"}
+              </div>
+            )}
+
+            {/* Grade and Percentage Position */}
+            {(courseData?.gradeLabel || courseData?.gradePercentage) && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '390px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  color: '#6B7280',
+                  textAlign: 'center',
+                }}
+              >
+                {courseData?.gradeLabel && (
+                  <span style={{ marginRight: '20px' }}>
+                    Grade: <strong style={{ color: '#A8772B' }}>{courseData?.gradeLabel || "-"}</strong>
+                  </span>
+                )}
+                {courseData?.gradePercentage && (
+                  <span>
+                    Score: <strong style={{ color: '#A8772B' }}>{courseData?.gradePercentage || "-"}%</strong>
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Certificate ID Position */}
+            {certificateData?.requestId?.certificateId && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '120px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: '14px',
+                  fontWeight: '400',
+                  color: '#9CA3AF',
+                  textAlign: 'center',
+                }}
+              >
+                Certificate ID: {certificateData?.requestId?.certificateId}
+              </div>
+            )}
+
+            {/* Date Position */}
+            {certificateData?.requestId?.reviewedAt && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '100px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: '14px',
+                  fontWeight: '400',
+                  color: '#9CA3AF',
+                  textAlign: 'center',
+                }}
+              >
+                Issued on: {new Date(certificateData.requestId.reviewedAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </div>
+            )}
 
             {/* Signature Position */}
             <div
@@ -154,7 +263,7 @@ const CertificatePage = () => {
 
           <div className="mt-8 flex items-center justify-around gap-10 w-full">
             <button
-              className="bg-[#1935CA] text-white text-[20px] rounded-lg px-4 py-2"
+              className="bg-[#374dcc] text-white text-[20px] rounded-lg px-4 py-2"
               onClick={() => router.back()}
             >
               Back

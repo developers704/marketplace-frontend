@@ -17,7 +17,6 @@ const ContentPage = () => {
     params?.chapterId.toString(),
     params?.sectionId.toString(),
   );
-  console.log(sectionsData, 'sectionsData');
   return (
     <div>
       <div className="flex justify-between items-center pb-6">
@@ -30,6 +29,7 @@ const ContentPage = () => {
         <CourseContent
           sectionData={sectionsData?.data}
           refetchSectionData={sectionsRefetch}
+          sectionsIsLoading={sectionsIsLoading}
         />
       </div>
     </div>

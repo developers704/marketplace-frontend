@@ -112,6 +112,7 @@ export const fetchSectionsData = async (
         },
       },
     );
+    
     return response.data;
   } catch (error: any) {
     const errorMessage =
@@ -146,15 +147,19 @@ export const videoProgress = async (
     );
     return response.data;
   } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.message ||
-      'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    const errorData = error.response?.data; 
+    
     Swal.fire({
       icon: 'error',
       title: 'Oops...',
-      text: errorMessage,
+      // text: errorData.message,
+      html: `
+      <p>${errorData?.message ?? 'N/A'}</p>
+      <p><strong>Required:</strong> ${errorData.required ?? 'N/A'}</p>
+      <p><strong>Watched:</strong> ${errorData.watched ?? 'N/A'}</p>
+      `,
     });
+    return errorData || { success: false, message: 'Something went wrong' };
     // throw new Error(errorMessage);
   }
 };
@@ -387,12 +392,13 @@ export const fetchAllUniversityPolicy = async (
   }
 };
 
-export const signPolicy = async (policyId: string, signedDocument: any) => {
+export const signPolicy = async (policyId: string, signedDocument: any, photoFile:any) => {
   const token = getToken();
   const formData = new FormData();
   formData.append('policyId', policyId);
   // formData.append('username', username);
   formData.append('signedDocument', signedDocument);
+  formData.append('photoFile', photoFile);
 
   try {
     const response = await axios.post(
@@ -488,8 +494,9 @@ export const useGetRightSidebarDataQuery = () => {
 export const useGetCourseChaptersDataQuery = (option: any) => {
   // console.log(options, "===>>> otions")
   return useQuery({
-    queryKey: ['Course-Chapters'],
+    queryKey: ['Course-Chapters', option],
     queryFn: () => fetchCourseChapters(option),
+    enabled: !!option,
   });
 };
 
@@ -527,7 +534,9 @@ export const useUniversityPolicyDataQuery = (
 ) => {
   return useQuery<any, Error>({
     queryKey: ['Policy'],
-    queryFn: () => fetchUniversityPolicy(roleId, warehouseId, customerId),
+    queryFn: () => fetchUniversityPolicy(
+      // roleId, warehouseId, customerId
+    ),
   });
 };
 

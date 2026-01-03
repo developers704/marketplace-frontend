@@ -1,5 +1,5 @@
 'use client';
-import { SingleCardSkeletons } from '@/components/ui/skeletons';
+import { CourseCardSkeletons } from '@/components/ui/skeletons';
 import CourseCard2 from '@/components/university/CourseCard2';
 import CourseContent from '@/components/university/CourseContent';
 import CourseCurriculum from '@/components/university/CourseCurriculum';
@@ -41,7 +41,7 @@ const CoursePageContent = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
       {courseIsLoading ? (
         Array.from({ length: 6 }).map((_, index) => (
-          <SingleCardSkeletons key={index} />
+          <CourseCardSkeletons key={index} />
         ))
       ) : userCourses?.data?.length > 0 ? (
         userCourses?.data?.map((course: any) => (

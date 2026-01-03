@@ -61,53 +61,7 @@ const getStatusText = (
   }
 };
 
-// const courseData: CourseSection[] = [
-//   {
-//     id: 1,
-//     section: 'Section 1',
-//     title: 'Introduction to Sales & Customer Service',
-//     status: 'done',
-//     weight: '33.33%',
-//     grade: 'A',
-//     certificateAvailable: true,
-//   },
-//   {
-//     id: 2,
-//     section: 'Section 2',
-//     title: 'Sales Fundamentals',
-//     status: 'done',
-//     weight: '33.33%',
-//     grade: 'B',
-//     certificateAvailable: true,
-//   },
-//   {
-//     id: 3,
-//     section: 'Section 3',
-//     title: 'Customer Service Essentials',
-//     status: 'unlock',
-//     weight: '33.33%',
-//     grade: '--',
-//     certificateAvailable: false,
-//   },
-//   {
-//     id: 4,
-//     section: 'Section 4',
-//     title: 'Sales Techniques & Strategies',
-//     status: 'lock',
-//     weight: '33.33%',
-//     grade: '--',
-//     certificateAvailable: false,
-//   },
-//   {
-//     id: 5,
-//     section: 'Section 5',
-//     title: 'Customer Relationship Management (CRM)',
-//     status: 'lock',
-//     weight: '33.33%',
-//     grade: '--',
-//     certificateAvailable: false,
-//   },
-// ];
+
 
 const courseData: CourseSection[] = [
   {
@@ -165,134 +119,159 @@ const CourseHistoryTable = ({ data }: any) => {
     setSections(courseData);
   }, []);
 
+  if (!data || data?.length === 0) {
+    return (
+      <div className="w-full py-12 text-center">
+        <div className="text-gray-500 mb-2">
+          <FaUnlock className="w-12 h-12 mx-auto" />
+        </div>
+        <p className="text-gray-500 font-medium">No courses available</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full py-6">
-      <table className="w-full rounded-lg">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full rounded-lg overflow-hidden">
         <thead className="">
-          <tr className="border-b bg-[#666665CC] text-white">
-            <th className="text-left p-3">Course</th>
-            <th className="text-left p-3">Status</th>
-            <th className="text-left p-3">Weight</th>
-            <th className="text-left p-3">Percentage</th>
-            <th className="text-left p-3">Grade</th>
-            <th className="text-left p-3">Certificate</th>
+          <tr className="bg-gradient-to-r from-gray-700 to-gray-800 text-white">
+            <th className="text-left p-4 font-semibold">Course</th>
+            <th className="text-left p-4 font-semibold">Status</th>
+            <th className="text-left p-4 font-semibold">Weight</th>
+            <th className="text-left p-4 font-semibold">Percentage</th>
+            <th className="text-left p-4 font-semibold">Grade</th>
+            <th className="text-left p-4 font-semibold">Certificate</th>
           </tr>
         </thead>
-        <tbody className="border !rounded-xl bg-white">
+        <tbody className="bg-white divide-y divide-gray-200">
           {data?.map((section: any, index: number) => (
             <tr
               key={section._id}
-              className="border-b hover:bg-gray-100 transition duration-200"
+              className="hover:bg-gray-50 transition-colors duration-150"
             >
               {/* Section Info */}
-              <td className="p-3 flex items-center ">
-                {/* {getStatusIcon(section.status)} */}
-                <span className="ml-2">
-                  <strong>Course {index + 1}:</strong> <br />
-                  <span className="text-blue-600">{section?.name}</span>
-                </span>
+              <td className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 bg-brand-blue/10 rounded-full flex items-center justify-center">
+                    <span className="text-brand-blue font-semibold text-sm">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500 font-medium">
+                      Course {index + 1}
+                    </div>
+                    <div className="text-base font-semibold text-gray-900 mt-0.5">
+                      {section?.name || "-"}
+                    </div>
+                  </div>
+                </div>
               </td>
 
               {/* Status */}
-              <td className="p-3 font-medium">
-                {getStatusText(section?.status)}
+              <td className="p-4">
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(
+                    section?.status === 'Completed' || section?.status === 'Done'
+                      ? 'done'
+                      : section?.status === 'Failed'
+                      ? 'lock'
+                      : section?.status === 'In Progress' || section?.status === 'Unlock'
+                      ? 'unlock'
+                      : 'lock'
+                  )}
+                  <span className="font-medium">
+                    {getStatusText(section?.status)}
+                  </span>
+                </div>
               </td>
 
               {/* Weight */}
-              <td className="p-3">{section?.weightage}</td>
+              <td className="p-4">
+                <span className="text-gray-700 font-medium">
+                  {section?.weightage || '-'}
+                </span>
+              </td>
 
               {/* Percentage */}
-              <td className="p-3">{section?.gradePercentage}%</td>
+              <td className="p-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-900 font-semibold">
+                    {section?.gradePercentage || 0}%
+                  </span>
+                  {section?.gradePercentage && (
+                    <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-brand-blue to-blue-600 rounded-full"
+                        style={{ width: `${Math.min(section.gradePercentage, 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </td>
 
               {/* Grade */}
-              <td className="p-3 font-semibold">{section?.gradeLabel}</td>
+              <td className="p-4">
+                {section?.gradeLabel && section?.gradeLabel !== '--' ? (
+                  <span
+                    className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm ${
+                      section.gradeLabel === 'A'
+                        ? 'bg-green-100 text-green-700'
+                        : section.gradeLabel === 'B'
+                        ? 'bg-blue-100 text-blue-700'
+                        : section.gradeLabel === 'C'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {section?.gradeLabel}
+                  </span>
+                ) : (
+                  <span className="text-gray-400 font-medium">--</span>
+                )}
+              </td>
 
               {/* Certificate */}
-              <td className="p-3">
+              <td className="p-4">
                 {section?.certificateInfo?.canRequest ? (
-                  <div className="flex space-x-3 ">
-                    <button
-                      className="bg-brand-blue text-white hover:bg-blue-700 text-sm font-medium px-3 py-1 rounded-md"
-                      onClick={() =>
-                        router.push(
-                          `/valliani-university/achievements/certificate/${section?._id}`,
-                        )
-                      }
-                    >
-                      Request Certificate
-                    </button>
-                    {/* <Image
-                      src={`/icons/Download.svg`}
-                      alt="download"
-                      width={18}
-                      height={18}
-                      className="cursor-pointer"
-                    />
+                  <button
+                    className="bg-brand-blue text-white hover:bg-blue-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+                    onClick={() =>
+                      router.push(
+                        `/valliani-university/achievements/certificate/${section?._id}`,
+                      )
+                    }
+                  >
+                    Request Certificate
+                  </button>
+                ) : section?.certificateInfo?.requestStatus === 'Requested' ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                    Requested
+                  </div>
+                ) : section?.certificateInfo?.requestStatus === 'Approved' ? (
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/valliani-university/achievements/certificate/${section?._id}`,
+                      )
+                    }
+                    className="flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-sm font-medium transition-colors duration-200 border border-green-100"
+                  >
                     <Image
                       src={`/icons/View.svg`}
-                      alt="View"
-                      width={20}
-                      height={20}
-                      className="object-contain mt-1.5 cursor-pointer"
-                      onClick={() =>
-                        router.push(
-                          `/valliani-university/achievements/certificate`,
-                        )
-                      }
-                      // objectFit='contain'
-                    /> */}
-                    {/* <FaDownload className="text-gray-600 cursor-pointer" />
-                    <FaEye className="text-gray-600 cursor-pointer" /> */}
-                  </div>
-                ) : section?.certificateInfo?.requestStatus === 'Requested' ? (
-                  <>
-                    <div className="">Requested</div>
-                  </>
-                ) : section?.certificateInfo?.requestStatus === 'Approved' ? (
-                  <>
-                    <div className="flex space-x-3 ">
-                      {/* <Image
-                        src={`/icons/Download.svg`}
-                        alt="download"
-                        width={18}
-                        height={18}
-                        className="cursor-pointer"
-                      /> */}
-                      <Image
-                        src={`/icons/View.svg`}
-                        alt="View"
-                        width={20}
-                        height={20}
-                        className="object-contain mt-1.5 cursor-pointer"
-                        onClick={() =>
-                          router.push(
-                            `/valliani-university/achievements/certificate/${section?._id}`,
-                          )
-                        }
-                        // objectFit='contain'
-                      />
-                    </div>
-                  </>
+                      alt="View Certificate"
+                      width={18}
+                      height={18}
+                      className="object-contain cursor-pointer"
+                    />
+                    View Certificate
+                  </button>
                 ) : (
-                  <>
-                    <div className="flex space-x-3 ">
-                      <Image
-                        src={`/icons/Download.svg`}
-                        alt="download"
-                        width={18}
-                        height={18}
-                        className="cursor-pointer opacity-30"
-                      />
-                      <Image
-                        src={`/icons/View.svg`}
-                        alt="View"
-                        width={20}
-                        height={20}
-                        className="object-contain mt-1.5 cursor-pointer opacity-30"
-                        // objectFit='contain'
-                      />
-                    </div>
-                  </>
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <FaLock className="w-4 h-4" />
+                    <span>Not Available</span>
+                  </div>
                 )}
               </td>
             </tr>

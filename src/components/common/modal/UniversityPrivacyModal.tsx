@@ -36,9 +36,11 @@ export default function UniversityPrivacyModal() {
   const [policies, setPolicies] = useState<any[]>([]);
   const [currentPolicyIndex, setCurrentPolicyIndex] = useState(0);
   const [warehouse, setWarehouse] = useState<any>();
-  // const [modalShown, setModalShown] = useState(false);
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
 
   const sigCanvasRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { isAuthorized, user, setUser } = useUI();
 
   // console.log("policy set in ke lengtj", policies.length);
@@ -133,26 +135,58 @@ useEffect(() => {
 
   const handleAgree = async () => {
     if (isSigned && sigCanvasRef.current) {
-      // 1. Get base64 image data
-      const signatureDataURL = sigCanvasRef.current.toDataURL('image/png');
-      const signImage = dataURLtoFile(signatureDataURL, 'signature.png');
-
+      setIsCapturingPhoto(true);
       try {
-        const response = await signPolicy(currentPolicy?._id, signImage);
-        // console.log('API Response:', response);
+        // 1. Request camera access and capture photo
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user' } 
+        });
+        
+        videoRef.current!.srcObject = stream;
+        
+        // Give camera time to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 2. Capture photo from video
+        const context = canvasRef.current!.getContext('2d');
+        if (context) {
+          context.drawImage(videoRef.current!, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
+          const photoDataURL = canvasRef.current!.toDataURL('image/jpeg');
+          const photoFile = dataURLtoFile(photoDataURL, 'employee_photo.jpg');
+          
+          // Stop camera stream
+          stream.getTracks().forEach(track => track.stop());
+          
+          // 3. Get signature data
+          const signatureDataURL = sigCanvasRef.current.toDataURL('image/png');
+          const signImage = dataURLtoFile(signatureDataURL, 'signature.png');
 
-
-        toast.success(response?.data?.message || "Policy  signed successfully!");
-   
-        if (currentPolicyIndex < policies.length - 1) {
-        setCurrentPolicyIndex(prev => prev + 1);
-        clearSignature(); 
-      } else {
-        setShowModal(false);
-      }
+          // 4. Submit both signature and photo
+          const formData = new FormData();
+          formData.append('signature', signImage);
+          formData.append('photo', photoFile);
+          
+          const response = await signPolicy(currentPolicy?._id, signImage, photoFile);
+          toast.success(response?.data?.message || "Policy signed with photo successfully!");
+     
+          if (currentPolicyIndex < policies.length - 1) {
+            setCurrentPolicyIndex(prev => prev + 1);
+            clearSignature(); 
+          } else {
+            setShowModal(false);
+          }
+        }
       } catch (error : any) {
-        toast.error(error.response?.data?.message || 'Failed to submit signature.');
+        if (error.name === 'NotAllowedError') {
+          toast.error('Camera access denied. Please allow camera access to continue.');
+        } else if (error.name === 'NotFoundError') {
+          toast.error('No camera found on this device.');
+        } else {
+          toast.error(error.response?.data?.message || 'Failed to capture photo and signature.');
+        }
         console.error(error);
+      } finally {
+        setIsCapturingPhoto(false);
       }
     }
   };
@@ -175,6 +209,20 @@ useEffect(() => {
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center z-50">
+      {/* Hidden camera and canvas for photo capture */}
+      <video 
+        ref={videoRef} 
+        style={{ display: 'none' }} 
+        autoPlay 
+        playsInline
+      />
+      <canvas 
+        ref={canvasRef} 
+        width={640} 
+        height={480} 
+        style={{ display: 'none' }} 
+      />
+
       <div className="bg-[#dedede] rounded-xl shadow-2xl p-6 w-[90%] max-w-3xl max-h-[90vh] flex flex-col">
         <h2 className="text-[32px] font-semibold mb-4 text-center">
           University Privacy Policy
@@ -209,17 +257,24 @@ useEffect(() => {
           </button>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleAgree}
-            disabled={!isSigned}
-            className={`px-5 py-2 rounded-md transition text-white ${
-              isSigned
+            disabled={!isSigned || isCapturingPhoto}
+            className={`px-5 py-2 rounded-md transition text-white flex items-center gap-2 ${
+              isSigned && !isCapturingPhoto
                 ? 'bg-blue-600 hover:bg-blue-700'
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            I Agree
+            {isCapturingPhoto ? (
+              <>
+                Capturing Photo
+                <span className="inline-block animate-spin">⏳</span>
+              </>
+            ) : (
+              'I Agree'
+            )}
           </button>
         </div>
       </div>

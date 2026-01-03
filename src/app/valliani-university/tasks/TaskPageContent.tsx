@@ -1,4 +1,5 @@
 'use client';
+import { CourseCardSkeletons } from '@/components/ui/skeletons';
 import CourseCard2 from '@/components/university/CourseCard2';
 import SearchBar from '@/components/university/UniversitySearchBar';
 import { useGetShortCoursesQuery } from '@/framework/basic-rest/university/dashboardApi';
@@ -13,7 +14,7 @@ const TaskPageContent = () => {
   } = useGetShortCoursesQuery();
   console.log(shortCourse, 'shortCourse');
 
-  if (isLoading) return <p>Loading...</p>;
+  // if (isLoading) return <p>Loading...</p>;
   const mockFetchSuggestions = async (query: string): Promise<string[]> => {
     const fakeData = [
       'Math Basics',
@@ -36,35 +37,28 @@ const TaskPageContent = () => {
           fetchSuggestions={mockFetchSuggestions}
         />
       </div>
+      
       <div>
-        {/* <h1 className="text-[28px] font-bold">Courses</h1> */}
-        {shortCourse?.data?.length <= 0 ? (
-          <>
-            <p className="text-center w-full font-semibold text-gray-600  text-2xl">
-              {shortCourse?.message}
-            </p>
-          </>
-        ) : (
-          shortCourse?.data?.shortCourses?.map((item: any, index: number) => {
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                <div key={`${item}-${index}`} className="mb-4">
-                  <CourseCard2 data={item} />
-                </div>
-              </div>
-            );
-          })
-        )}
-        {/* {[1, 2, 3, 4, 5, 6, 7, 8,9,10]?.map((item, index) => {
-            return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-              <div key={`${item}-${index}`} className="mb-4">
-                <CourseCard2 />
-              </div>
-              </div>
-            );
-          })} */}
-      </div>
+      {isLoading ? (
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <CourseCardSkeletons key={index} />
+          ))}
+        </div>
+      ) : shortCourse?.data?.shortCourses?.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+          {shortCourse.data.shortCourses.map((item: any) => (
+            <CourseCard2 key={item._id} data={item} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex justify-center items-center py-16 text-gray-500">
+          No Short Courses Available
+        </div>
+      )}
+    </div>
+
     </div>
   );
 };
