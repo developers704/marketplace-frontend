@@ -12,54 +12,126 @@ import {
 import { FaCheckCircle, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import DOMPurify from 'dompurify';
+import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
+import Lightbox from 'react-image-lightbox';
+import 'react-image-lightbox/style.css';
+
 import LoadingComp from '../common/loading';
 
 
 
 const IntroductionComp = ({ content }: any) => {
   const safeHTML = DOMPurify.sanitize(content);
-  return (
-    <>
-      <div className="flex-1 p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Introduction
-              </h1>
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [images, setImages] = useState<string[]>([]);
 
-              <div className="space-y-8">
-                <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
-              </div>
-            </div>
+    const options: HTMLReactParserOptions = {
+    replace: (domNode: any) => {
+      if (domNode.name === 'img') {
+        const src = domNode.attribs.src;
+        if (!images.includes(src)) setImages((prev) => [...prev, src]);
 
-          </div>
-        </div>
+        return (
+          <img
+            key={src}
+            src={src}
+            alt={domNode.attribs.alt || 'image'}
+            className="cursor-pointer max-w-full h-auto"
+            onClick={() => (setIsOpen(true), setPhotoIndex(images.indexOf(src)))}
+          />
+        );
+      }
+    },
+  };
+
+  const parsedContent = parse(safeHTML, options);
+
+ return (
+   <>
+  
+    <div className="flex-1 p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Introduction</h1>
+        <div className="space-y-2">{parsedContent}</div>
+
+        {isOpen && images.length > 0 && (
+          <Lightbox
+            mainSrc={images[photoIndex]}
+            nextSrc={images[(photoIndex + 1) % images.length]}
+            prevSrc={images[(photoIndex + images.length - 1) % images.length]}
+            onCloseRequest={() => setIsOpen(false)}
+            onMovePrevRequest={() =>
+              setPhotoIndex((photoIndex + images.length - 1) % images.length)
+            }
+            onMoveNextRequest={() =>
+              setPhotoIndex((photoIndex + 1) % images.length)
+            }
+            animationDisabled={false}
+            imageTitle={`Image ${photoIndex + 1} of ${images.length}`}
+          />
+        )}
       </div>
-    </>
+    </div>
+     </>
   );
 };
 const ObjectiveComp = ({ content }: any) => {
+ 
   const safeHTML = DOMPurify.sanitize(content);
-  return (
-    <>
-      <div className="flex-1 p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Objective
-              </h1>
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [images, setImages] = useState<string[]>([]);
 
-              <div className="space-y-8">
+    const options: HTMLReactParserOptions = {
+    replace: (domNode: any) => {
+      if (domNode.name === 'img') {
+        const src = domNode.attribs.src;
+        if (!images.includes(src)) setImages((prev) => [...prev, src]);
+
+        return (
+          <img
+            key={src}
+            src={src}
+            alt={domNode.attribs.alt || 'image'}
+            className="cursor-pointer max-w-full h-auto"
+            onClick={() => {setIsOpen(true); 
+            setPhotoIndex(images.indexOf(src))}
+            }
+          />
+        );
+      }
+    },
+  };
+
+  const parsedContent = parse(safeHTML, options);
+  return (
+      <>
     
-                <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="flex-1 p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Objective</h1>
+        <div className="space-y-2">{parsedContent}</div>
+
+        {isOpen && images.length > 0 && (
+          <Lightbox
+            mainSrc={images[photoIndex]}
+            nextSrc={images[(photoIndex + 1) % images.length]}
+            prevSrc={images[(photoIndex + images.length - 1) % images.length]}
+            onCloseRequest={() => setIsOpen(false)}
+            onMovePrevRequest={() =>
+              setPhotoIndex((photoIndex + images.length - 1) % images.length)
+            }
+            onMoveNextRequest={() =>
+              setPhotoIndex((photoIndex + 1) % images.length)
+            }
+            animationDisabled={false}
+            imageTitle={`Image ${photoIndex + 1} of ${images.length}`}
+          />
+        )}
       </div>
-    </>
+    </div>
+      </>
   );
 };
 
@@ -278,7 +350,7 @@ const nextVideoHandler = async () => {
                   onClick={() => nextVideoHandler()}
                   className="flex items-center px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                 >
-                  Submit
+                  Next
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
               </div>

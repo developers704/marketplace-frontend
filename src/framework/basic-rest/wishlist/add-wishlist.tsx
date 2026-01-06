@@ -7,7 +7,7 @@ export async function addWishListItem( productId: any, productType: any, dataIsm
   const isMain = dataIsmain.warehouses?.isMain 
   const sellerWarehouseId = dataIsmain?.warehouses?._id
 
-  console.log("ismaincheck", isMain)
+  // console.log("ismaincheck", isMain)
   const token = getToken();
   const response = await fetch(`${BASE_API}/api/wishlist/`, {
     method: 'POST',
@@ -24,7 +24,7 @@ export async function addWishListItem( productId: any, productType: any, dataIsm
   });
 
   const data = await response.json();
-  console.log(data, '===>>> Data');
+  // console.log(data, '===>>> Data');
 
   if (!response.ok) {
     const errorMessage =
@@ -55,7 +55,7 @@ export async function addWishListItemViewPage( productId: any, productType: any,
   });
 
   const data = await response.json();
-  console.log(data, '===>>> Data');
+  // console.log(data, '===>>> Data');
 
   if (!response.ok) {
     const errorMessage =

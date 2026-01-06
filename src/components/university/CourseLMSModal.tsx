@@ -52,7 +52,7 @@ export default function CourseLMSModal({
         return null;
       }
       const res = await fetchSectionsData(courseId, sectionId);
-    console.log("fetchSectionsData",res)
+    // console.log("fetchSectionsData",res)
       if (res?.success === false) {
       toast.error(res?.message || 'Something went wrong');
       setSectionData(null);
@@ -75,7 +75,7 @@ export default function CourseLMSModal({
     try {
         setSectionsIsLoading(true);
       const res = await fetchSectionsData(courseId, selectedSectionId);
-      console.log("refetchSelectedSection",res)
+      // console.log("refetchSelectedSection",res)
       if (res?.success === false) {
       toast.error(res?.message || 'Something went wrong');
       setSectionData(null);

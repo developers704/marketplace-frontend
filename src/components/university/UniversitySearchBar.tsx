@@ -54,7 +54,7 @@ function SearchBar({
       if (searchQuery) {
         try {
           const result = await searchQuery(query);
-          console.log(result, 'result');
+          // console.log(result, 'result');
           setSuggestions(result?.data?.courses);
           setShowSuggestions(true);
         } catch (error) {

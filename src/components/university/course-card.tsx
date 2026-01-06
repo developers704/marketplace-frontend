@@ -26,7 +26,7 @@ export default function CourseCard({ data }: any) {
       // href={`/valliani-university/courses/chapters/${data?._id}`}
       onClick={() => {
         if (data?.canAccess) {
-          router.push(`/valliani-university/courses/chapters/${data?._id}`);
+          router.push(`/valliani-university/courses/${data?._id}`);
         } else {
           toast.error('You do not have access to this course yet');
         }

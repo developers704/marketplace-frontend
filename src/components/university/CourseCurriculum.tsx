@@ -83,7 +83,7 @@ export default function CourseCurriculum({
     } else {
       // Page mode - navigate
       router.push(
-        `/valliani-university/courses/chapters/${params?.chapterId}/${sectionId}`,
+        `/valliani-university/courses/${params?.chapterId}/${sectionId}`,
       );
     }
   };

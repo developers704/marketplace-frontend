@@ -1,11 +1,10 @@
 'use client';
 
-// import type * as React from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // 🔥 FIX
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface NavigationItem {
   title: string;
@@ -86,11 +85,18 @@ const navigationItems: NavigationItem[] = [
 interface AppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  lang: String;
 }
 
-export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
+export function AppSidebar({ isOpen, onClose, lang }: AppSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter(); // 🔥 FIX
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // 🔥 FIX: auto-close dropdown on route change
+  // useEffect(() => {
+  //   setOpenDropdown(null);
+  // }, [pathname]);
 
   return (
     <>
@@ -166,7 +172,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                       <button
                         onClick={() =>
                           setOpenDropdown((prev) =>
-                            prev === item.title ? null : item.title,
+                            prev === item.title ? null : item.title
                           )
                         }
                         className={`
@@ -194,81 +200,49 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
                           }`}
                         />
                       </button>
-                      {item.subItems && openDropdown === item.title && (
-                        <ul className="space-y-0 pl-4">
-                          {item.subItems.map((subItem: any) => {
-                            const isActive = pathname === subItem.url;
+
+                      {openDropdown === item.title && (
+                        <ul className="pl-4">
+                          {item.subItems.map((sub: any) => {
+                            const subActive = pathname === sub.url;
                             return (
-                              <>
-                                <li key={subItem.title}>
-                                  <Link
-                                    href={subItem.url}
-                                    className={` flex items-center w-full gap-4 px-6 py-3 text-base font-medium transition-colors duration-200 border-0  ${
-                                      isActive
-                                        ? 'bg-slate-600 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                                    }`}
-                                    onClick={() => {
-                                      // Close mobile sidebar when clicking a link
-                                      if (window.innerWidth < 1024) {
-                                        onClose();
-                                      }
-                                    }}
-                                  >
-                                    <Image
-                                      src={
-                                        isActive
-                                          ? subItem.activeIcon
-                                          : subItem.icon
-                                      }
-                                      alt={`${subItem.title} icon`}
-                                      width={20}
-                                      height={20}
-                                      className="flex-shrink-0"
-                                    />
-                                    <span>{subItem.title}</span>
-                                  </Link>
-                                </li>
-                              </>
+                              <li key={sub.title}>
+                                <Link
+                                  href={sub.url}
+                                  onClick={() => {
+                                    if (window.innerWidth < 1024) onClose();
+                                  }}
+                                  className={`flex items-center gap-4 px-6 py-3 ${
+                                    subActive
+                                      ? 'bg-slate-600 text-white'
+                                      : 'hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <Image src={sub.icon} alt="" width={20} height={20} />
+                                  {sub.title}
+                                </Link>
+                              </li>
                             );
                           })}
                         </ul>
                       )}
                     </>
                   ) : (
-                    <Link
-                      href={item.url}
-                      className={`
-                      flex items-center gap-4 px-6 py-3 text-base font-medium transition-colors duration-200 border-0
-                      ${
+                    // 🔥 FIXED HOME LINK (NO REFRESH)
+                    <button
+                      onClick={() => {
+                        if (window.innerWidth < 1024) onClose();
+                        router.push(item.url); // 🔥 FIX
+                      }}
+                      className={`w-full flex items-center gap-4 px-6 py-3 text-left ${
                         isActive
                           ? 'bg-slate-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                      onClick={(e) => {
-                        // Close mobile sidebar when clicking a link
-                        if (window.innerWidth < 1024) {
-                          onClose();
-                        }
-                        
-                        // For Home button, prevent default and use window.location to preserve session
-                        if (item.title === 'Home') {
-                          e.preventDefault();
-                          // Use window.location.href to maintain authentication state
-                          window.location.href = '/en/';
-                        }
-                      }}
+                          : 'hover:bg-gray-100'
+                      }`}
                     >
-                      <Image
-                        src={isActive ? item.activeIcon : item.icon}
-                        alt={`${item.title} icon`}
-                        width={20}
-                        height={20}
-                        className="flex-shrink-0"
-                      />
-                      <span>{item.title}</span>
-                    </Link>
+                      <Image src={item.icon} alt="" width={20} height={20} />
+                      {item.title}
+                    </button>
                   )}
                 </li>
               );

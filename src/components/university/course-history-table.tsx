@@ -112,7 +112,7 @@ const courseData: CourseSection[] = [
 ];
 
 const CourseHistoryTable = ({ data }: any) => {
-  console.log(data, 'data progress table');
+  // console.log(data, 'data progress table');
   const [sections, setSections] = useState<CourseSection[]>([]);
   const router = useRouter();
   useEffect(() => {

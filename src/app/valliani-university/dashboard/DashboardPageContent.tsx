@@ -14,6 +14,7 @@ import {
   useGetGraphDataQuery,
 } from '@/framework/basic-rest/university/dashboardApi';
 import { useEffect, useRef, useState } from 'react';
+import { CheckCircle, GraduationCap, Percent } from 'lucide-react';
 
 const Dashboard = () => {
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
@@ -66,17 +67,17 @@ const Dashboard = () => {
               ) : (
                 <>
                   <StatCard
-                    icon="/icons/statIcon1.svg"
+                    Icon={Percent}
                     label="Average Percentage"
                     value={`${Number(graphData?.data?.averageScore)}%`}
                   />
                   <StatCard
-                    icon="/icons/statIcon1.svg"
+                    Icon={GraduationCap}
                     label="Completed Course"
                     value={Number(graphData?.data?.completedCourses)}
                   />
                   <StatCard
-                    icon="/icons/statIcon1.svg"
+                    Icon={CheckCircle}
                     label="Grade Scale"
                     value="90% + = A"
                   />

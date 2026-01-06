@@ -24,7 +24,7 @@ export async function fetchSpeacialProduct(productId: any) {
   );
 
   const data = await response.json();
-  console.log(data, '===>>> Data form query');
+  // console.log(data, '===>>> Data form query');
 
   if (!response.ok) {
     const errorMessage =
@@ -48,7 +48,7 @@ export async function fetchAllSpeacialProduct(type: any) {
   );
 
   const data = await response.json();
-  console.log(data, '===>>> special products');
+  // console.log(data, '===>>> special products');
 
   if (!response.ok) {
     const errorMessage =

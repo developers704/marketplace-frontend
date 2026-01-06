@@ -109,7 +109,7 @@ export async function requestWalletCredit(
   });
 
   const data = await response.json();
-  console.log(data, '===>>> wallet request response Data');
+  // console.log(data, '===>>> wallet request response Data');
 
   if (!response.ok) {
     const errorMessage =

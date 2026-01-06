@@ -174,7 +174,7 @@ function Header({ lang }: { lang: string }) {
         updateProfileImage(`${BASE_API}/${data.profileImage}`);
       }
     } catch (error: any) {
-      console.log('Error fetching profile:', error.message);
+      // console.log('Error fetching profile:', error.message);
     }
   };
 

@@ -16,7 +16,7 @@ export async function deleteWishlistItem(
   });
 
   const data = await response.json();
-  console.log(data, '===>>> Data');
+  // console.log(data, '===>>> Data');
 
   if (!response.ok) {
     const errorMessage =
@@ -40,7 +40,7 @@ export async function deleteAllWishlistItem() {
   });
 
   const data = await response.json();
-  console.log(data, '===>>> Data');
+  // console.log(data, '===>>> Data');
 
   if (!response.ok) {
     const errorMessage =

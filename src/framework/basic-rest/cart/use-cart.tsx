@@ -30,13 +30,13 @@ export async function addToCartApi(cartItem: any, isMainFlag: any) {
   });
 
   const data = await response.json();
-  console.log(data, '===>>> cart response Data item');
+  // console.log(data, '===>>> cart response Data item');
 
   if (!response.ok) {
     const errorMessage =
       data.message || 'Something went wrong. Please try again later.';
     // throw new Error(errorMessage);
-    console.log(errorMessage, '===>>> error message');
+    // console.log(errorMessage, '===>>> error message');
     return { message: errorMessage };
   }
   // console.log('response from login api is ', data);
@@ -46,7 +46,7 @@ export async function addToCartApi(cartItem: any, isMainFlag: any) {
 export async function addToCartViewPageApi(cartItem: any, sellerWarehouseId : any, isMainCheck: any) {
   
 
-  console.log("seller warehouse id addToCartViewPageApi" , sellerWarehouseId , isMainCheck);
+  // console.log("seller warehouse id addToCartViewPageApi" , sellerWarehouseId , isMainCheck);
   
   const { id, itemType, quantity, price, color } = cartItem;
   const body = {
@@ -72,13 +72,13 @@ export async function addToCartViewPageApi(cartItem: any, sellerWarehouseId : an
   });
 
   const data = await response.json();
-  console.log(data, '===>>> cart response Data item');
+  // console.log(data, '===>>> cart response Data item');
 
   if (!response.ok) {
     const errorMessage =
       data.message || 'Something went wrong. Please try again later.';
     // throw new Error(errorMessage);
-    console.log(errorMessage, '===>>> error message');
+    // console.log(errorMessage, '===>>> error message');
     return { message: errorMessage };
   }
   // console.log('response from login api is ', data);
@@ -87,7 +87,7 @@ export async function addToCartViewPageApi(cartItem: any, sellerWarehouseId : an
 
 export async function addToCartApiWishlist(cartItem: any, isMainFlag: any) {
 
-    console.log("ismainflag new setpu check",isMainFlag);
+    // console.log("ismainflag new setpu check",isMainFlag);
   const isMain = isMainFlag?.isMain
   const sellerWarehouseId = isMainFlag?.sellerWarehouseId
   
@@ -115,13 +115,13 @@ export async function addToCartApiWishlist(cartItem: any, isMainFlag: any) {
   });
 
   const data = await response.json();
-  console.log(data, '===>>> cart response Data item');
+  // console.log(data, '===>>> cart response Data item');
 
   if (!response.ok) {
     const errorMessage =
       data.message || 'Something went wrong. Please try again later.';
     // throw new Error(errorMessage);
-    console.log(errorMessage, '===>>> error message');
+    // console.log(errorMessage, '===>>> error message');
     return { message: errorMessage };
   }
   // console.log('response from login api is ', data);
@@ -147,7 +147,7 @@ export const deleteCartItem = async (
   );
 
   const data = await response.json();
-  console.log(data, '===>>> cart response Data');
+  // console.log(data, '===>>> cart response Data');
 
   if (!response.ok) {
     const errorMessage =
@@ -207,7 +207,7 @@ export async function updateCartItemQuantity(
   });
 
   const data = await response.json();
-  console.log(data, '===>>>  cart quantity updated');
+  // console.log(data, '===>>>  cart quantity updated');
 
   if (!response.ok) {
     const errorMessage =

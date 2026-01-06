@@ -10,7 +10,7 @@ async function updateAddress({
   address: any;
   resId: string;
 }) {
-  console.log('address params in async thunk ', address, resId);
+  // console.log('address params in async thunk ', address, resId);
 
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
@@ -50,10 +50,10 @@ export const useUpdateAddressMutation = () => {
     mutationFn: (input: { address: any; resId: string }) =>
       updateAddress(input),
     onSuccess: (data) => {
-      console.log(data, 'UpdateAddress success response');
+      // console.log(data, 'UpdateAddress success response');
     },
     onError: (error: any) => {
-      console.log(error, 'UpdateAddress error response');
+      // console.log(error, 'UpdateAddress error response');
     },
   });
 };

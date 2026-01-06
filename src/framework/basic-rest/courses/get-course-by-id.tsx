@@ -21,7 +21,7 @@ export const fetchCourse = async (courseId: any) => {
     // console.log(data, '===>>> courses data');
     return data;
   } catch (error) {
-    console.error('Error fetching category products:', error);
+    // console.error('Error fetching category products:', error);
     throw error;
   }
 };
@@ -32,7 +32,7 @@ export const fetchCourseAndEnrollUser = async (
 ) => {
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   const token = getToken(); // Assuming getToken() retrieves the token from localStorage, cookies, or elsewhere
-  console.log(token, '===>>> token');
+  // console.log(token, '===>>> token');
 
   //   try {
   //     const response = await http.get(

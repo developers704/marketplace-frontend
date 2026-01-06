@@ -6,6 +6,11 @@ import { Bell, User, Settings, LogOut, Menu, ChevronDown } from 'lucide-react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import NotificationDropdown from '../common/notificationDropdown';
+import { useRouter } from 'next/navigation';
+import { useLogoutMutation } from '@/framework/basic-rest/auth/use-logout';
+import Link from 'next/link';
+import { FiBell } from 'react-icons/fi';
+import { DotLoader, PulseLoader } from 'react-spinners';
 // import { useState, useEffect } from 'react';
 
 interface TopbarProps {
@@ -21,6 +26,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     isLoading: userLoading,
     error: userError,
   } = useUserDataQuery();
+  const router = useRouter();
+  const lang = "en"
+  const { mutate: logout } = useLogoutMutation(lang);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -38,8 +46,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // console.log(userData, 'user data profile');
-
+  const handleLogout = () => {
+  logout();
+  router.push('/signin');
+};
+ 
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center px-4">
       <div className="w-full flex items-center justify-between">
@@ -61,68 +72,17 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           {/* Notification Bell */}
           <div className="relative notification-dropdown">
             <NotificationDropdown />
-            {/* <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-md hover:bg-gray-100 transition-colors"
-            >
-              <Bell className="h-5 w-5 text-gray-600" />
-              {notificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {notificationCount}
-                </span>
-              )}
-            </button> */}
 
-            {/* Notifications Dropdown */}
-            {/* {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200">
-                  <h4 className="font-semibold text-gray-900">Notifications</h4>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50">
-                    <div className="font-medium text-gray-900">
-                      New assignment posted
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Mathematics Assignment 3 is now available
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      2 hours ago
-                    </div>
-                  </div>
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50">
-                    <div className="font-medium text-gray-900">
-                      Grade updated
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Your Physics exam grade has been posted
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">1 day ago</div>
-                  </div>
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50">
-                    <div className="font-medium text-gray-900">
-                      Course reminder
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Chemistry lab session tomorrow at 10 AM
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">2 days ago</div>
-                  </div>
-                </div>
-                <div className="p-3 border-t border-gray-200">
-                  <button className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    View all notifications
-                  </button>
-                </div>
-              </div>
-            )} */}
           </div>
 
           {/* Profile Dropdown */}
           <div className="relative profile-dropdown">
             <button
               // onClick={() => setShowProfile(!showProfile)}
+              onClick={(e) => {
+              e.stopPropagation();
+              setShowProfile(!showProfile);
+              }}
               className="flex items-center gap-4 p-2 rounded-md hover:bg-gray-100 transition-colors"
             >
               <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
@@ -140,38 +100,60 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             </button>
 
             {/* Profile Dropdown Menu */}
-            {/* {showProfile && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200">
-                  <div className="font-medium text-gray-900">John Doe</div>
-                  <div className="text-sm text-gray-600">
-                    john.doe@valliani.edu
+           {showProfile && (
+            <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+              
+              {/* Header */}
+              <div className="flex items-center gap-3 p-4 border-b">
+                <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-gray-600" />
+                </div>
+                {userLoading ? (<>
+               <PulseLoader color="#21caff" size={10} />
+                </>) : (<div>
+                  <div className="font-semibold capitalize">
+                    {userData?.username}
                   </div>
-                </div>
-                <div className="py-2">
-                  <a
-                    href="/profile"
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <User className="h-4 w-4" />
-                    Profile
-                  </a>
-                  <a
-                    href="/settings"
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <Settings className="h-4 w-4" />
-                    Settings
-                  </a>
-                </div>
-                <div className="border-t border-gray-200 py-2">
-                  <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                    <LogOut className="h-4 w-4" />
-                    Log out
-                  </button>
-                </div>
+                  <div className="text-sm text-gray-500 capitalize">
+                    {userData?.role?.role_name}
+                  </div>
+                </div>)}
+                
               </div>
-            )} */}
+
+              {/* Menu */}
+              <div className="py-2">
+                <Link
+                  href={`/${lang}/profile-details?options=profile info`}
+                  className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  <User className="h-4 w-4" />
+                  My Profile
+                </Link>
+
+                <Link
+                  href={`/${lang}/notifications/all`}
+                  className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  <FiBell className="h-4 w-4" />
+                  Notification
+                </Link>
+              </div>
+
+              {/* Logout */}
+              <div className="border-t">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 w-full"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </button>
+              </div>
+            </div>
+          )}
+
+
           </div>
         </div>
       </div>

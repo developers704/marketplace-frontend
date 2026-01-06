@@ -45,10 +45,7 @@ export default function UniversityPrivacyModal() {
 
   // console.log("policy set in ke lengtj", policies.length);
   const currentPolicy = policies[currentPolicyIndex];
-  
-  console.log("current policy ke length currentPolicy", currentPolicy);
-  console.log('isAuthorized:', isAuthorized, 'showModal:', showModal, 'warehouse:', warehouse);
-console.log('currentPolicyIndex:', currentPolicyIndex, 'currentPolicy:', currentPolicy);
+ 
 
   const { data: userData, isLoading: userLoading } = useUserDataQuery();
   // console.log("user data is here in uni",user);
@@ -66,11 +63,9 @@ useEffect(() => {
         const parsedWarehouse = JSON.parse(savedWarehouse);
         setWarehouse(parsedWarehouse);
       } catch (error) {
-        console.error("Failed to parse saved warehouse:", error);
         setWarehouse(null);
       }
     } else {
-      console.warn("No saved warehouse found in localStorage.");
       setWarehouse(null);
     }
   }
@@ -87,9 +82,7 @@ const getPolicy = async (
     return;
   }
 
-    console.log("fetching uni policy with ", roleId, warehouseId, customerId);
     const res : { pending : Policy[] }= await fetchUniversityPolicy();
-    console.log("uni response here ",res);
     
     const pendingPolicies : Policy[] = (res.pending  || []).filter(p => p.isActive && !p.isSigned);
     

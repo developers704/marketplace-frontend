@@ -40,7 +40,7 @@ function SubscriptionForm({ lang }: { lang: string }) {
 
     // reset form after submit
     e.target.reset();
-    console.log(values, 'News letter');
+    // console.log(values, 'News letter');
   }
   return (
     <form

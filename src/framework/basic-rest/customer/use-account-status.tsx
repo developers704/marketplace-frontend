@@ -29,10 +29,10 @@ export const useDeactivateAccountMutation = () => {
   return useMutation({
     mutationFn: () => deactivateAccount(),
     onSuccess: () => {
-      console.log('Account deactivated successfully.');
+      // console.log('Account deactivated successfully.');
     },
     onError: (error: any) => {
-      console.log(error.message || 'Failed to deactivate account.');
+      // console.log(error.message || 'Failed to deactivate account.');
     },
   });
 };
@@ -63,10 +63,10 @@ export const useReactivateAccountMutation = () => {
   return useMutation({
     mutationFn: () => reactivateAccount(),
     onSuccess: () => {
-      console.log('Account reactivated successfully.');
+      // console.log('Account reactivated successfully.');
     },
     onError: (error: any) => {
-      console.log(error.message || 'Failed to reactivate account.');
+      // console.log(error.message || 'Failed to reactivate account.');
     },
   });
 };

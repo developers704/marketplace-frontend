@@ -28,11 +28,11 @@ export async function verifyOTP(input: VerifyOTPInputType, setPermissions?: any)
         data.message || 'OTP verification failed. Please try again.';
       const error = new Error(data.message || 'OTP verification failed.');
       (error as any).response = data;
-      console.log(data, '====>>> OTP verification error');
+      // console.log(data, '====>>> OTP verification error');
       throw error;
     }
 
-    console.log('OTP verification response:', data);
+    // console.log('OTP verification response:', data);
 
     if (data.token) {
       Cookies.set('auth_token', data.token);
@@ -50,7 +50,7 @@ export async function verifyOTP(input: VerifyOTPInputType, setPermissions?: any)
 
     return data;
   } catch (error: any) {
-    console.log('OTP verification error:', error);
+    // console.log('OTP verification error:', error);
     toast.error(error.message || 'OTP verification failed', { position: 'bottom-right' });
     throw error;
   }
@@ -80,15 +80,15 @@ export async function resendOTP(input: ResendOTPInputType) {
         data.message || 'Failed to resend OTP. Please try again.';
       const error = new Error(data.message || 'Failed to resend OTP.');
       (error as any).response = data;
-      console.log(data, '====>>> Resend OTP error');
+      // console.log(data, '====>>> Resend OTP error');
       throw error;
     }
 
-    console.log('Resend OTP response:', data);
+    // console.log('Resend OTP response:', data);
     toast.success('OTP resent successfully!', { position: 'bottom-right' });
     return data;
   } catch (error: any) {
-    console.log('Resend OTP error:', error);
+    // console.log('Resend OTP error:', error);
     toast.error(error.message || 'Failed to resend OTP', { position: 'bottom-right' });
     throw error;
   }

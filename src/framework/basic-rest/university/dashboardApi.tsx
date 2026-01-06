@@ -191,7 +191,7 @@ export const toggleVideoReactions = async (
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     Swal.fire({
       icon: 'error',
       title: 'Oops...',
@@ -219,7 +219,7 @@ export const submitQuizApi = async (quizId: string, payload: any) => {
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -239,7 +239,7 @@ export const fetchShortCoursesData = async () => {
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -259,7 +259,7 @@ export const fetchCourseProgress = async () => {
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -279,7 +279,7 @@ export const fetchAboutUs = async () => {
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -310,7 +310,7 @@ export const requestCertificate = async (
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -361,7 +361,7 @@ export const fetchUniversityPolicy = async (
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -387,7 +387,7 @@ export const fetchAllUniversityPolicy = async (
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -416,7 +416,7 @@ export const signPolicy = async (policyId: string, signedDocument: any, photoFil
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -439,7 +439,7 @@ export const fetchUserCertificate = async (courseId: string) => {
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };
@@ -462,7 +462,7 @@ export const searchQuery = async (query: string) => {
     const errorMessage =
       error.response?.data?.message ||
       'Something went wrong. Please try again later.';
-    console.log(errorMessage, 'errorMessage');
+    // console.log(errorMessage, 'errorMessage');
     // throw new Error(errorMessage);
   }
 };

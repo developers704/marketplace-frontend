@@ -21,7 +21,7 @@ export async function searchGlobal() {
   });
 
   const data = await response.json();
-  console.log(data, '===>>> Search form query');
+  // console.log(data, '===>>> Search form query');
 
   if (!response.ok) {
     const errorMessage =

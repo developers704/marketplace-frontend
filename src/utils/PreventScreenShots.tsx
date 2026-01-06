@@ -93,7 +93,7 @@ const PreventScreenCapture: React.FC<Props> = ({
         pointerEvents: 'auto',
       }}
     >
-      <div
+      {/* <div
         style={{
           position: 'absolute',
           top: 20,
@@ -105,7 +105,7 @@ const PreventScreenCapture: React.FC<Props> = ({
         }}
       >
         Screenshots are disabled for security.
-      </div>
+      </div> */}
 
       <div
         style={{

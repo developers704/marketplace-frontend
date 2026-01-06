@@ -80,7 +80,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
 
     case 'REMOVE_SINGLE_ITEM':
-      console.log(action.payload, 'action.payload');
+      // console.log(action.payload, 'action.payload');
       return {
         ...state,
         cartItems: state.cartItems.filter(

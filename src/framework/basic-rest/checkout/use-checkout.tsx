@@ -41,8 +41,8 @@ export async function checkout(cartId: any, warehouse: any, cart: any, paymentMe
   const storeItems = cart.items.filter((i: any) => i.isMain === false);
   
   
-  console.log("mainItems:", mainItems);
-  console.log("storeItems:", storeItems);
+  // console.log("mainItems:", mainItems);
+  // console.log("storeItems:", storeItems);
   
   const callApi = async (endpoint: string, itemsArray: any[]) => {
     if (itemsArray.length === 0) return null;
@@ -71,7 +71,7 @@ export async function checkout(cartId: any, warehouse: any, cart: any, paymentMe
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("API Error:", data.message);
+      // console.log("API Error:", data.message);
       return { error: data.message };
     }
 
@@ -104,7 +104,7 @@ export async function orderHistory() {
     const errorMessage =
       data.message || 'Something went wrong. Please try again later.';
     // throw new Error(errorMessage);
-    console.log(errorMessage, '===>>> error message');
+    // console.log(errorMessage, '===>>> error message');
     return { message: errorMessage };
   }
   // console.log('response from login api is ', data);

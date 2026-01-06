@@ -45,7 +45,7 @@ async function updateUser(input: UpdateUserType) {
   // };
   // console.log('data before updating ', requestBody);
 
-  console.log(input, '====>>> input form query');
+  // console.log(input, '====>>> input form query');
 
   const formData = new FormData(); // Convert input to FormData
 
@@ -85,7 +85,7 @@ async function updateUser(input: UpdateUserType) {
 
   // Handle the successful response
   const data = await response.json();
-  console.log(data, 'UpdateUser success response');
+  // console.log(data, 'UpdateUser success response');
   return data;
 }
 export const useUpdateUserMutation = () => {
@@ -95,7 +95,7 @@ export const useUpdateUserMutation = () => {
       console.log(data, 'UpdateUser success response');
     },
     onError: (error: any) => {
-      console.log(error, 'UpdateUser error response');
+      // console.log(error, 'UpdateUser error response');
     },
   });
 };
