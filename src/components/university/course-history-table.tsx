@@ -1,9 +1,9 @@
 'use client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { requestCertificate } from '@/framework/basic-rest/university/dashboardApi';
 import {
   FaCheckCircle,
   FaDownload,
@@ -111,7 +111,7 @@ const courseData: CourseSection[] = [
   },
 ];
 
-const CourseHistoryTable = ({ data }: any) => {
+const CourseHistoryTable = ({ data, summary }: any) => {
   // console.log(data, 'data progress table');
   const [sections, setSections] = useState<CourseSection[]>([]);
   const router = useRouter();
@@ -231,16 +231,35 @@ const CourseHistoryTable = ({ data }: any) => {
                 )}
               </td>
 
-              {/* Certificate */}
+              {/* Certificate / Remediation */}
               <td className="p-4">
-                {section?.certificateInfo?.canRequest ? (
+                {summary?.programStats?.requiresShortCourses &&
+                summary?.programStats?.allMainCoursesCompleted &&
+                (summary?.programStats?.percentage ?? 0) < (summary?.programStats?.passingThreshold ?? 70) &&
+                summary?.programStats?.anchorCourseId &&
+                section?._id?.toString() === summary?.programStats?.anchorCourseId ? (
+                  <button
+                    className="bg-amber-500 text-white hover:bg-amber-600 text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+                    onClick={() => router.push('/valliani-university/tasks')}
+                  >
+                    Open Short Courses
+                  </button>
+                ) : section?.certificateInfo?.canRequest ? (
                   <button
                     className="bg-brand-blue text-white hover:bg-blue-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-                    onClick={() =>
-                      router.push(
-                        `/valliani-university/achievements/certificate/${section?._id}`,
-                      )
-                    }
+                    onClick={async () => {
+                      try {
+                        const res = await requestCertificate(section?._id);
+                        if (res?.success) {
+                          toast.success(res?.message || 'Certificate request submitted for approval');
+                          router.refresh?.();
+                        } else {
+                          toast.error(res?.message || 'Unable to submit certificate request');
+                        }
+                      } catch (err: any) {
+                        toast.error(err?.message || 'Unable to submit certificate request');
+                      }
+                    }}
                   >
                     Request Certificate
                   </button>

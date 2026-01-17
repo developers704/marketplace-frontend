@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 const CourseCard2 = ({ data }: any) => {
+  console.log(data, 'courseCard2Data');
   const router = useRouter();
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 

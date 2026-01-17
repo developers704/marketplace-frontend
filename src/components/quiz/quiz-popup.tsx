@@ -36,8 +36,9 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
   // const totalTime = 1 * 60; // in seconds
   const [timeLeft, setTimeLeft] = useState(totalTime);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  // Track the chosen option index (backend expects numeric index)
+  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
-  const [selectedOption, setSelectedOption] = useState<any>();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -57,15 +58,31 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
 
   useEffect(() => {
     if (quizData?.questions) {
+      // Preserve original index so backend can map answers correctly
+      const baseQuestions = quizData.questions.map((q: any, idx: number) => ({
+        ...q,
+        originalIndex: idx,
+      }));
+
       const shuffled = quizData?.enableSuffling
-        ? shuffleArray(quizData?.questions)
-        : quizData?.questions;
+        ? shuffleArray(baseQuestions)
+        : baseQuestions;
+
       setShuffledQuestions(shuffled);
+      setCurrentQuestion(0);
+      setSelectedAnswerIndex(null);
+      setSelectedAnswers([]);
+      setUserAnswers([]);
+      setIsSubmitted(false);
+      setCompleted(false);
+      setQuizResult(null);
+      setTimeLeft(totalTime);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quizData]);
 
   useEffect(() => {
-    if (!quizData?.enableTimer) return; // ⛔ Skip if timer is disabled
+    if (!quizData?.enableTimer) return;
     if (timeLeft === 0 && !completed) {
       Swal.fire("Time's up!", 'Time is up', 'warning').then(() => {
         handleEndQuiz();
@@ -86,16 +103,11 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
   // const current = quizData?.questions[currentQuestion];
   const current = shuffledQuestions[currentQuestion];
 
-  const handleAnswerSelect = (option: string) => {
-    if (current.type === 'single') {
-      setSelectedAnswers([option]);
-    } else {
-      setSelectedAnswers((prev) =>
-        prev.includes(option)
-          ? prev.filter((o) => o !== option)
-          : [...prev, option],
-      );
-    }
+  const handleAnswerSelect = (optionIndex: number) => {
+    setSelectedAnswerIndex(optionIndex);
+    // Keep a string array for any UI that relies on it
+    const optionValue = current?.options?.[optionIndex];
+    setSelectedAnswers(optionValue ? [optionValue] : []);
   };
 
   // console.log(quizData, 'selectedAnswers quizData');
@@ -112,18 +124,13 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
   };
 
 
-  const saveAnswer = (answers: string[], questionIndex: number) => {
+  const saveAnswer = (selectedIndex: number | null, questionIndex: number) => {
     const currentQ = shuffledQuestions[questionIndex];
-    const answerIndexes =
-      currentQ?.type === 'multiple'
-        ? answers
-            .map((ans) => currentQ.options.indexOf(ans))
-            .filter((i) => i !== -1)
-        : currentQ?.options.indexOf(answers[0]);
+    if (selectedIndex === null || !currentQ) return;
 
     const entry = {
-      questionIndex: currentQ?.originalIndex, // ✅ Use originalIndex here
-      selectedAnswer: answerIndexes,
+      questionIndex: currentQ.originalIndex ?? questionIndex, // ✅ Use originalIndex for backend mapping
+      selectedAnswer: selectedIndex,
     };
 
     setUserAnswers((prev) => [...prev, entry]);
@@ -137,13 +144,14 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
   };
 
   const handleNext = () => {
-    saveAnswer(selectedAnswers, currentQuestion);
-    if (currentQuestion < quizData?.questions?.length - 1) {
+    saveAnswer(selectedAnswerIndex, currentQuestion);
+
+    if (currentQuestion < (quizData?.questions?.length || 0) - 1) {
       setCurrentQuestion((prev) => prev + 1);
+      setSelectedAnswerIndex(null);
       setSelectedAnswers([]); // reset for next question
       setIsSubmitted(false);
     } else {
-      // saveAnswer(selectedAnswers, currentQuestion);
       handleEndQuiz();
     }
   };
@@ -151,19 +159,17 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
 
   const handleEndQuiz = async () => {
     const currentQ = shuffledQuestions[currentQuestion];
-    const answerIndexes =
-      currentQ?.type === 'multiple'
-        ? selectedAnswers
-            .map((ans) => currentQ?.options?.indexOf(ans))
-            .filter((i) => i !== -1)
-        : currentQ?.options?.indexOf(selectedAnswers[0]);
+    if (!currentQ) return;
 
-    const lastEntry = {
-      questionIndex: currentQ?.originalIndex, // ✅ Use originalIndex here
-      selectedAnswer: answerIndexes,
-    };
+    const lastEntry =
+      selectedAnswerIndex === null
+        ? null
+        : {
+            questionIndex: currentQ.originalIndex ?? currentQuestion, // ✅ Use originalIndex here
+            selectedAnswer: selectedAnswerIndex,
+          };
 
-    const finalAnswers = [...userAnswers, lastEntry];
+    const finalAnswers = lastEntry ? [...userAnswers, lastEntry] : [...userAnswers];
     const endTime = new Date().toISOString();
 
     const payload = {
@@ -172,22 +178,45 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
       endTime,
     };
 
-    const res = await submitQuizApi(quizData?._id, payload);
-    setQuizResult(res);
-    setUserAnswers(finalAnswers);
-    setCompleted(true);
-    
-    // Refresh section data and chapters to unlock next content
-    if (res?.success === true) {
-      try {
-        await refetchSectionData?.();
-      } catch (err) {
-        console.error('Error refetching section data:', err);
+    try {
+      const res = await submitQuizApi(quizData?._id, payload);
+      setQuizResult(res);
+      setUserAnswers(finalAnswers);
+      setCompleted(true);
+      
+      // Refresh section data and chapters to unlock next content
+      if (res?.success === true) {
+        try {
+          await refetchSectionData?.();
+        } catch (err) {
+          console.error('Error refetching section data:', err);
+        }
+        try {
+          await refetchChapters?.();
+        } catch (err) {
+          console.error('Error refetching chapters:', err);
+        }
       }
-      try {
-        await refetchChapters?.();
-      } catch (err) {
-        console.error('Error refetching chapters:', err);
+    } catch (err: any) {
+      // Handle single-attempt block for main courses
+      const lastAttempt =
+        err?.data?.data?.lastAttempt ||
+        err?.data?.lastAttempt ||
+        err?.lastAttempt;
+      if (lastAttempt) {
+        setQuizResult({
+          success: false,
+          result: {
+            score: lastAttempt.score ?? 0,
+            percentage: lastAttempt.percentage ?? 0,
+            grade: lastAttempt.grade ?? 'F',
+            passed: lastAttempt.passed ?? false,
+            message: err?.message || 'Attempt already used for this quiz.',
+          },
+        });
+        setCompleted(true);
+      } else {
+        console.error('Quiz submit failed:', err);
       }
     }
   };
@@ -217,7 +246,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
         <p className="text-xl font-semibold">
           Score: {quizResult?.result?.score}
         </p>
-        <button
+        {/* <button
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
           onClick={() => {
             isCompleted(false);
@@ -229,7 +258,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
           }}
         >
           Continue
-        </button>
+        </button> */}
       </div>
     );
   }
@@ -258,7 +287,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
 
       <div className="space-y-3">
         {current?.options?.map((option: any, index: number) => {
-          const isSelected = selectedAnswers?.includes(option);
+          const isSelected = selectedAnswerIndex === index;
           return (
             <label
               key={index}
@@ -270,16 +299,16 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
                 <input
                   type="checkbox"
                   disabled={isSubmitted}
-                  // checked={isSelected}
-                  onChange={() => handleAnswerSelect(option)}
+                  checked={isSelected}
+                  onChange={() => handleAnswerSelect(index)}
                 />
               ) : (
                 <input
                   type="radio"
-                  name="answer"
+                  name={`question-${currentQuestion}`}
                   disabled={isSubmitted}
                   checked={isSelected}
-                  onChange={() => handleAnswerSelect(option)}
+                  onChange={() => handleAnswerSelect(index)}
                 />
               )}
               <span>{option}</span>

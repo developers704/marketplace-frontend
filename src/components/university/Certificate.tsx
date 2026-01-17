@@ -14,7 +14,7 @@ export default function Certificate() {
       <div className="absolute bottom-4 right-4 rotate-180">
         <CornerDecoration />
       </div>
-
+      
       {/* Top Border Lines */}
       <div className="absolute top-12 left-20 right-20 h-0.5 bg-amber-600"></div>
       <div className="absolute top-16 left-32 right-32 h-0.5 bg-amber-600"></div>

@@ -19,6 +19,7 @@ export default function CourseDetailPageContent() {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [sectionsIsLoading, setSectionsIsLoading] = useState<boolean>(false);
   const [courseName, setCourseName] = useState<string>('');
+  const [autoLoaded, setAutoLoaded] = useState(false);
 
   const {
     data: chapters,
@@ -33,6 +34,21 @@ console.log("chapterError", chapterError)
   } = useGetCourseQuery(courseId);
 
   // Set course name from course data or chapters data
+  useEffect(() => {
+  if (
+    !autoLoaded &&
+    chapters?.data?.chapters?.length > 0
+  ) {
+    const firstChapter = chapters.data.chapters[0];
+    const firstSection = firstChapter?.sections?.[0];
+
+    if (firstSection) {
+      fetchAndSetSection(firstSection);
+      setAutoLoaded(true);
+    }
+  }
+}, [chapters, autoLoaded]);
+
   useEffect(() => {
     if (courseData?.data?.name) {
       setCourseName(courseData.data.name);
@@ -56,14 +72,18 @@ console.log("chapterError", chapterError)
   const fetchAndSetSection = async (section: any) => {
     try {
       setSectionsIsLoading(true);
-      const sectionId = section?._id;
+      // Supports both normal sections (_id is string) and quiz items (_id can be string or populated object)
+      const sectionId = section?.isQuiz
+        ? (section?._id?._id ?? section?._id)
+        : section?._id;
+      
+      console.log("fetchAndSetSection sectionId", sectionId, section);
       setSelectedSectionId(sectionId || null);
       if (!courseId || !sectionId) {
         setSectionData(null);
         return null;
       }
       const res = await fetchSectionsData(courseId, sectionId);
-      console.log("fetchAndSetSection", res);
       if (res?.success === false) {
             toast.error(res?.message || 'Something went wrong');
             setSectionData(null);
@@ -165,6 +185,7 @@ console.log("chapterError", chapterError)
               refetchChapters={refetchSectionData}
               courseId={courseId}
               sectionsIsLoading={sectionsIsLoading}
+              onNavigate={fetchAndSetSection}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">

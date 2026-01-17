@@ -6,14 +6,16 @@ import QuizPage from '../quiz/quiz-popup';
 import { toast } from 'react-toastify';
 
 const QuizStart = ({ setIsQuizOpen, quizData, setActiveSidebar }: any) => {
+
+  console.log("quizData", quizData)
   const quizStartHandler = () => {
-    if (quizData.canAttempt) {
+    if (quizData) {
       setIsQuizOpen(true);
     } else {
       toast.error(
         `You are not eligible for the quiz, please complete the course first`,
       );
-      setActiveSidebar(1);
+      // setActiveSidebar(1);
     }
   };
   return (
@@ -67,12 +69,14 @@ const QuizSection = ({
   refetchSectionData,
 }: any) => {
   
+
+  console.log("quizData in quizSection", quizData)
   return (
     <div className="">
       <div className="pb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        {/* <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Quiz
-        </h1>
+        </h1> */}
       </div>
       <div className="">
         {isQuizStarted ? (
@@ -86,7 +90,7 @@ const QuizSection = ({
           </>
         ) : (
           <>
-            {quizData?.userAttempts?.passed ? (
+            {quizData?.userAttempts?.totalAttempts > 0 ? (
               <>
                 <div className="max-w-xl mx-auto p-6 text-center space-y-2">
                   <h2 className="text-2xl font-bold">Quiz Completed!</h2>

@@ -33,6 +33,9 @@ const CertificatePage = () => {
   const { courseId } = params as { courseId: string };
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
+  const programStats = progressData?.data?.summary?.programStats;
+  const anchorCourseId = programStats?.anchorCourseId;
+
   // const userName = userData?.username;
 
   const downloadPDF = async () => {
@@ -104,9 +107,30 @@ const CertificatePage = () => {
     }
   }, [progressData, courseId]);
 
+  // ✅ Program-level certificate: always use anchor course (final course)
+  useEffect(() => {
+    if (!anchorCourseId || !courseId) return;
+    if (anchorCourseId.toString() !== courseId.toString()) {
+      router.replace(`/valliani-university/achievements/certificate/${anchorCourseId}`);
+    }
+  }, [anchorCourseId, courseId, router]);
+
   return (
     <div className="p-10">
-      {isCertificateApproved === 'Not Requested' ? (
+      {programStats?.requiresShortCourses ? (
+        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center space-y-3">
+          <h2 className="text-2xl font-bold text-gray-900">Certificate not available yet</h2>
+          <p className="text-gray-600">
+            Your overall program score is below the passing criteria. Please complete the required short courses and retake quizzes.
+          </p>
+          <button
+            onClick={() => router.push('/valliani-university/achievements')}
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-brand-blue text-white hover:bg-blue-700 transition"
+          >
+            Back to Achievements
+          </button>
+        </div>
+      ) : isCertificateApproved === 'Not Requested' ? (
         <SignaturePad
           onSave={(dataUrl) => setSignature(dataUrl)}
           username={userData?.username}

@@ -5,7 +5,7 @@ import CourseHistoryTable from '@/components/university/course-history-table';
 import SearchBar from '@/components/university/UniversitySearchBar';
 import { useGetCourseProgressQuery } from '@/framework/basic-rest/university/dashboardApi';
 import React from 'react';
-import { Award, Info, BookOpen, GraduationCap } from 'lucide-react';
+import { Award, BookOpen, GraduationCap, TrendingUp, ShieldCheck } from 'lucide-react';
 
 const AchievementPageContent = () => {
   const { data, isLoading, error, refetch } = useGetCourseProgressQuery();
@@ -36,6 +36,40 @@ const AchievementPageContent = () => {
         <SearchBar
           onSearch={(query) => console.log('Searching for:', query)}
           fetchSuggestions={mockFetchSuggestions}
+        />
+      </div>
+
+      {/* Program Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <SummaryCard
+          title="Overall Program %"
+          value={`${data?.data?.summary?.programStats?.percentage ?? 0}%`}
+          sub="Average across all main courses"
+          icon={<TrendingUp className="w-5 h-5 text-brand-blue" />}
+        />
+        <SummaryCard
+          title="Main Courses Completed"
+          value={`${data?.data?.summary?.completedCourses ?? 0} / ${data?.data?.summary?.mainCoursesCount ?? 0}`}
+          sub="Must complete all main courses"
+          icon={<GraduationCap className="w-5 h-5 text-emerald-600" />}
+        />
+        <SummaryCard
+          title="Certificate Ready?"
+          value={
+            data?.data?.summary?.programStats?.eligibleForCertificate
+              ? 'Eligible'
+              : data?.data?.summary?.programStats?.requiresShortCourses
+              ? 'Needs Short Course'
+              : 'Not Eligible'
+          }
+          sub="Eligibility requires 70%+ overall"
+          icon={<ShieldCheck className="w-5 h-5 text-indigo-600" />}
+        />
+        <SummaryCard
+          title="Quizzes"
+          value={`${data?.data?.summary?.programStats?.totalQuizzes ?? 0} total`}
+          sub={`Anchor: ${data?.data?.summary?.programStats?.anchorCourseId ? 'Set' : 'Unset'}`}
+          icon={<BookOpen className="w-5 h-5 text-amber-600" />}
         />
       </div>
 
@@ -111,7 +145,10 @@ const AchievementPageContent = () => {
           {isLoading ? (
             <SkeletonLoaderTable />
           ) : (
-            <CourseHistoryTable data={data?.data?.mainCourses} />
+            <CourseHistoryTable
+              data={data?.data?.mainCourses}
+              summary={data?.data?.summary}
+            />
           )}
         </div>
       </div>
@@ -128,7 +165,10 @@ const AchievementPageContent = () => {
           {isLoading ? (
             <SkeletonLoaderTable />
           ) : (
-            <CourseHistoryTable data={data?.data?.shortCourses} />
+            <CourseHistoryTable
+              data={data?.data?.shortCourses}
+              summary={data?.data?.summary}
+            />
           )}
         </div>
       </div>
@@ -137,3 +177,24 @@ const AchievementPageContent = () => {
 };
 
 export default AchievementPageContent;
+
+const SummaryCard = ({
+  title,
+  value,
+  sub,
+  icon,
+}: {
+  title: string;
+  value: string;
+  sub?: string;
+  icon: React.ReactNode;
+}) => (
+  <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-start gap-3">
+    <div className="p-2 bg-gray-50 rounded-lg">{icon}</div>
+    <div className="flex-1">
+      <div className="text-sm text-gray-500 font-medium">{title}</div>
+      <div className="text-xl font-bold text-gray-900">{value}</div>
+      {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
+    </div>
+  </div>
+);

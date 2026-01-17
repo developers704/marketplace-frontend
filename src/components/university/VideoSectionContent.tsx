@@ -20,6 +20,7 @@ const VideoSectionContent = ({
   const [watchedVideos, setWatchedVideos] = useState<Record<number, boolean>>(
     {},
   );
+ 
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
   const handleVideoComplete = () => {
@@ -104,7 +105,7 @@ const dislikeHandler = async () => {
       <div className="flex-[2] p-4 pt-0 flex flex-col">
         <div>
           <VideoPlayer
-            videoUrl={`https://backend.vallianimarketplace.com/${selectedVideo?.videoUrl}`}
+            videoUrl={`${BASE_API}/${selectedVideo?.videoUrl}`}
             onComplete={handleVideoComplete}
             setWatchedDuration={setWatchedDuration}
             

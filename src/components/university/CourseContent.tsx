@@ -50,9 +50,9 @@ const IntroductionComp = ({ content }: any) => {
  return (
    <>
   
-    <div className="flex-1 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Introduction</h1>
+    <div className="flex-1 p-8  w-full ">
+      <div className="max-w-4xl">
+        {/* <h1 className="text-3xl font-bold text-gray-900 mb-8">Introduction</h1> */}
         <div className="space-y-2">{parsedContent}</div>
 
         {isOpen && images.length > 0 && (
@@ -110,7 +110,7 @@ const ObjectiveComp = ({ content }: any) => {
     
     <div className="flex-1 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Objective</h1>
+        {/* <h1 className="text-3xl font-bold text-gray-900 mb-8">Objective</h1> */}
         <div className="space-y-2">{parsedContent}</div>
 
         {isOpen && images.length > 0 && (
@@ -140,11 +140,13 @@ export default function CourseContent({
   refetchSectionData,
   refetchChapters,
   courseId: propCourseId,
-  sectionsIsLoading
+  sectionsIsLoading,
+  onNavigate, // optional: parent can load another section/quiz into the right panel
+
 }: any) {
   const params = useParams() as { chapterId: string; sectionId: string };
   // prefer courseId passed from parent (modal), fallback to URL param
-  
+
   const paramCourseId = params?.chapterId;
   const paramSectionId = params?.sectionId;
   const courseId = propCourseId ?? paramCourseId;
@@ -163,37 +165,79 @@ export default function CourseContent({
   // const [videoReaction, setVideoReaction] = useState<any>('');
   const [watchedDuration, setWatchedDuration] = useState<any>(0);
   const router = useRouter();
-  // const toggleSidebarItem = (itemId: number) => {
-  //   setExpandedSidebarItems((prev) =>
-  //     prev.includes(itemId)
-  //       ? prev.filter((id) => id !== itemId)
-  //       : [...prev, itemId],
-  //   );
-  //   setActiveSidebar(itemId);
-  // };
 
-  // Auto-select the first video when section data loads
+  const isQuizPage = sectionData?.isQuiz === true;
+    const hasIntroduction = !isQuizPage && !!sectionData?.introduction;
+    const hasObjective = !isQuizPage && !!sectionData?.objective;
+    const hasVideos = !isQuizPage && sectionData?.content?.length > 0;
+    const hasQuiz = isQuizPage && sectionData?.quiz;
+
+    const hasAnyContent = hasIntroduction || hasObjective || hasVideos || hasQuiz;
+
+  // Initialize/keep selected video when content changes (avoid resetting to first video on every refetch)
   useEffect(() => {
-    if (sectionData?.content && sectionData.content.length > 0) {
-      setSelectedVideo(sectionData.content[0]._id);
-    } else {
+    if (isQuizPage) {
       setSelectedVideo(null);
+      return;
     }
-  }, [sectionData?.content]);
 
+    const contentList = sectionData?.content || [];
+    if (!Array.isArray(contentList) || contentList.length === 0) {
+      setSelectedVideo(null);
+      return;
+    }
+
+    // Keep current selection if it still exists
+    const stillExists = selectedVideo
+      ? contentList.some((v: any) => v?._id === selectedVideo)
+      : false;
+
+    if (stillExists) return;
+
+    setSelectedVideo(contentList[0]?._id);
+  }, [sectionData?.content, isQuizPage, selectedVideo]);
+ 
+  // Prevent page leave during quiz
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isQuizStarted) {
         e.preventDefault();
-        e.returnValue = ''; 
+        e.returnValue = '';
       }
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isQuizStarted]);
 
+
+  // Reset watchedDuration when switching videos
+  useEffect(() => {
+    setWatchedDuration(0);
+  }, [selectedVideo]);
+
+  const navigateToSectionOrQuiz = async (payload: any) => {
+    if (typeof onNavigate === 'function') {
+      return await onNavigate(payload);
+    }
+
+    // Fallback (page-mode): navigate to section/quiz route
+    const nextId =
+      payload?.isQuiz
+        ? payload?._id?._id ?? payload?._id
+        : payload?._id;
+
+    if (!courseId || !nextId) return null;
+
+    // NOTE: In this repo, `courses/chapters/[chapterId]/[sectionId]` uses `chapterId` as courseId
+    router.push(`/valliani-university/courses/chapters/${courseId}/${nextId}`);
+    return null;
+  };
+
+
+
 const nextVideoHandler = async () => {
+  if (isQuizPage) return;
+  if (!selectedVideo) return;
   const videoData = {
     watchedDuration: watchedDuration,
     completed: true,
@@ -217,15 +261,56 @@ const nextVideoHandler = async () => {
       
       toast.success(res?.message || 'Progress updated successfully');
 
-      await refetchSectionData?.();
+      const next = res?.data?.nextContent;
+
+      // Always refetch chapters (unlock next chapter/section + update sidebar)
       await refetchChapters?.();
 
-      if (res?.data?.nextContent?.navigationType === 'quiz') {
-        setActiveSidebar('quiz');
-      } else if (res?.data?.nextContent?.navigationType === 'content') {
-        setSelectedVideo(res?.data?.nextContent?.content?._id);
-        setActiveSidebar(3);
+      if (next?.navigationType === 'quiz') {
+        // Auto-open quiz after finishing all videos/content
+        await navigateToSectionOrQuiz({
+          _id: next?.quizId,
+          isQuiz: true,
+          chapterId: next?.chapterId
+        });
+        return;
       }
+
+      if (next?.navigationType === 'content') {
+        const nextVideoId = next?.contentId || next?.content?._id;
+        const nextSectionId = next?.sectionId;
+
+        // Same section → just switch video
+        if (
+          nextSectionId &&
+          derivedSectionId &&
+          nextSectionId.toString() === derivedSectionId.toString()
+        ) {
+          if (nextVideoId) setSelectedVideo(nextVideoId);
+          await refetchSectionData?.(); // update per-video status in list
+          return;
+        }
+
+        // Different section → ask parent to load it
+        if (nextSectionId) {
+          await navigateToSectionOrQuiz({
+            _id: nextSectionId,
+            isQuiz: false,
+            chapterId: next?.chapterId
+          });
+          if (nextVideoId) setSelectedVideo(nextVideoId);
+          return;
+        }
+      }
+
+      if (next?.navigationType === 'complete') {
+        toast.success('Course completed!');
+        await refetchSectionData?.();
+        return;
+      }
+
+      // Default: refresh section data
+      await refetchSectionData?.();
     } else {
 
       toast.error(res?.message || 'fix');
@@ -274,105 +359,129 @@ const nextVideoHandler = async () => {
       );
     }
   };
-
-    const hasIntroduction = !!sectionData?.introduction;
-    const hasObjective = !!sectionData?.objective;
-    const hasVideos = sectionData?.content && sectionData.content.length > 0;
-    const hasQuiz = !!sectionData?.quiz;
-
-    const hasAnyContent = hasIntroduction || hasObjective || hasVideos || hasQuiz;
-
+  
+    
   return (
     <div className="flex gap-5 shadow-xl rounded-lg m-4">
-
       {sectionsIsLoading ? (
-        <div className='w-full flex justify-center items-center h-[600px]'>
+        <div className="w-full flex justify-center items-center h-[600px]">
           <LoadingComp />
         </div>
-
-        ): !hasAnyContent ? (
+      ) : !hasAnyContent ? (
         <div className="w-full flex flex-col justify-center items-center h-[600px] text-center">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-          No content available
-        </h2>
-        <p className="text-gray-500 max-w-md">
-          This chapter does not have any introduction, objective, videos, or quiz yet.
-          Please check back later.
-        </p>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+            No content available
+          </h2>
+          <p className="text-gray-500 max-w-md">
+            This section does not have any content yet. Please check back later.
+          </p>
         </div>
-        ) : (
-          <div className="overflow-y-auto p-6">
-          { sectionData?.introduction && (
-        <IntroductionComp content={sectionData?.introduction} />
-          )}
-        
-         { sectionData?.objective && (
-         <ObjectiveComp content={sectionData?.objective} />
-      )}
+      ) : (
+        <div className="overflow-y-auto p-6  w-full">
+          {/* UPDATED: Only show intro/objective/videos if NOT quiz page */}
+          {!isQuizPage && (
+            <>
+              {hasIntroduction && <IntroductionComp content={sectionData?.introduction} />}
+              {/* {hasObjective && <ObjectiveComp content={sectionData?.objective} />} */}
 
-        <div className="">
-          {sectionData?.content && sectionData.content.length > 0 && (
-            <div className="space-y-4 mt-6 pl-6 pr-6">
-              <h2 className="text-2xl font-semibold mb-4">Videos</h2>
-              {sectionData.content.map((video: any, idx: number) => (
-                <div
-                  key={video._id || idx}
-                  className="p-4 flex items-center justify-between"
-                >
-                  <div className='flex items-center justify-between gap-2'>
-                    <div className="text-sm text-gray-500">{idx + 1}.</div>
-                    <div className="text-base font-medium text-gray-800">{video.title}</div>
-                    <div className="text-sm text-gray-500">{video.duration ? `${video.duration} sec` : ''}</div>
+              {hasVideos && (
+                <div className="mt-8">
+                  {/* <h2 className="text-2xl font-semibold mb-6">Videos</h2> */}
+                  <div className="space-y-4">
+                    {sectionData.content.map((video: any, idx: number) => (
+                      <button
+                        type="button"
+                        key={video._id}
+                        onClick={() => {
+                          const prev = sectionData.content?.[idx - 1];
+                          const canOpen = idx === 0 || prev?.status === 'Completed';
+                          if (!canOpen) {
+                            toast.error('Please complete the previous video first');
+                            return;
+                          }
+                          setSelectedVideo(video._id);
+                        }}
+                        className={`w-full text-left p-4 rounded-lg flex items-center justify-between transition ${
+                          selectedVideo === video._id
+                            ? 'bg-blue-50 border border-blue-200'
+                            : 'bg-gray-50 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="text-lg font-medium text-gray-600 w-8">
+                            {idx + 1}.
+                          </div>
+                          <div className="font-medium text-gray-800">{video.title}</div>
+                          {video.duration && (
+                            <div className="text-sm text-gray-500">
+                              {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')} min
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {video?.status === 'Completed' ? (
+                            <FaCheckCircle className="text-green-600" />
+                          ) : idx > 0 && sectionData.content?.[idx - 1]?.status !== 'Completed' ? (
+                            <FaLock className="text-gray-400" />
+                          ) : null}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    {/* {selectedVideo === video._id ? (
-                      <span className="px-3 py-1 bg-gray-200 rounded text-sm">Playing</span>
-                    ) : null} */}
-                  </div>
+
+                  {/* Video Player */}
+                  {selectedVideo && (
+                    <div className="mt-8">
+                      <VideoSectionContent
+                        videoId={selectedVideo}
+                        content={sectionData.content}
+                        setWatchedDuration={setWatchedDuration}
+                        videoReactionHandler={videoReactionHandler}
+                        refetchSectionData={refetchSectionData}
+                      />
+                      <div className="max-w-4xl mx-auto flex justify-end mt-6">
+                        <button
+                          type="button"
+                          onClick={nextVideoHandler}
+                          className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                        >
+                          Next
+                          <ArrowRight className="w-5 h-5 ml-2" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) 
-          }
+              )}
+            </>
+          )}
 
+          {/* UPDATED: Quiz Section - Always show if available, especially on quiz-only page */}
+          {hasQuiz && (
+            <div className={`mt-8 ${isQuizPage ? 'mt-0' : 'border-t pt-10'}`}>
+              {/* Optional: Quiz Title on Quiz-only page */}
+              {isQuizPage && (
+                <div className="text-center mb-10">
+                  <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                    Chapter Quiz
+                  </h1>
+                  <p className="text-lg text-gray-600">
+                    Test your knowledge to complete this chapter
+                  </p>
+                </div>
+              )}
 
-          {selectedVideo && (
-              <div className="">
-              <VideoSectionContent
-                videoId={selectedVideo}
-                content={sectionData?.content}
-                setWatchedDuration={setWatchedDuration}
-                videoReactionHandler={videoReactionHandler}
+              <QuizSection
+                isQuizStarted={isQuizStarted}
+                setIsQuizStarted={setIsQuizStarted}
+                quizData={sectionData.quiz}
+                refetchChapters={refetchChapters}
                 refetchSectionData={refetchSectionData}
               />
-              <div className="max-w-4xl mx-auto flex justify-end">
-                <button
-                  onClick={() => nextVideoHandler()}
-                  className="flex items-center px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Next
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </button>
-              </div>
             </div>
           )}
         </div>
-
-        {sectionData?.quiz && (
-        <div className="mt-2 p-6">
-            <QuizSection
-              isQuizStarted={isQuizStarted}
-              setIsQuizStarted={setIsQuizStarted}
-              quizData={sectionData?.quiz}
-              setActiveSidebar={setActiveSidebar}
-              refetchChapters={refetchChapters}
-              refetchSectionData={refetchSectionData}
-            />
-        </div>
-          )}
-      </div>
-        )}
-      
+      )}
     </div>
   );
 }

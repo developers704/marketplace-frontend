@@ -45,7 +45,9 @@ export default function CourseLMSModal({
   const fetchAndSetSection = async (section: any) => {
     try {
         setSectionsIsLoading(true);
-      const sectionId = section?._id;
+      const sectionId = section?.isQuiz
+        ? (section?._id?._id ?? section?._id)
+        : section?._id;
       setSelectedSectionId(sectionId || null);
       if (!courseId || !sectionId) {
         setSectionData(null);
@@ -147,6 +149,7 @@ export default function CourseLMSModal({
                 refetchChapters={refetchSectionData}
                 courseId={courseId}
                 sectionsIsLoading={sectionsIsLoading}
+                onNavigate={fetchAndSetSection}
               />
             )
             : (

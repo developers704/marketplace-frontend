@@ -12,6 +12,7 @@ import SearchBar from '@/components/university/UniversitySearchBar';
 import {
   useGetCustomerCoursesQuery,
   useGetGraphDataQuery,
+  useGetShortCoursesQuery,
 } from '@/framework/basic-rest/university/dashboardApi';
 import { useEffect, useRef, useState } from 'react';
 import { CheckCircle, GraduationCap, Percent } from 'lucide-react';
@@ -31,6 +32,12 @@ const Dashboard = () => {
     refetch: refetchGraphData,
   } = useGetGraphDataQuery(period);
 
+  const {
+    data: shortCoursesData,
+    isLoading: shortCoursesLoading,
+    error: shortCoursesError,
+  }=useGetShortCoursesQuery();
+
   // console.log(userCourses, 'userCourses');
   // console.log(graphData, 'graphData');
   useEffect(() => {
@@ -38,6 +45,12 @@ const Dashboard = () => {
       refetchGraphData(); // jab bhi period change ho, force refetch
     }
   }, [period, refetchGraphData]);
+
+  const courses = userCourses?.data || [];
+  const mainCourses = courses.filter((c: any) => c?.courseType !== 'Short Course');
+  const shortCourses = shortCoursesData?.data?.shortCourses || [];
+ 
+
 
   return (
     <div className="">
@@ -86,23 +99,38 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm ">
-            <div className="mb-3 text-[22px] font-bold">My Courses</div>
+            <div className="mb-3 text-[22px] font-bold">Main Courses</div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {courseIsLoading ? (
                 [1, 2, 3].map((_, index) => (
-                  <>
-                    <SingleCardSkeletons key={index} />
-                  </>
+                  <SingleCardSkeletons key={index} />
                 ))
-              ) : userCourses?.data.length > 0 ? (
-                userCourses?.data
-                  ?.slice(0, 3)
-                  ?.map((course: any) => (
-                    <CourseCard key={course._id} data={course} />
-                  ))
+              ) : mainCourses.length > 0 ? (
+                mainCourses.map((course: any) => (
+                  <CourseCard key={course._id} data={course} />
+                ))
               ) : (
                 <div className="text-center text-brand-muted">
-                  No Courses Available
+                  No Main Courses Available
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
+            <div className="mb-3 text-[22px] font-bold">Short Courses</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courseIsLoading ? (
+                [1, 2, 3].map((_, index) => (
+                  <SingleCardSkeletons key={index} />
+                ))
+              ) : shortCourses.length > 0 ? (
+                shortCourses.map((course: any) => (
+                  <CourseCard key={course._id} data={course} />
+                ))
+              ) : (
+                <div className="text-center text-brand-muted">
+                  No Short Courses Available
                 </div>
               )}
             </div>

@@ -216,11 +216,8 @@ export const submitQuizApi = async (quizId: string, payload: any) => {
     );
     return response.data;
   } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.message ||
-      'Something went wrong. Please try again later.';
-    // console.log(errorMessage, 'errorMessage');
-    // throw new Error(errorMessage);
+    // Surface backend payload so caller can handle attempt limits/info
+    throw error.response?.data || error;
   }
 };
 
@@ -284,23 +281,16 @@ export const fetchAboutUs = async () => {
   }
 };
 
-export const requestCertificate = async (
-  courseId: string,
-  userSignature: any,
-) => {
+export const requestCertificate = async (courseId: string) => {
   const token = getToken();
-  const formData = new FormData();
-  formData.append('userSignature', userSignature);
-  // formData.append('username', username);
-  formData.append('courseId', courseId);
-
   try {
     const response = await axios.post(
       `${BASE_API}/api/certificate/request`,
-      formData,
+      { courseId },
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       },
     );

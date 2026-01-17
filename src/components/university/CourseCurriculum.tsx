@@ -1,53 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle, ChevronDown, Lock } from 'lucide-react';
+import { CheckCircle, ChevronDown, Lock, Target } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { FaLock } from 'react-icons/fa';
 import LoadingComp from '../common/loading';
-
-// interface CourseChapter {
-//   id: number;
-//   title: string;
-//   subtitle: string;
-//   deadline: string;
-//   isCompleted: boolean;
-//   isLocked: boolean;
-//   topics: string[];
-// }
-
-// const courseChapters: CourseChapter[] = [
-//   {
-//     id: 1,
-//     title: 'Chapter 1:',
-//     subtitle: 'Introduction, Sales, and Customer Service',
-//     deadline: '12.08.2024',
-//     isCompleted: true,
-//     isLocked: false,
-//     topics: ['Welcome Phase', 'Sale Phase 1', 'Customer Services'],
-//   },
-//   {
-//     id: 2,
-//     title: 'Chapter 2:',
-//     subtitle: 'Time Management, Repairs, and Sales Leadership',
-//     deadline: '12.08.2024',
-//     isCompleted: false,
-//     isLocked: true,
-//     topics: ['Time Management', 'Repair Basics', 'Leadership Skills'],
-//   },
-//   {
-//     id: 3,
-//     title: 'Chapter 3:',
-//     subtitle: 'Training, and Sales focus',
-//     deadline: '12.08.2024',
-//     isCompleted: false,
-//     isLocked: true,
-//     topics: [
-//       'Training Fundamentals',
-//       'Sales Techniques',
-//       'Performance Metrics',
-//     ],
-//   },
-// ];
 
 interface CourseCurriculumProps {
   onTopicClick?: (topic: string) => void;
@@ -69,6 +27,7 @@ export default function CourseCurriculum({
   // console.log(data, 'data');
 
   const toggleChapter = (chapterId: number) => {
+    // console.log('toggling chapter in section:', chapterId);
     setExpandedChapters((prev) =>
       prev.includes(chapterId)
         ? prev.filter((id) => id !== chapterId)
@@ -104,8 +63,16 @@ export default function CourseCurriculum({
           className="border-b border-gray-100 last:border-b-0"
         >
           <div
-            className="flex items-center justify-between p-6 cursor-pointer"
-            onClick={() => toggleChapter(chapter._id)}
+            className={`flex items-center justify-between p-6 ${
+              chapter?.canAccess ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+            }`}
+            onClick={() => {
+              if (!chapter?.canAccess) {
+                toast.error('Please complete previous chapters first');
+                return;
+              }
+              toggleChapter(chapter._id);
+            }}
           >
             <div className="flex items-start gap-4">
               <div className="mt-2">
@@ -141,28 +108,77 @@ export default function CourseCurriculum({
             />
           </div>
 
-          {expandedChapters.includes(chapter._id) && (
+          {expandedChapters.includes(chapter._id) && chapter?.canAccess && (
             <div className="px-16 pb-6">
               <ul className="space-y-2">
-                {chapter.sections?.map((topic: any, index: any) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="text-gray-600 hover:text-green-300 text-2xl font-bold cursor-pointer transition-colors duration-300">•</span>
+                {chapter.sections?.map((section: any) => (
+                  <li key={section._id} className="flex items-center gap-3 py-1">
+                    {section.canAccess ? (
+                      <span className="text-gray-600 text-2xl font-bold">•</span>
+                    ) : (
+                      <FaLock className="text-gray-400 text-sm" />
+                    )}
                     <button
-                      onClick={(e) => {
-                        const enrichedTopic = { ...topic, chapterId: chapter?._id };
-                        handleRoute(topic?._id, enrichedTopic);
+                      onClick={() => {
+                        if (!section.canAccess) {
+                          toast.error('Please complete previous sections first');
+                          return;
+                        }
+                        const enriched = {
+                          ...section,
+                          chapterId: chapter._id,
+                          isQuiz: false
+                        };
+                        handleRoute(section._id, enriched);
                       }}
-                      className="relative text-gray-600 text-md text-left cursor-pointer
-                    hover:text-black
-                      transition-colors duration-300
-                      before:absolute before:-bottom-1 before:left-0 before:w-0 before:h-0.5
-                    before:bg-green-500 before:transition-all before:duration-300
-                      hover:before:w-full "
+                      disabled={!section.canAccess}
+                      className={`text-left transition ${
+                        section.canAccess
+                          ? 'text-gray-700 hover:text-black cursor-pointer'
+                          : 'text-gray-400 cursor-not-allowed'
+                      }`}
                     >
-                      {topic?.title}
+                      {section.title}
+                      {section.status === 'Completed' && (
+                        <span className="ml-2 text-green-600">✓</span>
+                      )}
                     </button>
                   </li>
                 ))}
+
+                {/* Quiz Item - Chapter Level */}
+                {chapter.quiz && (
+                  <li className="flex items-center gap-3 py-2 mt-2 border-t border-gray-200">
+                    <span className="text-gray-600 text-2xl font-bold">•</span>
+                    
+                    {chapter.progress === 100 || chapter.status === 'Completed' ? (
+                      // Unlocked Quiz
+                      <button
+                        onClick={() => {
+                          const quizSection = {
+                            _id: chapter.quiz, // quiz ID
+                            title: 'Quiz',
+                            quiz: true, // flag
+                            chapterId: chapter._id,
+                            isQuiz: true // important
+                          };
+                          // handleRoute(chapter.quiz, quizSection);
+                          onSectionSelect?.(quizSection);
+                        }}
+                        className="text-left font-bold text-green-600 hover:text-green-800 flex items-center gap-2"
+                      >
+                        <Target className="w-5 h-5" />
+                        Quiz
+                      </button>
+                    ) : (
+                      // Locked Quiz
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Lock className="w-5 h-5" />
+                        <span>Quiz (Complete chapter to unlock)</span>
+                      </div>
+                    )}
+                  </li>
+                )}
               </ul>
             </div>
           )}
