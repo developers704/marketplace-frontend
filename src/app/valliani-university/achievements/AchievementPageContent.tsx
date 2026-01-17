@@ -10,6 +10,23 @@ import { Award, BookOpen, GraduationCap, TrendingUp, ShieldCheck } from 'lucide-
 const AchievementPageContent = () => {
   const { data, isLoading, error, refetch } = useGetCourseProgressQuery();
   console.log(data, 'data progress');
+  const shortCourses = data?.data?.shortCourses || [];
+  const totalShortCourses = shortCourses.length;
+  const completedShortCourses = shortCourses.filter(
+    (sc: any) =>
+      sc?.progress === 100 ||
+      sc?.status === 'Completed' ||
+      sc?.status === 'Done'
+  ).length;
+  const averageShortGrade =
+    totalShortCourses > 0
+      ? Math.round(
+          shortCourses.reduce(
+            (sum: number, sc: any) => sum + (sc?.gradePercentage || 0),
+            0,
+          ) / totalShortCourses,
+        )
+      : 0;
   const mockFetchSuggestions = async (query: string): Promise<string[]> => {
     const fakeData = [
       'Math Basics',
@@ -70,6 +87,40 @@ const AchievementPageContent = () => {
           value={`${data?.data?.summary?.programStats?.totalQuizzes ?? 0} total`}
           sub={`Anchor: ${data?.data?.summary?.programStats?.anchorCourseId ? 'Set' : 'Unset'}`}
           icon={<BookOpen className="w-5 h-5 text-amber-600" />}
+        />
+      </div>
+
+      {/* Short Course Summary */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <SummaryCard
+          title="Short Courses Completed"
+          value={`${completedShortCourses} / ${totalShortCourses}`}
+          sub="Remediation progress"
+          icon={<BookOpen className="w-5 h-5 text-purple-600" />}
+        />
+        <SummaryCard
+          title="Short Course Avg %"
+          value={`${averageShortGrade}%`}
+          sub="Average grade across short courses"
+          icon={<TrendingUp className="w-5 h-5 text-emerald-600" />}
+        />
+        <SummaryCard
+          title="Short Courses Open"
+          value={`${totalShortCourses}`}
+          sub="Total assigned short courses"
+          icon={<ShieldCheck className="w-5 h-5 text-amber-600" />}
+        />
+        <SummaryCard
+          title="Eligible After Short?"
+          value={
+            data?.data?.summary?.programStats?.requiresShortCourses
+              ? 'In Progress'
+              : data?.data?.summary?.programStats?.eligibleForCertificate
+              ? 'Eligible'
+              : 'N/A'
+          }
+          sub="Certificate unlock status"
+          icon={<GraduationCap className="w-5 h-5 text-indigo-600" />}
         />
       </div>
 
