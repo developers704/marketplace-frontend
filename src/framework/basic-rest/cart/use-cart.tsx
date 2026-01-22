@@ -160,30 +160,47 @@ export const deleteCartItem = async (
 };
 
 export async function getAllCartItems() {
-  //   console.log(body, '===>>> body');
-  const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
-  const token = getToken();
-  const response = await fetch(`${BASE_API}/api/cart/`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+    if (!BASE_API) {
+      return Promise.reject({ message: 'API base URL is not configured' });
+    }
 
-  const data = await response.json();
-  // console.log(data, '===>>> All cart response Data');
+    const token = getToken();
+    if (!token) {
+       return Promise.reject({ message: 'Authentication token is missing' });
+    }
 
-  if (!response.ok) {
-    const errorMessage =
-      data.message || 'Something went wrong. Please try again later.';
-    // throw new Error(errorMessage);
-    return { message: errorMessage };
+    const response = await fetch(`${BASE_API}/api/cart/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to fetch cart items' }));
+      return Promise.reject({
+        message: errorData.message || 'Cart not found',
+        status: response.status,
+      });
+    }
+    const data = await response.json();
+    return data;
+  } catch (err: any) {
+    if (err instanceof TypeError && err.message === 'Failed to fetch') {
+      return Promise.reject({
+        message:
+          'Network error: Unable to connect to the server. Please check your connection.',
+      });
+    }
+
+    return Promise.reject({
+      message: err?.message || 'Unknown error while fetching cart',
+    });
   }
-  // console.log('response from login api is ', data);
-  return data;
 }
-
 export async function updateCartItemQuantity(
   cartItemId: any,
   quantity: any,

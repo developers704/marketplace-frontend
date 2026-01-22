@@ -1,5 +1,5 @@
 import Container from '@components/ui/container';
-import ProductSingleDetails from '@components/product/product';
+import ProductDetailsRouter from '@components/product/product-details-router';
 import DownloadApps from '@components/common/download-apps';
 import PopcornJerkyProductFeed from '@components/product/feeds/popcorn-jerky-product-feed';
 import RelatedProductFeed from '@components/product/feeds/related-product-feed';
@@ -19,7 +19,7 @@ export default async function Page({
       <div className="pt-6 lg:pt-7">
         <Container>
           <Breadcrumb lang={lang} />
-          <ProductSingleDetails lang={lang} />
+          <ProductDetailsRouter lang={lang} />
         </Container>
       </div>
 

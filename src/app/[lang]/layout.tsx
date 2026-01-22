@@ -70,7 +70,7 @@ export default function RootLayout({
                 <ProfileProvider>
                   <ManagedUIContext>
                     <div className="w-full overflow-x-hidden">
-                      <PreventScreenCapture />
+                      {/* <PreventScreenCapture /> */}
                       <ElegantLayout lang={lang}>{children}</ElegantLayout>
                       {/* <ManagedModal lang={lang} />
                   <ManagedDrawer lang={lang} /> */}

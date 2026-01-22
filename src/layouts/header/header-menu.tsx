@@ -65,6 +65,17 @@ const HeaderMenu: React.FC<MenuProps> = ({
       label: 'Supplies',
     },
     {
+      id: 10,
+      path: `/${lang}/marketplace`,
+      label: 'Marketplace',
+    },
+    {
+      id: 11,
+      path: `/${lang}/marketplace/store-inventory`,
+      label: 'My inventory',
+    },
+    
+    {
       id: 6,
       path: `/${lang}/tool-findings`,
       label: 'Tool Finding',
@@ -107,6 +118,9 @@ const HeaderMenu: React.FC<MenuProps> = ({
   };
 
   const filteredMenu = menuItems.filter((item) => {
+    // Marketplace is an internal visibility tab — show for authorized users even if permission key is not configured yet.
+    if (item.label === 'Marketplace') return true;
+
     const permissionKey = normalizeKey(item.label);
     // console.log(permissionKey, '====>>> permissionKey');
 

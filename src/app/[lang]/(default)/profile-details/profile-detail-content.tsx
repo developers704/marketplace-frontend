@@ -6,6 +6,7 @@ import MyOrder from './my-order';
 import MyWallet from './my-wallet';
 import MyCourses from './my-courses';
 import Approvals from './approvals';
+import B2BApprovalsV2 from './b2b-approvals-v2';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Breadcrumb from '@/components/ui/breadcrumb';
@@ -48,8 +49,10 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
     },
   ];
 
-  // Add Approvals tab only for DM and CM
-  const options = isApprover ? [...baseOptions, { id: 6, title: 'Approvals' }] : baseOptions;
+  // Add Approvals tabs only for DM and CM
+  const options = isApprover
+    ? [...baseOptions, { id: 6, title: 'Approvals' }, { id: 7, title: 'B2B Approvals (v2)' }]
+    : baseOptions;
 
   const handleOptionClick = (title: string) => {
     router.push(`/${lang}/profile-details?option=${title}`);
@@ -120,6 +123,8 @@ useEffect(() => {
               <MyCourses />
             ) : selectedOption === 'Approvals' ? (
               <Approvals lang={lang} />
+            ) : selectedOption === 'B2B Approvals (v2)' ? (
+              <B2BApprovalsV2 lang={lang} />
             ) : (
               ''
             )}

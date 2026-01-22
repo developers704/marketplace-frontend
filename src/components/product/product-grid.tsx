@@ -1,13 +1,13 @@
 import type { FC } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Alert from '@components/ui/alert';
 import Button from '@components/ui/button';
-import ProductCardAlpine from '@components/product/product-cards/product-card-alpine';
+import VendorProductCardAlpine from '@components/product/product-cards/vendor-product-card-alpine';
 import ProductCardLoader from '@components/ui/loaders/product-card-loader';
 import cn from 'classnames';
 import { useProductsQuery } from '@framework/product/get-all-products';
 import { LIMITS } from '@framework/utils/limits';
-import { Product } from '@framework/types';
+import type { VendorProductListItem } from '@framework/types/catalogV2';
 import { useTranslation } from 'src/app/i18n/client';
 import useQueryParam from '@utils/use-query-params';
 
@@ -59,12 +59,8 @@ export const ProductGrid: FC<ProductGridProps> = ({ className = '', lang }) => {
           ))
         ) : (
           data?.pages?.map((page: any) => {
-            return page?.data?.map((product: Product) => (
-              <ProductCardAlpine
-                key={`product--key-${product.id}`}
-                product={product}
-                lang={lang}
-              />
+            return page?.data?.map((product: VendorProductListItem) => (
+              <VendorProductCardAlpine key={`vendor-product--key-${product?._id}`} product={product} lang={lang} />
             ));
           })
         )}

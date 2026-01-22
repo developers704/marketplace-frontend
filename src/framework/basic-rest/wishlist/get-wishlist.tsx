@@ -2,30 +2,41 @@ import { useQuery } from '@tanstack/react-query';
 import { getToken } from '../utils/get-token';
 
 export async function getWishListItem() {
-  //   console.log(options, '===>>> id in fetchAllSubCategories');
-  const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
-  const token = getToken();
-  const response = await fetch(`${BASE_API}/api/wishlist/`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+    if (!BASE_API) {
+      throw new Error('API base URL is not configured');
+    }
 
-  const data = await response.json();
-  // console.log(data, '===>>> Data');
+    const token = getToken();
+    if (!token) {
+      throw new Error('Authentication token is missing');
+    }
 
-  if (!response.ok) {
-    const errorMessage =
-      data.message || 'Something went wrong. Please try again later.';
-    // throw new Error(errorMessage);
-    // console.log(errorMessage, '===>>> errorMessage');
-    return {message: errorMessage};
+    const response = await fetch(`${BASE_API}/api/wishlist/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to fetch wishlist' }));
+      return Promise.reject({ message: errorData.message || 'Failed to fetch wishlist', status: response.status });
+
+      
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    // Re-throw with more context
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('Network error: Unable to connect to the server. Please check your connection and ensure the backend is running.');
+    }
+    throw error;
   }
-  // console.log('response from login api is ', data);
-    
-  return data;
 }
 
 export const useGetAllWishlist = () => {

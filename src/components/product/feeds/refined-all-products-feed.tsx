@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import ProductCardAlpine from '@components/product/product-cards/product-card-alpine';
+import VendorProductCardAlpine from '@components/product/product-cards/vendor-product-card-alpine';
 import type { FC } from 'react';
 import { useProductsQuery } from '@framework/product/get-all-products';
 import ProductCardLoader from '@components/ui/loaders/product-card-loader';
@@ -10,7 +10,7 @@ import cn from 'classnames';
 import { useTranslation } from 'src/app/i18n/client';
 import { usePathname, useRouter } from 'next/navigation';
 import { LIMITS } from '@framework/utils/limits';
-import { Product } from '@framework/types';
+import type { VendorProductListItem } from '@framework/types/catalogV2';
 import useQueryParam from '@utils/use-query-params';
 interface ProductFeedProps {
   lang: string;
@@ -82,9 +82,9 @@ const RefinedAllProductFeed: FC<ProductFeedProps> = ({
                   <Fragment key={index}>
                     {page?.data
                       ?.slice(0, LIMITS.REFINED_PRODUCTS_LIMITS)
-                      ?.map((product: Product) => (
-                        <ProductCardAlpine
-                          key={`product--key${product.id}`}
+                      ?.map((product: VendorProductListItem) => (
+                        <VendorProductCardAlpine
+                          key={`vendor-product--key${product?._id}`}
                           product={product}
                           lang={lang}
                         />

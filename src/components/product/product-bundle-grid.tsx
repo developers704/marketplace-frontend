@@ -1,12 +1,12 @@
 'use client';
 
-import ProductCardAlpine from '@components/product/product-cards/product-card-alpine';
+import VendorProductCardAlpine from '@components/product/product-cards/vendor-product-card-alpine';
 import { useProductsQuery } from '@framework/product/get-all-products';
 import ProductCardLoader from '@components/ui/loaders/product-card-loader';
 import Alert from '@components/ui/alert';
 import cn from 'classnames';
 import slice from 'lodash/slice';
-import { Product } from '@framework/types';
+import type { VendorProductListItem } from '@framework/types/catalogV2';
 
 interface ProductFeedProps {
   element?: any;
@@ -49,9 +49,9 @@ export default function ProductBundleGrid({
                   >
                     {page?.data
                       ?.slice(0, 21)
-                      ?.map((product: Product, idx: number) => (
-                        <ProductCardAlpine
-                          key={`product-card-key-${product.id}-${idx * 2.5}`}
+                      ?.map((product: VendorProductListItem, idx: number) => (
+                        <VendorProductCardAlpine
+                          key={`vendor-product-card-key-${product?._id}-${idx * 2.5}`}
                           product={product}
                           lang={lang}
                         />
@@ -60,8 +60,8 @@ export default function ProductBundleGrid({
                     {page?.data?.length! > 21 &&
                       slice(page?.data, 21, page?.data?.length).map(
                         (product: any, idx: number) => (
-                          <ProductCardAlpine
-                            key={`product-key-alpine${product.id}-${idx}`}
+                          <VendorProductCardAlpine
+                            key={`vendor-product-key-alpine${product?._id}-${idx}`}
                             product={product}
                             lang={lang}
                           />
