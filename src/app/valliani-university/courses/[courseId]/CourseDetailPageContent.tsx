@@ -20,18 +20,20 @@ export default function CourseDetailPageContent() {
   const [sectionsIsLoading, setSectionsIsLoading] = useState<boolean>(false);
   const [courseName, setCourseName] = useState<string>('');
   const [autoLoaded, setAutoLoaded] = useState(false);
-
+ 
   const {
     data: chapters,
     isLoading: chapterIsLoading,
     refetch: refetchSectionData,
     error: chapterError,
   } = useGetCourseChaptersDataQuery(courseId);
-console.log("chapterError", chapterError)
+
   const {
     data: courseData,
     isLoading: courseDataLoading,
   } = useGetCourseQuery(courseId);
+
+  
 
   // Set course name from course data or chapters data
   useEffect(() => {
@@ -127,7 +129,11 @@ console.log("chapterError", chapterError)
   };
 
   const handleBackClick = () => {
-    router.push('/valliani-university/courses');
+    if(courseData?.courseType == "Short Course"){
+      router.push('/valliani-university/tasks');
+    }else{
+      router.push('/valliani-university/courses');
+    }
   };
 
   return (

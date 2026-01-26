@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight,  Play, Clock, CheckCircle2, Lock } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import VideoSectionContent from './VideoSectionContent';
 import QuizSection from './QuizSection';
@@ -9,126 +9,40 @@ import {
   toggleVideoReactions,
   videoProgress,
 } from '@/framework/basic-rest/university/dashboardApi';
-import { FaCheckCircle, FaLock } from 'react-icons/fa';
+// import { FaCheckCircle, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import DOMPurify from 'dompurify';
-import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
-import Lightbox from 'react-image-lightbox';
+// import DOMPurify from 'dompurify';
+// import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
+// import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
+import TipTapRenderer from './TipTapRenderer';
 
 import LoadingComp from '../common/loading';
 
 
 
 const IntroductionComp = ({ content }: any) => {
-  const safeHTML = DOMPurify.sanitize(content);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [images, setImages] = useState<string[]>([]);
-
-    const options: HTMLReactParserOptions = {
-    replace: (domNode: any) => {
-      if (domNode.name === 'img') {
-        const src = domNode.attribs.src;
-        if (!images.includes(src)) setImages((prev) => [...prev, src]);
-
-        return (
-          <img
-            key={src}
-            src={src}
-            alt={domNode.attribs.alt || 'image'}
-            className="cursor-pointer max-w-full h-auto"
-            onClick={() => (setIsOpen(true), setPhotoIndex(images.indexOf(src)))}
-          />
-        );
-      }
-    },
-  };
-
-  const parsedContent = parse(safeHTML, options);
+  if (!content) return null;
 
  return (
    <>
-  
-    <div className="flex-1 p-8  w-full ">
-      <div className="max-w-4xl">
-        {/* <h1 className="text-3xl font-bold text-gray-900 mb-8">Introduction</h1> */}
-        <div className="space-y-2">{parsedContent}</div>
-
-        {isOpen && images.length > 0 && (
-          <Lightbox
-            mainSrc={images[photoIndex]}
-            nextSrc={images[(photoIndex + 1) % images.length]}
-            prevSrc={images[(photoIndex + images.length - 1) % images.length]}
-            onCloseRequest={() => setIsOpen(false)}
-            onMovePrevRequest={() =>
-              setPhotoIndex((photoIndex + images.length - 1) % images.length)
-            }
-            onMoveNextRequest={() =>
-              setPhotoIndex((photoIndex + 1) % images.length)
-            }
-            animationDisabled={false}
-            imageTitle={`Image ${photoIndex + 1} of ${images.length}`}
-          />
-        )}
+    <div className="w-full">
+      <div className="max-w-5xl mx-auto">
+        <TipTapRenderer content={content} className="introduction-content" />
       </div>
     </div>
      </>
   );
 };
+
 const ObjectiveComp = ({ content }: any) => {
- 
-  const safeHTML = DOMPurify.sanitize(content);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [images, setImages] = useState<string[]>([]);
+  if (!content) return null;
 
-    const options: HTMLReactParserOptions = {
-    replace: (domNode: any) => {
-      if (domNode.name === 'img') {
-        const src = domNode.attribs.src;
-        if (!images.includes(src)) setImages((prev) => [...prev, src]);
-
-        return (
-          <img
-            key={src}
-            src={src}
-            alt={domNode.attribs.alt || 'image'}
-            className="cursor-pointer max-w-full h-auto"
-            onClick={() => {setIsOpen(true); 
-            setPhotoIndex(images.indexOf(src))}
-            }
-          />
-        );
-      }
-    },
-  };
-
-  const parsedContent = parse(safeHTML, options);
   return (
       <>
-    
-    <div className="flex-1 p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* <h1 className="text-3xl font-bold text-gray-900 mb-8">Objective</h1> */}
-        <div className="space-y-2">{parsedContent}</div>
-
-        {isOpen && images.length > 0 && (
-          <Lightbox
-            mainSrc={images[photoIndex]}
-            nextSrc={images[(photoIndex + 1) % images.length]}
-            prevSrc={images[(photoIndex + images.length - 1) % images.length]}
-            onCloseRequest={() => setIsOpen(false)}
-            onMovePrevRequest={() =>
-              setPhotoIndex((photoIndex + images.length - 1) % images.length)
-            }
-            onMoveNextRequest={() =>
-              setPhotoIndex((photoIndex + 1) % images.length)
-            }
-            animationDisabled={false}
-            imageTitle={`Image ${photoIndex + 1} of ${images.length}`}
-          />
-        )}
+    <div className="w-full">
+      <div className="max-w-5xl mx-auto">
+        <TipTapRenderer content={content} className="objective-content" />
       </div>
     </div>
       </>
@@ -362,122 +276,189 @@ const nextVideoHandler = async () => {
   
     
   return (
-    <div className="flex gap-5 shadow-xl rounded-lg m-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {sectionsIsLoading ? (
         <div className="w-full flex justify-center items-center h-[600px]">
           <LoadingComp />
         </div>
       ) : !hasAnyContent ? (
-        <div className="w-full flex flex-col justify-center items-center h-[600px] text-center">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-            No content available
-          </h2>
-          <p className="text-gray-500 max-w-md">
-            This section does not have any content yet. Please check back later.
-          </p>
+        <div className="w-full flex flex-col justify-center items-center h-[600px] text-center px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <Lock className="w-10 h-10 text-gray-400" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">
+              No Content Available
+            </h2>
+            <p className="text-gray-600 text-lg leading-relaxed">
+              This section does not have any content yet. Please check back later.
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="overflow-y-auto p-6  w-full">
-          {/* UPDATED: Only show intro/objective/videos if NOT quiz page */}
-          {!isQuizPage && (
-            <>
-              {hasIntroduction && <IntroductionComp content={sectionData?.introduction} />}
-              {/* {hasObjective && <ObjectiveComp content={sectionData?.objective} />} */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Introduction Section - Luxurious Design */}
+          {!isQuizPage && hasIntroduction && (
+            <div className="mb-12">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+                  <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <div className="w-1 h-8 bg-white rounded-full"></div>
+                    Introduction
+                  </h2>
+                </div>
+                <div className="p-8 md:p-12">
+                  <IntroductionComp content={sectionData?.introduction} />
+                </div>
+              </div>
+            </div>
+          )}
 
-              {hasVideos && (
-                <div className="mt-8">
-                  {/* <h2 className="text-2xl font-semibold mb-6">Videos</h2> */}
-                  <div className="space-y-4">
-                    {sectionData.content.map((video: any, idx: number) => (
-                      <button
-                        type="button"
-                        key={video._id}
-                        onClick={() => {
-                          const prev = sectionData.content?.[idx - 1];
-                          const canOpen = idx === 0 || prev?.status === 'Completed';
-                          if (!canOpen) {
-                            toast.error('Please complete the previous video first');
-                            return;
-                          }
-                          setSelectedVideo(video._id);
-                        }}
-                        className={`w-full text-left p-4 rounded-lg flex items-center justify-between transition ${
-                          selectedVideo === video._id
-                            ? 'bg-blue-50 border border-blue-200'
-                            : 'bg-gray-50 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="text-lg font-medium text-gray-600 w-8">
-                            {idx + 1}.
-                          </div>
-                          <div className="font-medium text-gray-800">{video.title}</div>
-                          {video.duration && (
-                            <div className="text-sm text-gray-500">
-                              {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')} min
+          {/* Video Content Section - Professional Design */}
+          {!isQuizPage && hasVideos && (
+            <div className="mb-12">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
+                  <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <Play className="w-8 h-8" />
+                    Course Videos
+                  </h2>
+                </div>
+                <div className="p-8">
+                  {/* Video List - Enhanced Design */}
+                  <div className="space-y-4 mb-8">
+                    {sectionData.content.map((video: any, idx: number) => {
+                      const isSelected = selectedVideo === video._id;
+                      const isCompleted = video?.status === 'Completed';
+                      const isLocked = idx > 0 && sectionData.content?.[idx - 1]?.status !== 'Completed';
+                      const canOpen = idx === 0 || !isLocked;
+
+                      return (
+                        <button
+                          type="button"
+                          key={video._id}
+                          onClick={() => {
+                            if (!canOpen) {
+                              toast.error('Please complete the previous video first');
+                              return;
+                            }
+                            setSelectedVideo(video._id);
+                          }}
+                          className={`w-full text-left p-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-500 shadow-lg'
+                              : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent hover:border-gray-300 shadow-md hover:shadow-lg'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-6 flex-1">
+                              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                                isSelected 
+                                  ? 'bg-blue-600 text-white' 
+                                  : isCompleted
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-gray-300 text-gray-600'
+                              }`}>
+                                {isCompleted ? (
+                                  <CheckCircle2 className="w-6 h-6" />
+                                ) : (
+                                  idx + 1
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h3 className={`text-lg font-semibold mb-2 ${
+                                  isSelected ? 'text-blue-900' : 'text-gray-800'
+                                }`}>
+                                  {video.title}
+                                </h3>
+                                {video.duration && (
+                                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <Clock className="w-4 h-4" />
+                                    <span>
+                                      {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')} min
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {video?.status === 'Completed' ? (
-                            <FaCheckCircle className="text-green-600" />
-                          ) : idx > 0 && sectionData.content?.[idx - 1]?.status !== 'Completed' ? (
-                            <FaLock className="text-gray-400" />
-                          ) : null}
-                        </div>
-                      </button>
-                    ))}
+                            <div className="flex items-center gap-3">
+                              {isCompleted && (
+                                <div className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-2">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  Completed
+                                </div>
+                              )}
+                              {isLocked && (
+                                <div className="px-4 py-2 bg-gray-200 text-gray-600 rounded-full text-sm font-medium flex items-center gap-2">
+                                  <Lock className="w-4 h-4" />
+                                  Locked
+                                </div>
+                              )}
+                              {isSelected && (
+                                <div className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium">
+                                  Playing
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Video Player */}
+                  {/* Video Player - Enhanced */}
                   {selectedVideo && (
                     <div className="mt-8">
-                      <VideoSectionContent
-                        videoId={selectedVideo}
-                        content={sectionData.content}
-                        setWatchedDuration={setWatchedDuration}
-                        videoReactionHandler={videoReactionHandler}
-                        refetchSectionData={refetchSectionData}
-                      />
-                      <div className="max-w-4xl mx-auto flex justify-end mt-6">
+                      <div className="p-2 rounded-xl overflow-hidden shadow-2xl">
+                        <VideoSectionContent
+                          videoId={selectedVideo}
+                          content={sectionData.content}
+                          setWatchedDuration={setWatchedDuration}
+                          videoReactionHandler={videoReactionHandler}
+                          refetchSectionData={refetchSectionData}
+                        />
+                      </div>
+                      <div className="flex justify-end mt-6">
                         <button
                           type="button"
                           onClick={nextVideoHandler}
-                          className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                          className="group flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
-                          Next
-                          <ArrowRight className="w-5 h-5 ml-2" />
+                          <span>Continue to Next</span>
+                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
-              )}
-            </>
+              </div>
+            </div>
           )}
 
-          {/* UPDATED: Quiz Section - Always show if available, especially on quiz-only page */}
+          {/* Quiz Section - Luxurious Design */}
           {hasQuiz && (
-            <div className={`mt-8 ${isQuizPage ? 'mt-0' : 'border-t pt-10'}`}>
-              {/* Optional: Quiz Title on Quiz-only page */}
-              {isQuizPage && (
-                <div className="text-center mb-10">
-                  <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                    Chapter Quiz
-                  </h1>
-                  <p className="text-lg text-gray-600">
-                    Test your knowledge to complete this chapter
-                  </p>
+            <div className={`${isQuizPage ? '' : 'mt-12'}`}>
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                {isQuizPage && (
+                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-12 text-center">
+                    <h1 className="text-5xl font-bold text-white mb-4">
+                      Chapter Quiz
+                    </h1>
+                    <p className="text-xl text-purple-100">
+                      Test your knowledge to complete this chapter
+                    </p>
+                  </div>
+                )}
+                <div className={`p-8 ${isQuizPage ? '' : 'border-t border-gray-200'}`}>
+                  <QuizSection
+                    isQuizStarted={isQuizStarted}
+                    setIsQuizStarted={setIsQuizStarted}
+                    quizData={sectionData.quiz}
+                    refetchChapters={refetchChapters}
+                    refetchSectionData={refetchSectionData}
+                  />
                 </div>
-              )}
-
-              <QuizSection
-                isQuizStarted={isQuizStarted}
-                setIsQuizStarted={setIsQuizStarted}
-                quizData={sectionData.quiz}
-                refetchChapters={refetchChapters}
-                refetchSectionData={refetchSectionData}
-              />
+              </div>
             </div>
           )}
         </div>
