@@ -49,11 +49,16 @@ const HeaderMenu: React.FC<MenuProps> = ({
     //   path: '/inventory-orders',
     //   label: 'Inventory Order',
     // },
-    {
-      id: 9,
-      path: `/${lang}/Inventory`,
+     {
+      id: 10,
+      path: `/${lang}/marketplace`,
       label: 'Inventory',
     },
+    // {
+    //   id: 9,
+    //   path: `/${lang}/Inventory`,
+    //   label: 'Inventory',
+    // },
     {
       id: 4,
       path: `/${lang}/marketing`,
@@ -64,11 +69,7 @@ const HeaderMenu: React.FC<MenuProps> = ({
       path: `/${lang}/supplies`,
       label: 'Supplies',
     },
-    {
-      id: 10,
-      path: `/${lang}/marketplace`,
-      label: 'Marketplace',
-    },
+   
     {
       id: 11,
       path: `/${lang}/marketplace/store-inventory`,

@@ -4,7 +4,7 @@ import React from 'react';
 
 const CategoryCard = ({ item }: any) => {
   // console.log(item, "===>>> indiviual item")
-  const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+  const BASE_API = process.env.NEXT_PUBLIC_BASE_API as string;
 
   // console.log(`${BASE_API}/uploads/images/${item.image}`);
 

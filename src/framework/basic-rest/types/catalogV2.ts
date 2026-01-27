@@ -17,12 +17,16 @@ export type VendorSkuLite = {
   attributes?: SkuAttributes;
 };
 
+type CategoryInfo = string | { _id: string; name: string; image?: string; description?: string };
+
 export type VendorProductListItem = {
   _id: string;
   vendorModel: string;
   title: string;
   brand?: string;
-  category?: string;
+  category?: CategoryInfo;
+  subcategory?: CategoryInfo;
+  subsubcategory?: CategoryInfo;
   description?: string;
   skuCount?: number;
   totalInventory?: number;

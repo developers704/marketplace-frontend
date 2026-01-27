@@ -52,16 +52,16 @@ const VendorProductSingleDetails: React.FC<{
 
   useEffect(() => {
     if (defaultSku?._id) {
-      setSelectedSkuId(defaultSku._id);
-      setSelectedColor(defaultSku.metalColor || '');
-      setSelectedSize(defaultSku.size || '');
-      setSelectedMetalType(defaultSku.metalType || '');
+      setSelectedSkuId(defaultSku?._id);
+      setSelectedColor(defaultSku?.metalColor || '');
+      setSelectedSize(defaultSku?.size || '');
+      setSelectedMetalType(defaultSku?.metalType || '');
     }
   }, [defaultSku?._id]);
 
  const selectedSkuLite: VendorSkuLite | null =
   (selectedSkuId
-    ? skus.find((s) => String(s._id) === String(selectedSkuId))
+    ? skus?.find((s) => String(s._id) === String(selectedSkuId))
     : null)
   ?? defaultSku
   ?? null;
@@ -69,7 +69,7 @@ const VendorProductSingleDetails: React.FC<{
   const { data: skuDetails, isLoading: skuLoading } = useSkuQuery(selectedSkuId);
 
   const displaySku = (skuDetails?.sku as any) || selectedSkuLite;
-  const displayImages: string[] = displaySku?.images?.length ? displaySku.images : [];
+  const displayImages: string[] = displaySku?.images?.length ? displaySku?.images : [];
   const displayImage = displayImages?.[0] ? buildImageUrl(BASE_API, displayImages[0]) : productPlaceholder;
 
   const { price } = usePrice({
@@ -78,11 +78,11 @@ const VendorProductSingleDetails: React.FC<{
   });
 
   const filteredMetalTypes = useMemo(() => {
-    if (!selectedColor) return unique(skus.map((s: any) => String(s.metalType || '').trim()));
+    if (!selectedColor) return unique(skus.map((s: any) => String(s?.metalType || '').trim()));
     return unique(
       skus
-        .filter((s: any) => String(s.metalColor || '').trim() === selectedColor)
-        .map((s: any) => String(s.metalType || '').trim()),
+        .filter((s: any) => String(s?.metalColor || '').trim() === selectedColor)
+        .map((s: any) => String(s?.metalType || '').trim()),
     );
   }, [skus, selectedColor]);
 
@@ -90,8 +90,8 @@ const VendorProductSingleDetails: React.FC<{
     return unique(
       skus
         .filter((s: any) => {
-          if (selectedColor && String(s.metalColor || '').trim() !== selectedColor) return false;
-          if (selectedMetalType && String(s.metalType || '').trim() !== selectedMetalType) return false;
+          if (selectedColor && String(s?.metalColor || '').trim() !== selectedColor) return false;
+          if (selectedMetalType && String(s?.metalType || '').trim() !== selectedMetalType) return false;
           return true;
         })
         .map((s: any) => String(s.size || '').trim()),
@@ -99,9 +99,9 @@ const VendorProductSingleDetails: React.FC<{
   }, [skus, selectedColor, selectedMetalType]);
 
   const pickSku = (opts: { color?: string; metalType?: string; size?: string }) => {
-    const color = opts.color ?? selectedColor;
-    const metalType = opts.metalType ?? selectedMetalType;
-    const size = opts.size ?? selectedSize;
+    const color = opts?.color ?? selectedColor;
+    const metalType = opts?.metalType ?? selectedMetalType;
+    const size = opts?.size ?? selectedSize;
 
     const exact = skus.find((s: any) => {
       if (color && String(s.metalColor || '').trim() !== color) return false;
@@ -113,24 +113,24 @@ const VendorProductSingleDetails: React.FC<{
 
     // Relaxed fallback: match color + metalType
     const relaxed = skus.find((s: any) => {
-      if (color && String(s.metalColor || '').trim() !== color) return false;
-      if (metalType && String(s.metalType || '').trim() !== metalType) return false;
+      if (color && String(s?.metalColor || '').trim() !== color) return false;
+      if (metalType && String(s?.metalType || '').trim() !== metalType) return false;
       return true;
     });
     if (relaxed) return relaxed;
 
     // Relaxed fallback: match color only
-    const colorOnly = skus.find((s: any) => (color ? String(s.metalColor || '').trim() === color : true));
+    const colorOnly = skus.find((s: any) => (color ? String(s?.metalColor || '').trim() === color : true));
     return colorOnly || skus[0] || null;
   };
 
   const handleSkuSelect = (skuId: string) => {
-    const sku = skus.find((s: any) => String(s._id) === String(skuId));
+    const sku = skus?.find((s: any) => String(s._id) === String(skuId));
     if (!sku) return;
-    setSelectedSkuId(String(sku._id));
-    setSelectedColor(String(sku.metalColor || '').trim());
-    setSelectedMetalType(String(sku.metalType || '').trim());
-    setSelectedSize(String(sku.size || '').trim());
+    setSelectedSkuId(String(sku?._id));
+    setSelectedColor(String(sku?.metalColor || '').trim());
+    setSelectedMetalType(String(sku?.metalType || '').trim());
+    setSelectedSize(String(sku?.size || '').trim());
   };
 
   const handleColorSelect = (color: string) => {
@@ -178,8 +178,8 @@ const VendorProductSingleDetails: React.FC<{
   };
   const descriptionName =
   typeof displaySku?.attributes?.descriptionname === 'string'
-    ? displaySku.attributes.descriptionname
-    : displaySku?.sku || product.title;
+    ? displaySku?.attributes?.descriptionname
+    : displaySku?.sku || product?.title;
 
   return (
     <div className="space-y-8 py-6">
@@ -228,11 +228,25 @@ const VendorProductSingleDetails: React.FC<{
             <div>
               <h1 className="text-ml font-bold text-gray-900 ">{descriptionName}</h1>
               <div className="text-sm text-gray-600 mt-1">
-                {product.brand ? <span className="mr-3">Brand: {product.brand}</span> : null}
-                {product.category ? <span>Category: {product.category}</span> : null}
+                {product?.brand ? <span className="mr-3">Brand: {product?.brand}</span> : null}
+                {product?.category ? (
+                  <span>
+                    Category: {typeof product?.category === 'string' ? product?.category : (product?.category as any)?.name || 'N/A'}
+                  </span>
+                ) : null}
+                {product?.subcategory && (
+                  <span className="ml-3">
+                    Subcategory: {typeof product?.subcategory === 'string' ? product?.subcategory : (product?.subcategory as any)?.name || 'N/A'}
+                  </span>
+                )}
+                {product?.subsubcategory && (
+                  <span className="ml-3">
+                    Sub-subcategory: {typeof product?.subsubcategory === 'string' ? product?.subsubcategory : (product?.subsubcategory as any)?.name || 'N/A'}
+                  </span>
+                )}
               </div>
-              {product.vendorModel ? (
-                <div className="text-xs text-gray-500 mt-1">Vendor Model: {product.vendorModel}</div>
+              {product?.vendorModel ? (
+                <div className="text-xs text-gray-500 mt-1">Vendor Model: {product?.vendorModel}</div>
               ) : null}
             </div>
             <div className="text-right">
@@ -242,8 +256,8 @@ const VendorProductSingleDetails: React.FC<{
               <div className="text-lg font-bold text-brand-dark">{price}</div>
               <div className="text-xs text-gray-500">Selected SKU stock: {totalSelectedQty}</div>
               <div className="text-xs text-gray-500 flex items-center justify-end gap-2">
-                <span>Total stock (all SKUs): {product.totalInventory}</span>
-                <InventoryStatusBadge quantity={Number(product.totalInventory || 0)} />
+                <span>Total stock (all SKUs): {product?.totalInventory}</span>
+                <InventoryStatusBadge quantity={Number(product?.totalInventory || 0)} />
               </div>
             </div>
           </div>
@@ -258,12 +272,12 @@ const VendorProductSingleDetails: React.FC<{
             onChange={(e) => handleSkuSelect(e.target.value)}
           >
             {skus.map((s: any) => (
-              <option key={s._id} value={s._id}>
+              <option key={s?._id} value={s?._id}>
                 {skuLabel(s)}
               </option>
             ))}
           </select>
-          <div className="text-xs text-gray-500 mt-2">{skus.length} SKUs under this vendor model</div>
+          <div className="text-xs text-gray-500 mt-2">{skus?.length} SKUs under this vendor model</div>
         </div>
 
         {/* Option Selectors */}
@@ -271,7 +285,7 @@ const VendorProductSingleDetails: React.FC<{
           <div>
             <div className="text-sm font-semibold text-gray-900 mb-2">Metal Color</div>
             <div className="flex flex-wrap gap-2">
-              {unique((data.availableColors || []) as string[]).map((c) => {
+              {unique((data?.availableColors || []) as string[]).map((c) => {
                 const active = selectedColor === c;
                 return (
                   <button
@@ -344,7 +358,7 @@ const VendorProductSingleDetails: React.FC<{
                 </thead>
                 <tbody>
                   {skuDetails.inventories.map((inv: any) => (
-                    <tr key={inv._id} className="border-b last:border-b-0">
+                    <tr key={inv?._id} className="border-b last:border-b-0">
                       <td className="py-2 pr-4">{inv?.city?.name ?? '—'}</td>
                       <td className="py-2 pr-4">{inv?.warehouse?.name ?? '—'}</td>
                       <td className="py-2 text-right font-semibold">{inv?.quantity ?? 0}</td>
