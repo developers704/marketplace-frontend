@@ -6,6 +6,7 @@ import Button from '@components/ui/button';
 import Alert from '@components/ui/alert';
 import cn from 'classnames';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ShoppingCart, Search, X, Filter, ArrowLeft } from 'lucide-react';
 import { useProductsQuery } from '@framework/product/get-all-products';
 import { LIMITS } from '@framework/utils/limits';
@@ -27,6 +28,7 @@ import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils';
 
 export default function MarketplacePageContent({ lang }: { lang: string }) {
+  const searchParams = useSearchParams();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
@@ -46,6 +48,19 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
 
   // Fetch categories
   const { data: categories, isLoading: categoriesLoading } = useV2CategoriesQuery();
+
+  // Handle category from URL query parameter (from home page)
+  useEffect(() => {
+    const categoryId = searchParams.get('category');
+    if (categoryId && categories && categories.length > 0) {
+      const category = categories.find(c => c._id === categoryId);
+      if (category) {
+        setSelectedCategoryData(category);
+        setSelectedCategory(category._id);
+        setViewMode('subcategories');
+      }
+    }
+  }, [searchParams, categories]);
   
   // Fetch subcategories when category is selected
   const { data: subcategories, isLoading: subcategoriesLoading } = useV2SubcategoriesByCategoryQuery(
@@ -259,10 +274,10 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       <div className="pt-6 pb-10">
         <div className="flex items-end justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Marketplace</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900">Marketplace</h1>
+            {/* <p className="text-sm text-gray-600 mt-1">
               Vendor-model listings with real-time stock visibility (SKU inventory aggregated).
-            </p>
+            </p> */}
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -271,7 +286,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
             >
               My Store Inventory
             </Link>
-            <button
+            {/* <button
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors"
               aria-label="Open cart"
@@ -282,7 +297,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                   {cartItemCount > 9 ? '9+' : cartItemCount}
                 </span>
               )}
-            </button>
+            </button> */}
           </div>
         </div>
 

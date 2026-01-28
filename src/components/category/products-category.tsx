@@ -1,17 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import CategoryCard from './category-card';
 import ShowMoreDropdown from '../ui/show-more-dropdown';
-import { useCategoriesQuery } from '@/framework/basic-rest/category/get-all-categories';
+import { useV2CategoriesQuery, type V2Category } from '@/framework/basic-rest/catalogV2/get-categories';
 import { useRouter } from 'next/navigation';
-import {
-  fetchSubCategories,
-  useSubCategoriesQuery,
-} from '@/framework/basic-rest/category/get-all-sub-categories';
 import DebounceSearch from '../common/debounceSearch';
 import { CategoriesSkeletons } from '../ui/skeletons';
-import DisableInspectElement from '@/utils/DisableInspectElement';
-import PreventScreenCapture from '@/utils/PreventScreenShots';
+import Image from 'next/image';
+import { getImageUrl } from '@/lib/utils';
 
 interface ProductsCategoryProps {
   lang: string;
@@ -20,22 +15,21 @@ interface ProductsCategoryProps {
 }
 
 const ProductsCategory = ({ lang }: ProductsCategoryProps) => {
-  const moreItems = [9, 14, 20, 25];
+  const moreItems = [8, 12, 16, 20];
   const router = useRouter();
   const {
-    data: allCategories,
+    data: categories,
     isLoading,
     error,
-  } = useCategoriesQuery({ limit: 2 });
+  } = useV2CategoriesQuery();
 
   const [limit, setLimit] = useState<number | any>(moreItems[0]);
   const [searchQuery, setSearchQuery] = useState<string | any>('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  const categoriesToDisplay = allCategories?.slice(0, limit);
+  const BASE_API = process.env.NEXT_PUBLIC_BASE_API || '';
 
-  // console.log(allCategories, '===>>>. allCategories');
-  // console.log(allSubCategories, '===>>>. subCategories');
+  const categoriesToDisplay = categories?.slice(0, limit);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -45,57 +39,31 @@ const ProductsCategory = ({ lang }: ProductsCategoryProps) => {
     return () => clearTimeout(handler); // Cleanup function
   }, [searchQuery]);
 
-  const categoryRouteHandler = async (
-    categoryName?: string,
-    categoryId?: string,
-  ) => {
-    const subCate = await fetchSubCategories(categoryId);
-    // console.log(categoryId, '===>>>. categoryId');
-    // console.log(subCate);
-    if (subCate.length > 0) {
-      router.push(`/${lang}/${categoryName}`);
-    } else {
-      // /${lang}/${category}/${item.name.toLowerCase()}?id=${item._id},${item.parentCategory._id}
-      router.push(`/${lang}/${categoryName}/${categoryName}?id=${categoryId}`);
-    }
-    // const categoryProducts = await fetchProductsByCategory(categoryName, categoryId);
+  const categoryRouteHandler = (category: V2Category) => {
+    // Navigate to marketplace with category selected
+    router.push(`/${lang}/marketplace?category=${category._id}`);
   };
 
-  // Function to filter products & categories based on search input
-  const filteredCategories = allCategories?.filter((category:any) =>
+  // Function to filter categories based on search input
+  const filteredCategories = categories?.filter((category: V2Category) =>
     category.name.toLowerCase().includes(debouncedQuery.toLowerCase()),
   );
-
-  // console.log(filteredCategories, '===>>>. filteredCategories111');
-
-
 
   if (isLoading) return <CategoriesSkeletons />;
 
   return (
     <section className="my-10">
-      {/* <DisableInspectElement /> */}
-      {/* <PreventScreenCapture /> */}
       <div id="top" className="flex items-center justify-between mb-3">
         <div className="leftSide">
-          <h1 className="md:text-3xl text-xl font-bold">Products Category</h1>
+          <h1 className="md:text-3xl text-xl font-bold">Inventory Categories</h1>
         </div>
         <div className="rightSide flex items-center justify-center space-x-4">
           {/* Search */}
-
           <DebounceSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
-
           {/* End of Search */}
-
-          {/* <Search
-            searchId="product-search"
-            className="hidden lg:flex lg:max-w-[650px] 2xl:max-w-[800px]"
-            variant="fill"
-            lang={lang}
-          /> */}
           <p>Show: </p>
           <div className="flex items-center justify-center">
             <ShowMoreDropdown
@@ -108,23 +76,37 @@ const ProductsCategory = ({ lang }: ProductsCategoryProps) => {
       </div>
       <div
         id="bottom"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4"
       >
         {(debouncedQuery ? filteredCategories : categoriesToDisplay)?.map(
-          (item: any) => {
+          (category: V2Category) => {
             return (
-              <div
-                // href={`/${lang}/${item.name}`}
-                onClick={() => categoryRouteHandler(item.name, item._id)}
-                key={item._id}
-                className="border-[1px] rounded-xl border-transparent transition-all duration-300 ease-in-out hover:border-gray-600 cursor-pointer"
+              <button
+                key={category._id}
+                onClick={() => categoryRouteHandler(category)}
+                className="group text-center cursor-pointer transition-transform hover:scale-105"
               >
-                <CategoryCard item={item} />
-              </div>
+                <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 mb-2 relative">
+                  <Image
+                    src={getImageUrl(BASE_API, `/uploads/images/${category.image || 'category-placeholder.png'}`)}
+                    alt={category.name}
+                    fill
+                    className="object-cover group-hover:opacity-90 transition-opacity"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 12.5vw"
+                  />
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-gray-900 mt-1 line-clamp-2">{category.name}</h3>
+                {category.productCount !== undefined && (
+                  <p className="text-xs text-gray-500 mt-0.5">{category.productCount} products</p>
+                )}
+              </button>
             );
           },
         )}
       </div>
+      {categories && categories.length === 0 && !isLoading && (
+        <p className="text-gray-500 text-center py-8">No categories available</p>
+      )}
     </section>
   );
 };

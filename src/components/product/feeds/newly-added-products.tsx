@@ -1,223 +1,110 @@
 'use client';
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useCategoriesQuery } from '@/framework/basic-rest/category/get-all-categories';
-import NewProductCard from '@/components/cards/newProductCard';
-import {
-  fetchNewProducts,
-  useNewlyProductQuery,
-} from '@/framework/basic-rest/product/get-product';
 import { useUI } from '@/contexts/ui.context';
-import { PermissionsContext } from '@/contexts/permissionsContext';
-import { NewProductSkeletons } from '@/components/ui/skeletons';
-import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
+import { useProductsQuery } from '@framework/product/get-all-products';
+import type { VendorProductListItem } from '@framework/types/catalogV2';
+import MarketplaceProductCard from '@/components/marketplace/marketplace-product-card';
+import ProductCardLoader from '@components/ui/loaders/product-card-loader';
+import cn from 'classnames';
 
 const NewlyAddedProduct = ({ lang }: any) => {
-  const {
-    data: categories,
-    isLoading: categoryLoading,
-    error,
-  } = useCategoriesQuery({ limit: 2 });
   const { isAuthorized } = useUI();
 
-  const [selectedCategory, setSelectedCategory] = useState<string | any>('');
-  const [selectedItem, setSelectedItem] = useState('Diamond');
-  const [getProducts, setGetProducts] = useState<null | any>([]);
-  const [regularProducts, setRegularProducts] = useState<null | any>([]);
-  const [specialProducts, setSpecialProducts] = useState<null | any>([]);
-  const [isLoading, setIsLoading] = useState<any>(false);
-  const [isError, setIsError] = useState<any>('');
-  const { permissions } = useContext(PermissionsContext);
-  const key = 'Cart';
-  // const { data: user, isLoading: userLoading } = useUserDataQuery();
+  // Fetch newest products from v2Catalog (sorted by createdAt desc by default)
+  const {
+    data,
+    isLoading,
+    error,
+  } = useProductsQuery({
+    limit: 10, // Show 10 newest products
+    newQuery: {},
+  } as any);
 
-  useEffect(() => {
-    if (categories?.length > 0 && !selectedCategory) {
-      setSelectedCategory(categories?.[0]?._id);
-    }
-  }, [categories, selectedCategory]); // Run only when categories change
+  // Extract products from all pages
+  const products: VendorProductListItem[] = React.useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page: any) => page?.data || []).slice(0, 10);
+  }, [data]);
 
-  // console.log(selectedCategory, '===>>> selectedCategory');
-
-  // const { data, isLoading } = useNewlyProductQuery();
-
-  // console.log(user?.lastLoginDate, '===>>> user');
-
-  const handleCategoryChange = (
-    newCategoryId: string,
-    newCategoryName: string,
-  ) => {
-    setSelectedCategory(newCategoryId);
-    setSelectedItem(newCategoryName);
-  };
-
-  const fetchNewlyAddedProducts = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetchNewProducts();
-      // console.log(response, 'res');
-      if (response) {
-        setRegularProducts(response?.regularProducts?.slice(0, 5) || []);
-        setSpecialProducts(response?.specialProducts?.slice(0, 5) || []);
-        setIsError('');
-      } else {
-        setRegularProducts([]);
-        setSpecialProducts([]);
-        setIsError('Unable to load new products');
-      }
-    } catch (error) {
-      console.error('Error fetching new products:', error);
-      setRegularProducts([]);
-      setSpecialProducts([]);
-      setIsError('Unable to load new products');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // const fetchNewlyAddedProducts = async () => {
-  //   setIsLoading(true);
-  //   const response = await fetchNewProducts();
-
-  //   if (response) {
-  //     if (!user?.lastLoginDate) {
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     const lastLoginTime = new Date(user.lastLoginDate); // Convert last login date to Date object
-
-  //     // Filter regular and special products based on last login date
-  //     const newRegularProducts = response?.regularProducts
-  //       ?.filter((product: any) => new Date(product?.createdAt) > lastLoginTime)
-  //       .slice(0, 5);
-
-  //     const newSpecialProducts = response?.specialProducts
-  //       ?.filter((product: any) => new Date(product?.createdAt) > lastLoginTime)
-  //       .slice(0, 5);
-
-  //     // Set state with filtered products
-  //     setRegularProducts(newRegularProducts);
-  //     setSpecialProducts(newSpecialProducts);
-  //   } else {
-  //     setRegularProducts([]);
-  //     setSpecialProducts([]);
-  //   }
-  //   setIsLoading(false);
-  // };
-
-  useEffect(() => {
-    if (isAuthorized) {
-      fetchNewlyAddedProducts();
-    } else {
-      setIsError('No New Porducts');
-      return;
-    }
-  }, []);
-
-  // if (isLoading) {
-  //   return <div>Loading...</div>;
-  // }
+  if (!isAuthorized) {
+    return (
+      <section className="my-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Newly Added Inventory</h1>
+        </div>
+        <div className="text-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+          <p className="text-lg text-gray-600">Please log in to view newly added inventory items</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="my-10">
-      <div
-        id="top"
-        className="flex lg:items-center lg:justify-between lg:flex-row flex-col gap-3 items-center "
-      >
-        <div className="leftSide">
-          <h1 className="text-3xl font-bold">Newly Added Products</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Newly Added Inventory</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Latest vendor-model listings added to the inventory
+          </p>
         </div>
-      </div>
-      {!isAuthorized ? (
-        <div className="text-2xl w-fit border rounded-lg border-black p-4 mt-5">
-          Log in to see New Products
-        </div>
-      ) : (
-        ''
-      )}
-      {isLoading ? (
-        <NewProductSkeletons />
-      ) : isAuthorized ? (
-        <>
-          <h1 className="text-xl font-semibold mt-5">Regular Products</h1>
-          <div
-            id="bottom"
-            className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+        {products.length > 0 && (
+          <Link
+            href={`/${lang}/marketplace`}
+            className="text-sm font-semibold text-brand-blue hover:underline"
           >
-            {regularProducts.length > 0
-              ? regularProducts.map((product: any) => {
-                  // console.log(product, 'product');
-                  return (
-                    <Link
-                      // href={`/${lang}/${product?.category[0]?.name}/${product?.subcategory[0]?.name}/${product._id}`}
-                      href={`/${lang}/${product?.category?.[0]?.name}/${product?.subcategory?.[0]?.name}/${product?.name}?id=${product?._id}`}
-                      key={product._id}
-                    >
-                      <NewProductCard data={product} lang={lang} />
-                      {/* <div>hello</div> */}
-                    </Link>
-                  );
-                })
-              : 'No New Products'}
-          </div>
-        </>
-      ) : (
-        ''
-      )}
+            View All →
+          </Link>
+        )}
+      </div>
+
       {isLoading ? (
-        <NewProductSkeletons />
-      ) : isAuthorized ? (
+        <div
+          className={cn(
+            'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 2xl:gap-5',
+          )}
+        >
+          {Array.from({ length: 10 }).map((_, idx) => (
+            <ProductCardLoader key={`newly-added-loader-${idx}`} uniqueKey={`newly-added-loader-${idx}`} />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-12 border border-red-200 rounded-lg bg-red-50">
+          <p className="text-red-600 font-semibold">Failed to load products</p>
+          <p className="text-sm text-red-500 mt-1">{error?.message || 'Please try again later'}</p>
+        </div>
+      ) : products.length > 0 ? (
         <>
-          {permissions[key]?.View && (
-            <>
-              <h1 className="text-xl font-semibold mt-5">Other Products</h1>
-              <div
-                id="bottom"
-                className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+          <div
+            className={cn(
+              'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 2xl:gap-5',
+            )}
+          >
+            {products.map((product: VendorProductListItem) => (
+              <MarketplaceProductCard
+                key={product._id}
+                product={product}
+                lang={lang}
+              />
+            ))}
+          </div>
+          {products.length >= 10 && (
+            <div className="mt-8 text-center">
+              <Link
+                href={`/${lang}/marketplace`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 transition-colors font-semibold"
               >
-                  {specialProducts.length > 0
-                  ? specialProducts?.map((product: any) => {
-                      return (
-                        <Link
-                          href={`/${lang}/specialProducts/${product?._id}`}
-                          key={product?._id}
-                        >
-                          <NewProductCard data={product} lang={lang} />
-                          {/* <div>hello</div> */}
-                        </Link>
-                      );
-                    })
-                  : 'No New Products'}
-              </div>
-            </>
+                View All Products
+              </Link>
+            </div>
           )}
         </>
       ) : (
-        ''
+        <div className="text-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+          <p className="text-gray-600">No newly added products available</p>
+        </div>
       )}
-      <div
-        id="bottom"
-        className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
-      >
-        {/* {products?.count > 0
-          ? products?.data.map((product: any) => {
-              return (
-                <Link
-                  href={`/${lang}/product/${product._id}`}
-                  key={product._id}
-                >
-                  <NewProductCard data={product} />
-                </Link>
-              );
-            })
-          : 'No products found'} */}
-      </div>
-      {/* <div className="my-16 w-full flex items-center justify-center">
-        <button className="w-fit bg-[#666665] text-white py-3 px-7 rounded-lg">
-          See More
-        </button>
-      </div> */}
     </section>
   );
 };

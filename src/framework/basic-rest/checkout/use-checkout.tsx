@@ -36,19 +36,31 @@ export async function checkout(cartId: any, warehouse: any, cart: any, paymentMe
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   const token = getToken();
 
-  // SPLIT ITEMS BASED ON isMain
-  const mainItems = cart.items.filter((i: any) => i.isMain === true);
-  const storeItems = cart.items.filter((i: any) => i.isMain === false);
+  // SPLIT ITEMS BASED ON itemType and isMain
+  const specialProductItems = cart.items.filter((i: any) => i.itemType === 'SpecialProduct');
+  const regularItems = cart.items.filter((i: any) => i.itemType !== 'SpecialProduct');
+  
+  // Split regular items by isMain
+  const mainItems = regularItems.filter((i: any) => i.isMain === true);
+  const storeItems = regularItems.filter((i: any) => i.isMain === false);
   
   
   // console.log("mainItems:", mainItems);
   // console.log("storeItems:", storeItems);
+  // console.log("specialProductItems:", specialProductItems);
   
-  const callApi = async (endpoint: string, itemsArray: any[]) => {
+  const callApi = async (endpoint: string, itemsArray: any[], isSpecialProduct: boolean = false) => {
     if (itemsArray.length === 0) return null;
     
-     const sellerWarehouseId = itemsArray[0]?.sellerWarehouseId;
-    const body = {
+    const sellerWarehouseId = itemsArray[0]?.sellerWarehouseId;
+    const body = isSpecialProduct ? {
+      cartId,
+      warehouse,
+      items: itemsArray,
+      paymentMethod,
+      specialInstructions: "Please deliver between 5 PM and 6 PM",
+      cityId: "67400e8a7b963a1282d218b5",
+    } : {
       cartId,
       warehouse,
       items: itemsArray,
@@ -80,8 +92,9 @@ export async function checkout(cartId: any, warehouse: any, cart: any, paymentMe
 
   const mainResult = await callApi("/api/checkout/process", mainItems);
   const storeResult = await callApi("/api/checkout/store-request-order", storeItems);
+  const specialProductResult = await callApi("/api/checkout/special-product-checkout", specialProductItems, true);
 
-  return { mainResult, storeResult };
+  return { mainResult, storeResult, specialProductResult };
 }
 
 

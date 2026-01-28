@@ -41,6 +41,10 @@ import NotificationDropdown from '@/components/common/notificationDropdown';
 import { permission } from 'process';
 import GlobalSearch from '@/components/common/globalSearch';
 import { PermissionsContext } from '@/contexts/permissionsContext';
+import { ShoppingCart } from 'lucide-react';
+import B2BCartDrawer from '@components/marketplace/b2b-cart-drawer';
+import { useQuery } from '@tanstack/react-query';
+import { getB2BCart } from '@/framework/basic-rest/catalogV2/b2b-cart';
 const Delivery = dynamic(() => import('@layouts/header/delivery'), {
   ssr: false,
 });
@@ -78,6 +82,7 @@ function Header({ lang }: { lang: string }) {
   );
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { addToWishlist, addAllToWishlist } = useWishlist();
   const { permissions } = useContext(PermissionsContext);
   const key = 'Cart';
@@ -91,6 +96,14 @@ function Header({ lang }: { lang: string }) {
   const { getCartLength, addAllToCart } = useContext(CartContext);
   const [cartItemsLength, setCartItemsLength] = useState<number | any>(0);
   const parentRef = useRef<HTMLDivElement>(null);
+
+  // Fetch B2B cart to show item count
+  const { data: b2bCart } = useQuery({
+    queryKey: ['v2-b2b-cart'],
+    queryFn: getB2BCart,
+  });
+
+  const b2bCartItemCount = b2bCart?.items?.length || 0;
   useActiveScroll(siteHeaderRef, 40);
   useOnClickOutside(siteSearchRef, () => closeSearch());
   useOnClickOutside(categoryBtnRef, () => setCategoryMenu(false));
@@ -251,8 +264,20 @@ function Header({ lang }: { lang: string }) {
           {/* <div className="flex lg:hidden lg:flex-1">
             <FaRegBell />
           </div> */}
-          <div className="flex lg:hidden lg:flex-1">
+          <div className="flex lg:hidden lg:flex-1 items-center gap-3">
             <WalletBalance lang={lang} />
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors"
+              aria-label="Open cart"
+            >
+              <ShoppingCart size={24} />
+              {b2bCartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-brand-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {b2bCartItemCount > 9 ? '9+' : b2bCartItemCount}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* <Search
@@ -271,6 +296,18 @@ function Header({ lang }: { lang: string }) {
               <Link href={`/${lang}/profile-details?option=Store Wallet`}>
                 <WalletBalance lang={lang} />
               </Link>
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors xl:mx-3.5 mx-2.5 hidden lg:flex"
+                aria-label="Open cart"
+              >
+                <ShoppingCart size={24} />
+                {b2bCartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-brand-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {b2bCartItemCount > 9 ? '9+' : b2bCartItemCount}
+                  </span>
+                )}
+              </button>
               <Link
                 href={`/${lang}/wishlist`}
                 className="xl:mx-3.5 mx-2.5 hidden lg:flex"
@@ -398,6 +435,18 @@ function Header({ lang }: { lang: string }) {
                 <div className="">
                   <WalletBalance lang={lang} />
                 </div>
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors ltr:mr-7 rtl:ml-7 hidden lg:flex"
+                  aria-label="Open cart"
+                >
+                  <ShoppingCart size={24} />
+                  {b2bCartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-brand-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {b2bCartItemCount > 9 ? '9+' : b2bCartItemCount}
+                    </span>
+                  )}
+                </button>
                 <Link
                   href={`/${lang}/wishlist`}
                   className="ltr:mr-7 rtl:ml-7 hidden lg:flex"
@@ -462,6 +511,9 @@ function Header({ lang }: { lang: string }) {
 
         {/* End of menu part */}
       </div>
+
+      {/* B2B Cart Drawer */}
+      <B2BCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} lang={lang} />
     </header>
   );
 }
