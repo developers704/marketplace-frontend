@@ -96,9 +96,9 @@ const ProductsCategory = ({ lang }: ProductsCategoryProps) => {
                   />
                 </div>
                 <h3 className="text-xs sm:text-sm font-bold text-gray-900 mt-1 line-clamp-2">{category.name}</h3>
-                {category.productCount !== undefined && (
+                {/* {category.productCount !== undefined && (
                   <p className="text-xs text-gray-500 mt-0.5">{category.productCount} products</p>
-                )}
+                )} */}
               </button>
             );
           },

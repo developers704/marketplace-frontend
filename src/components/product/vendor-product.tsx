@@ -50,6 +50,9 @@ const VendorProductSingleDetails: React.FC<{
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
 
+  // Inventory expand/collapse state
+  const [isInventoryExpanded, setIsInventoryExpanded] = useState(false);
+
   useEffect(() => {
     if (defaultSku?._id) {
       setSelectedSkuId(defaultSku?._id);
@@ -58,6 +61,11 @@ const VendorProductSingleDetails: React.FC<{
       setSelectedMetalType(defaultSku?.metalType || '');
     }
   }, [defaultSku?._id]);
+
+  // Reset inventory expanded state when SKU changes
+  useEffect(() => {
+    setIsInventoryExpanded(false);
+  }, [selectedSkuId]);
 
  const selectedSkuLite: VendorSkuLite | null =
   (selectedSkuId
@@ -347,26 +355,53 @@ const VendorProductSingleDetails: React.FC<{
           {skuLoading ? (
             <div className="h-20 bg-gray-50 rounded animate-pulse" />
           ) : skuDetails?.inventories?.length ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b">
-                    <th className="py-2 pr-4">City</th>
-                    <th className="py-2 pr-4">Warehouse</th>
-                    <th className="py-2 text-right">Qty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {skuDetails.inventories.map((inv: any) => (
-                    <tr key={inv?._id} className="border-b last:border-b-0">
-                      <td className="py-2 pr-4">{inv?.city?.name ?? '—'}</td>
-                      <td className="py-2 pr-4">{inv?.warehouse?.name ?? '—'}</td>
-                      <td className="py-2 text-right font-semibold">{inv?.quantity ?? 0}</td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-gray-500 border-b">
+                      {/* <th className="py-2 pr-4">City</th> */}
+                      <th className="py-2 pr-4">Warehouse</th>
+                      <th className="py-2 text-right">Qty</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {(isInventoryExpanded 
+                      ? skuDetails.inventories 
+                      : skuDetails.inventories.slice(0, 3)
+                    ).map((inv: any) => (
+                      <tr key={inv?._id} className="border-b last:border-b-0">
+                        {/* <td className="py-2 pr-4">{inv?.city?.name ?? '—'}</td> */}
+                        <td className="py-2 pr-4">{inv?.warehouse?.name ?? '—'}</td>
+                        <td className="py-2 text-right font-semibold">{inv?.quantity ?? 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {skuDetails.inventories.length > 3 && (
+                <button
+                  onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
+                  className="mt-3 w-full text-sm text-brand-blue hover:text-blue-700 font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                >
+                  {isInventoryExpanded ? (
+                    <>
+                      <span>View Less</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </>
+                  ) : (
+                    <>
+                      <span>View More ({skuDetails.inventories.length - 3} more)</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              )}
+            </>
           ) : (
             <div className="text-sm text-gray-600">No inventory records found for this SKU.</div>
           )}
