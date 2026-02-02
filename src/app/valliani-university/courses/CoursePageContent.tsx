@@ -44,9 +44,13 @@ const CoursePageContent = () => {
           <CourseCardSkeletons key={index} />
         ))
       ) : userCourses?.data?.length > 0 ? (
-        userCourses?.data?.map((course: any) => (
-          <CourseCard2 key={course?._id} data={course} />
-        ))
+        // ✅ CRITICAL FIX: Filter to show only main courses (courseType === 'Course')
+        // Short courses should only appear in the Short Courses tab
+        userCourses?.data
+          ?.filter((course: any) => course?.courseType === 'Course')
+          ?.map((course: any) => (
+            <CourseCard2 key={course?._id} data={course} />
+          ))
       ) : (
         <div className="col-span-full flex justify-center items-center py-10 text-brand-muted">
           No Courses Available

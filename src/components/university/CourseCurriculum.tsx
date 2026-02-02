@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle, ChevronDown, Lock, Target } from 'lucide-react';
+import { Brain, CheckCircle, ChevronDown, FlagTriangleLeft, Lock, Target } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { FaLock } from 'react-icons/fa';
@@ -165,16 +165,16 @@ export default function CourseCurriculum({
                           // handleRoute(chapter.quiz, quizSection);
                           onSectionSelect?.(quizSection);
                         }}
-                        className="text-left font-bold text-green-600 hover:text-green-800 flex items-center gap-2"
+                        className="text-left font-bold text-green-700 hover:text-green-500 flex items-center gap-2"
                       >
-                        <Target className="w-5 h-5" />
+                        <FlagTriangleLeft className="w-5 h-5"/>  
                         Quiz
                       </button>
                     ) : (
                       // Locked Quiz
                       <div className="flex items-center gap-2 text-gray-500">
                         <Lock className="w-5 h-5" />
-                        <span>Quiz (Complete chapter to unlock)</span>
+                        <span>Complete chapter to unlock Quiz</span>
                       </div>
                     )}
                   </li>

@@ -100,16 +100,47 @@ const dislikeHandler = async () => {
 
 // Removed automatic refetch on mount to avoid loops. Parent controls refetching.
 
+  /**
+   * Get the correct video URL for playback
+   * 
+   * Priority:
+   * 1. Bunny Stream URLs (b-cdn.net) - use backend proxy to avoid CORS
+   * 2. Other full URLs (http/https) - use directly
+   * 3. Local file paths - prepend BASE_API
+   * 
+   * Note: Bunny Stream URLs require proxy due to CORS restrictions
+   */
+  const getVideoUrl = () => {
+    if (!selectedVideo?.videoUrl) return '';
+    
+    const videoUrl = selectedVideo.videoUrl;
+    
+    // If it's a Bunny Stream URL (b-cdn.net or bunnycdn.com), use proxy endpoint
+    if (videoUrl.includes('b-cdn.net') || videoUrl.includes('bunnycdn.com')) {
+      // Use backend proxy to avoid CORS issues
+      const encodedUrl = encodeURIComponent(videoUrl);
+      return `${BASE_API}/api/courses/video-proxy?videoUrl=${encodedUrl}`;
+    }
+    
+    // If it's already a full URL (http:// or https://), use it directly
+    if (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) {
+      return videoUrl;
+    }
+    
+    // Otherwise, prepend BASE_API for local file paths
+    return `${BASE_API}/${videoUrl}`;
+  };
+
   return (
     <div className=''>
       <div className="flex-[2] p-4 pt-0 flex flex-col">
         <div>
           <VideoPlayer
-            videoUrl={`${BASE_API}/${selectedVideo?.videoUrl}`}
+            videoUrl={getVideoUrl()}
             onComplete={handleVideoComplete}
             setWatchedDuration={setWatchedDuration}
-            
-          />
+          />   
+       
           <div className="flex items-center justify-between my-4">
             <h1 className="text-xl font-bold">{selectedVideo?.title}</h1>
             <div className="flex items-center gap-4">

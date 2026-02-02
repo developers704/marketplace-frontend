@@ -8,6 +8,10 @@ import QuizSection from './QuizSection';
 import {
   toggleVideoReactions,
   videoProgress,
+  fetchCustomerCourses,
+  fetchCourseChapters,
+  manualCompleteSection,
+  fetchShortCoursesData,
 } from '@/framework/basic-rest/university/dashboardApi';
 // import { FaCheckCircle, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -78,15 +82,28 @@ export default function CourseContent({
   const [isQuizStarted, setIsQuizStarted] = useState<any>(false);
   // const [videoReaction, setVideoReaction] = useState<any>('');
   const [watchedDuration, setWatchedDuration] = useState<any>(0);
+  const [timerCompleted, setTimerCompleted] = useState<boolean>(false);
+  const [timerRemaining, setTimerRemaining] = useState<number>(0);
   const router = useRouter();
 
-  const isQuizPage = sectionData?.isQuiz === true;
+    const isQuizPage = sectionData?.isQuiz === true;
     const hasIntroduction = !isQuizPage && !!sectionData?.introduction;
     const hasObjective = !isQuizPage && !!sectionData?.objective;
     const hasVideos = !isQuizPage && sectionData?.content?.length > 0;
     const hasQuiz = isQuizPage && sectionData?.quiz;
+    // ✅ MANUAL SECTION: Section with NO content (videos/text) and NO quiz requires manual completion
+    // Introduction/objective alone don't count as "content" - they're just informational
+    const isManualSection = !isQuizPage && !hasVideos && !hasQuiz && !sectionData?.quiz;
+    // Check if section has only introduction (for display purposes)
+    const hasOnlyIntroduction = hasIntroduction && !hasVideos && !hasQuiz && !sectionData?.quiz;
+    // Check if timer is required (only applies if section has videos)
+    const requiredTime = sectionData?.requiredTime || null;
+    console.log('requiredTime:', requiredTime);
+    const hasTimer = requiredTime !== null && requiredTime > 0 && hasVideos;
+    // Videos should be shown only if timer is completed or not required
+    const shouldShowVideos = !hasTimer || timerCompleted;
 
-    const hasAnyContent = hasIntroduction || hasObjective || hasVideos || hasQuiz;
+    const hasAnyContent = hasIntroduction || hasObjective || hasVideos || hasQuiz || isManualSection;
 
   // Initialize/keep selected video when content changes (avoid resetting to first video on every refetch)
   useEffect(() => {
@@ -129,6 +146,31 @@ export default function CourseContent({
     setWatchedDuration(0);
   }, [selectedVideo]);
 
+  // Timer logic for section required time
+  useEffect(() => {
+    if (!hasTimer) {
+      setTimerCompleted(true);
+      setTimerRemaining(0);
+      return;
+    }
+
+    // Reset timer when section changes
+    setTimerCompleted(false);
+    setTimerRemaining(requiredTime || 0);
+
+    const interval = setInterval(() => {
+      setTimerRemaining((prev) => {
+        if (prev <= 1) {
+          setTimerCompleted(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [derivedSectionId, requiredTime, hasTimer]);
+
   const navigateToSectionOrQuiz = async (payload: any) => {
     if (typeof onNavigate === 'function') {
       return await onNavigate(payload);
@@ -145,6 +187,147 @@ export default function CourseContent({
     // NOTE: In this repo, `courses/chapters/[chapterId]/[sectionId]` uses `chapterId` as courseId
     router.push(`/valliani-university/courses/chapters/${courseId}/${nextId}`);
     return null;
+  };
+
+  // Helper function to navigate to next content (quiz → next chapter → next course)
+  const navigateToNextContent = async () => {
+    try {
+      // First check if there's a quiz in the current chapter
+      if (refetchChapters) {
+        await refetchChapters();
+      }
+
+      if (!courseId || !derivedChapterId) {
+        toast.error('Course or Chapter ID not found');
+        return;
+      }
+
+      const chaptersResponse = await fetchCourseChapters(courseId);
+      const chapters = chaptersResponse?.data?.chapters || [];
+      const currentChapter = chapters.find((ch: any) => ch._id === derivedChapterId);
+
+      // Check if current chapter has a quiz
+      if (currentChapter?.quiz?._id) {
+        // Navigate to quiz
+        await navigateToSectionOrQuiz({
+          _id: currentChapter.quiz._id,
+          isQuiz: true,
+          chapterId: derivedChapterId
+        });
+        toast.success('Moving to quiz...');
+        return;
+      }
+
+      // No quiz, check for next chapter
+      const currentChapterIndex = chapters.findIndex(
+        (ch: any) => ch._id === derivedChapterId
+      );
+
+      if (currentChapterIndex < chapters.length - 1) {
+        const nextChapter = chapters[currentChapterIndex + 1];
+        const nextSection = nextChapter?.sections?.[0];
+        if (nextSection) {
+          await navigateToSectionOrQuiz(nextSection);
+          toast.success('Moving to next chapter...');
+          return;
+        }
+      }
+
+      // No next chapter, check for next course
+      // ✅ CRITICAL FIX: Check if current course is Short Course, then navigate to next short course
+      // First, try to get short courses to check if current course is a short course
+      try {
+        const shortCoursesResponse = await fetchShortCoursesData();
+        const shortCourses = shortCoursesResponse?.data?.shortCourses || [];
+        const currentShortCourseIndex = shortCourses.findIndex(
+          (sc: any) => sc._id === courseId
+        );
+
+        // If current course is found in short courses, it's a short course
+        if (currentShortCourseIndex !== -1) {
+          // ✅ Navigate to next Short Course
+          if (currentShortCourseIndex < shortCourses.length - 1) {
+            const nextShortCourse = shortCourses[currentShortCourseIndex + 1];
+            
+            // Check if next short course is accessible
+            if (nextShortCourse?.canAccess) {
+              const nextCourseId = nextShortCourse._id;
+              const nextCourseChapters = await fetchCourseChapters(nextCourseId);
+              const nextChapters = nextCourseChapters?.data?.chapters || [];
+
+              if (nextChapters.length > 0) {
+                const firstChapter = nextChapters[0];
+                const firstSection = firstChapter?.sections?.[0];
+                if (firstSection) {
+                  router.push(
+                    `/valliani-university/courses/${nextCourseId}?chapter=${firstChapter._id}&section=${firstSection._id}`
+                  );
+                  toast.success('Moving to next short course...');
+                  return;
+                }
+              }
+            } else {
+              toast.info(`Next short course "${nextShortCourse?.name}" is locked. ${nextShortCourse?.lockReason || 'Complete previous course first.'}`);
+              return;
+            }
+          } else {
+            toast.info('All short courses completed!');
+            return;
+          }
+        }
+      } catch (shortCourseError) {
+        // If short courses API fails, continue with main course logic
+        console.log('Short courses check failed, trying main courses:', shortCourseError);
+      }
+
+      // ✅ CRITICAL FIX: Check for next course (can be main course OR short course)
+      // Now fetchCustomerCourses includes both Course and Short Course types
+      const customerCoursesResponse = await fetchCustomerCourses();
+      const allCourses = customerCoursesResponse?.data || [];
+      
+      // Filter courses by type to handle navigation correctly
+      // If current course is short course, only check short courses
+      // If current course is main course, only check main courses
+      const currentCourse = allCourses.find((course: any) => course._id === courseId);
+      const currentCourseType = currentCourse?.courseType || 'Course';
+      
+      // Filter courses by same type (main courses with main courses, short courses with short courses)
+      const sameTypeCourses = allCourses.filter(
+        (course: any) => course.courseType === currentCourseType
+      );
+      
+      const currentCourseIndex = sameTypeCourses.findIndex(
+        (course: any) => course._id === courseId
+      );
+
+      if (currentCourseIndex < sameTypeCourses.length - 1) {
+        const nextCourse = sameTypeCourses[currentCourseIndex + 1];
+        const nextCourseId = nextCourse._id;
+        const nextCourseChapters = await fetchCourseChapters(nextCourseId);
+        const nextChapters = nextCourseChapters?.data?.chapters || [];
+
+        if (nextChapters.length > 0) {
+          const firstChapter = nextChapters[0];
+          const firstSection = firstChapter?.sections?.[0];
+          if (firstSection) {
+            router.push(
+              `/valliani-university/courses/${nextCourseId}?chapter=${firstChapter._id}&section=${firstSection._id}`
+            );
+            toast.success(
+              currentCourseType === 'Short Course' 
+                ? 'Moving to next short course...' 
+                : 'Moving to next course...'
+            );
+            return;
+          }
+        }
+      }
+
+      toast.info('No further content available.');
+    } catch (error: any) {
+      console.error('Navigation error:', error);
+      toast.error('Failed to navigate');
+    }
   };
 
 
@@ -179,6 +362,11 @@ const nextVideoHandler = async () => {
 
       // Always refetch chapters (unlock next chapter/section + update sidebar)
       await refetchChapters?.();
+      
+      // Refetch section data to get updated video statuses
+      const updatedSectionResponse = await refetchSectionData?.();
+      const updatedSection = updatedSectionResponse?.data || updatedSectionResponse || sectionData;
+      const currentSectionVideos = updatedSection?.content || sectionData?.content || [];
 
       if (next?.navigationType === 'quiz') {
         // Auto-open quiz after finishing all videos/content
@@ -201,7 +389,6 @@ const nextVideoHandler = async () => {
           nextSectionId.toString() === derivedSectionId.toString()
         ) {
           if (nextVideoId) setSelectedVideo(nextVideoId);
-          await refetchSectionData?.(); // update per-video status in list
           return;
         }
 
@@ -217,14 +404,42 @@ const nextVideoHandler = async () => {
         }
       }
 
+      // ✅ CRITICAL FIX: Handle navigation to empty section (manual section)
+      // This allows routing from content section to empty section (with introduction)
+      if (next?.navigationType === 'section' || next?.navigationType === 'manual-section') {
+        const nextSectionId = next?.sectionId;
+        if (nextSectionId) {
+          // Navigate to the empty section (will show introduction and manual completion button)
+          await navigateToSectionOrQuiz({
+            _id: nextSectionId,
+            isQuiz: false,
+            chapterId: next?.chapterId
+          });
+          return;
+        }
+      }
+
       if (next?.navigationType === 'complete') {
         toast.success('Course completed!');
-        await refetchSectionData?.();
+        // Automatically navigate to next course/chapter if available
+        await navigateToNextContent();
         return;
       }
 
-      // Default: refresh section data
-      await refetchSectionData?.();
+      // If no next content is returned, check if all videos in current section are completed
+      if (!next) {
+        const allVideosCompleted = currentSectionVideos.length > 0 && 
+          currentSectionVideos.every((video: any) => video.status === 'Completed');
+        
+        if (allVideosCompleted) {
+          // All videos in section completed, navigate to next content (quiz → next chapter → next course)
+          await navigateToNextContent();
+          return;
+        }
+      }
+
+      // Default: just refresh (video completed but more videos remain in section)
+      return;
     } else {
 
       toast.error(res?.message || 'fix');
@@ -251,6 +466,68 @@ const nextVideoHandler = async () => {
       reaction,
     );
     return res;
+  };
+
+  // ✅ Manual section completion handler
+  const handleManualCompleteSection = async () => {
+    if (!courseId || !derivedChapterId || !derivedSectionId) {
+      toast.error('Unable to complete section: missing identifiers');
+      return;
+    }
+
+    try {
+      const res = await manualCompleteSection(
+        courseId,
+        derivedChapterId,
+        derivedSectionId,
+      );
+
+      if (res?.success) {
+        toast.success(res?.message || 'Section marked as completed successfully');
+
+        // Refetch chapters to update unlock status
+        await refetchChapters?.();
+        
+        // Refetch section data to get updated status
+        await refetchSectionData?.();
+
+        // Navigate to next content if available
+        const next = res?.data?.nextContent;
+        if (next) {
+          if (next.navigationType === 'quiz') {
+            await navigateToSectionOrQuiz({
+              _id: next?.quizId,
+              isQuiz: true,
+              chapterId: next?.chapterId
+            });
+          } else if (next.navigationType === 'content') {
+            await navigateToSectionOrQuiz({
+              _id: next?.sectionId,
+              isQuiz: false,
+              chapterId: next?.chapterId
+            });
+          } else if (next.navigationType === 'section' || next.navigationType === 'manual-section') {
+            // ✅ CRITICAL FIX: Next section is empty (requires manual completion) - navigate to it
+            await navigateToSectionOrQuiz({
+              _id: next?.sectionId,
+              isQuiz: false,
+              chapterId: next?.chapterId
+            });
+          } else if (next.navigationType === 'complete') {
+            toast.success('Course completed!');
+            await navigateToNextContent();
+          }
+        } else {
+          // No next content, try to navigate to next chapter/course
+          await navigateToNextContent();
+        }
+      } else {
+        toast.error(res?.message || 'Failed to complete section');
+      }
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to complete section';
+      toast.error(errorMessage);
+    }
   };
   const quizRouteHandler: any = () => {
     if (
@@ -301,7 +578,7 @@ const nextVideoHandler = async () => {
           {!isQuizPage && hasIntroduction && (
             <div className="mb-12">
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+                <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <div className="w-1 h-8 bg-white rounded-full"></div>
                     Introduction
@@ -310,12 +587,49 @@ const nextVideoHandler = async () => {
                 <div className="p-8 md:p-12">
                   <IntroductionComp content={sectionData?.introduction} />
                 </div>
+                
+                {/* Timer display if timer is active */}
+         {hasTimer && !timerCompleted && (
+          <div className="px-6 pb-8">
+            <div className="max-w-xl mx-auto bg-gradient-to-br  rounded-2xl p-6 shadow-md">
+              
+            
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <Clock className="w-6 h-6 text-yellow-600 animate-pulse" />
+                <h3 className="text-lg sm:text-xl font-semibold text-yellow-800">
+                  locked
+                </h3>
+              </div>
+
+              
+              <p className="text-center text-yellow-700 mb-4 text-sm sm:text-base">
+                Please review the course content in full before proceeding Next.
+              </p>
+            </div>
+          </div>
+        )}
+              
+
+                
+                {isManualSection && (
+                  <div className="px-6 pb-6 flex justify-end">
+                   
+                      <button
+                        type="button"
+                        onClick={handleManualCompleteSection}
+                        className="group flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                      >
+                        <span>Go to Next</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>                 
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Video Content Section - Professional Design */}
-          {!isQuizPage && hasVideos && (
+          {!isQuizPage && hasVideos && shouldShowVideos && (
             <div className="mb-12">
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
@@ -418,16 +732,92 @@ const nextVideoHandler = async () => {
                           refetchSectionData={refetchSectionData}
                         />
                       </div>
-                      <div className="flex justify-end mt-6">
-                        <button
-                          type="button"
-                          onClick={nextVideoHandler}
-                          className="group flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
-                        >
-                          <span>Continue to Next</span>
-                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      </div>
+                      {/* Show Continue button only if timer is completed or not required */}
+                      {(!hasTimer || timerCompleted) && (
+                        <div className="flex justify-end mt-6">
+                          <button
+                            type="button"
+                            onClick={nextVideoHandler}
+                            className="group flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                          >
+                            <span>Continue to Next</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Show navigation button when all videos are completed and no video is selected */}
+                  {!selectedVideo && sectionData?.content?.length > 0 && 
+                   sectionData.content.every((video: any) => video.status === 'Completed') && (
+                    <div className="mt-8 flex justify-center">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            // Navigate to next chapter or course
+                            if (refetchChapters) {
+                              await refetchChapters();
+                            }
+
+                            if (!courseId) {
+                              toast.error('Course ID not found');
+                              return;
+                            }
+
+                            const chaptersResponse = await fetchCourseChapters(courseId);
+                            const chapters = chaptersResponse?.data?.chapters || [];
+                            const currentChapterIndex = chapters.findIndex(
+                              (ch: any) => ch._id === derivedChapterId
+                            );
+
+                            if (currentChapterIndex < chapters.length - 1) {
+                              const nextChapter = chapters[currentChapterIndex + 1];
+                              const nextSection = nextChapter?.sections?.[0];
+                              if (nextSection) {
+                                await navigateToSectionOrQuiz(nextSection);
+                                return;
+                              }
+                            }
+
+                            // Check for next course
+                            const customerCoursesResponse = await fetchCustomerCourses();
+                            const allCourses = customerCoursesResponse?.data || [];
+                            const currentCourseIndex = allCourses.findIndex(
+                              (course: any) => course._id === courseId
+                            );
+
+                            if (currentCourseIndex < allCourses.length - 1) {
+                              const nextCourse = allCourses[currentCourseIndex + 1];
+                              const nextCourseId = nextCourse._id;
+                              const nextCourseChapters = await fetchCourseChapters(nextCourseId);
+                              const nextChapters = nextCourseChapters?.data?.chapters || [];
+
+                              if (nextChapters.length > 0) {
+                                const firstChapter = nextChapters[0];
+                                const firstSection = firstChapter?.sections?.[0];
+                                if (firstSection) {
+                                  router.push(
+                                    `/valliani-university/courses/${nextCourseId}?chapter=${firstChapter._id}&section=${firstSection._id}`
+                                  );
+                                  toast.success('Moving to next course...');
+                                  return;
+                                }
+                              }
+                            }
+
+                            toast.success('All videos completed!');
+                          } catch (error: any) {
+                            console.error('Navigation error:', error);
+                            toast.error('Failed to navigate');
+                          }
+                        }}
+                        className="group flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                      >
+                        <span>Go to Next Chapter</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -440,11 +830,11 @@ const nextVideoHandler = async () => {
             <div className={`${isQuizPage ? '' : 'mt-12'}`}>
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 {isQuizPage && (
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-12 text-center">
+                  <div className="bg-gradient-to-r from-green-500 to-green-700 px-8 py-12 text-center">
                     <h1 className="text-5xl font-bold text-white mb-4">
                       Chapter Quiz
                     </h1>
-                    <p className="text-xl text-purple-100">
+                    <p className="text-xl text-white">
                       Test your knowledge to complete this chapter
                     </p>
                   </div>
@@ -456,6 +846,9 @@ const nextVideoHandler = async () => {
                     quizData={sectionData.quiz}
                     refetchChapters={refetchChapters}
                     refetchSectionData={refetchSectionData}
+                    courseId={courseId}
+                    chapterId={derivedChapterId}
+                    onNavigate={navigateToSectionOrQuiz}
                   />
                 </div>
               </div>
@@ -466,3 +859,4 @@ const nextVideoHandler = async () => {
     </div>
   );
 }
+

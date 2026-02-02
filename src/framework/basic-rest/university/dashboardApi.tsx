@@ -164,6 +164,33 @@ export const videoProgress = async (
   }
 };
 
+// Manual section completion (for sections with no content and no quiz)
+export const manualCompleteSection = async (
+  courseId: string,
+  chapterId: string,
+  sectionId: string,
+) => {
+  const token = getToken();
+  try {
+    const response = await axios.post(
+      `${BASE_API}/api/navigation/${courseId}/chapters/${chapterId}/sections/${sectionId}/manual-complete`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message ||
+      'Something went wrong. Please try again later.';
+    throw new Error(errorMessage);
+  }
+};
+
 export const toggleVideoReactions = async (
   courseId: string,
   chapterId: string,
