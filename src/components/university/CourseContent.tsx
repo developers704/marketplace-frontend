@@ -86,6 +86,28 @@ export default function CourseContent({
   const [timerRemaining, setTimerRemaining] = useState<number>(0);
   const router = useRouter();
 
+  // ✅ Helper function to get timer completion key for localStorage
+  const getTimerCompletionKey = (courseId: string, sectionId: string) => {
+    return `course_timer_completed_${courseId}_${sectionId}`;
+  };
+
+  // ✅ Helper function to check if timer is already completed
+  const isTimerAlreadyCompleted = (courseId: string, sectionId: string): boolean => {
+    if (typeof window === 'undefined') return false;
+    const key = getTimerCompletionKey(courseId, sectionId);
+    const completed = localStorage.getItem(key);
+    return completed === 'true';
+  };
+
+  // ✅ Helper function to save timer completion status
+  const saveTimerCompletion = (courseId: string, sectionId: string) => {
+    if (typeof window === 'undefined') return;
+    const key = getTimerCompletionKey(courseId, sectionId);
+    localStorage.setItem(key, 'true');
+    // Also save timestamp for future reference
+    localStorage.setItem(`${key}_timestamp`, new Date().toISOString());
+  };
+
     const isQuizPage = sectionData?.isQuiz === true;
     const hasIntroduction = !isQuizPage && !!sectionData?.introduction;
     const hasObjective = !isQuizPage && !!sectionData?.objective;
@@ -154,7 +176,17 @@ export default function CourseContent({
       return;
     }
 
-    // Reset timer when section changes
+    // ✅ CRITICAL FIX: Check if timer is already completed for this section
+    if (courseId && derivedSectionId) {
+      const alreadyCompleted = isTimerAlreadyCompleted(courseId, derivedSectionId);
+      if (alreadyCompleted) {
+        setTimerCompleted(true);
+        setTimerRemaining(0);
+        return;
+      }
+    }
+
+    // Reset timer when section changes (only if not already completed)
     setTimerCompleted(false);
     setTimerRemaining(requiredTime || 0);
 
@@ -162,6 +194,10 @@ export default function CourseContent({
       setTimerRemaining((prev) => {
         if (prev <= 1) {
           setTimerCompleted(true);
+          // ✅ CRITICAL FIX: Save completion status to localStorage
+          if (courseId && derivedSectionId) {
+            saveTimerCompletion(courseId, derivedSectionId);
+          }
           return 0;
         }
         return prev - 1;
@@ -169,7 +205,7 @@ export default function CourseContent({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [derivedSectionId, requiredTime, hasTimer]);
+  }, [derivedSectionId, requiredTime, hasTimer, courseId]);
 
   const navigateToSectionOrQuiz = async (payload: any) => {
     if (typeof onNavigate === 'function') {

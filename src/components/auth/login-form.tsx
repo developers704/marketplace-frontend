@@ -1,6 +1,6 @@
 'use client';
-import { useContext, useState, useEffect } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useContext, useState, useEffect, useRef } from 'react';
+import { Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { login } from '@/framework/basic-rest/auth/use-login';
 import { verifyOTP, resendOTP } from '@/framework/basic-rest/auth/use-verify-otp';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,8 @@ const LoginForm = ({ lang }: { lang: string }) => {
   const [selectedWarehouse, setSelectedWarehouse] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   // const { mutate: login, isPending } = useLoginMutation();
   const { setPermissions } = useContext(PermissionsContext) || {};
   const { authorize } = useUI();
@@ -42,6 +44,23 @@ const LoginForm = ({ lang }: { lang: string }) => {
     };
     fetchWarehouses();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const handleSubmit = async () => {
     if (!selectedWarehouse) {
@@ -142,20 +161,54 @@ const LoginForm = ({ lang }: { lang: string }) => {
           </button>
         </div>
 
-        {/* Warehouse Dropdown */}
-        <div className="mb-6">
-          <select
-            value={selectedWarehouse}
-            onChange={(e) => setSelectedWarehouse(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
+        {/* Warehouse Dropdown - Custom with fixed height */}
+        <div className="mb-6 relative" ref={dropdownRef}>
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 bg-white text-left flex items-center justify-between"
           >
-            <option value="">Select Warehouse</option>
-            {warehouses.map((w) => (
-              <option key={w._id} value={w._id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
+            <span className={selectedWarehouse ? 'text-gray-900' : 'text-gray-500'}>
+              {selectedWarehouse
+                ? warehouses.find((w) => w._id === selectedWarehouse)?.name || 'Select Warehouse'
+                : 'Select Warehouse'}
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedWarehouse('');
+                  setIsDropdownOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 ${
+                  !selectedWarehouse ? 'bg-teal-50 text-teal-600' : 'text-gray-900'
+                }`}
+              >
+                Select Warehouse
+              </button>
+              {warehouses.map((w) => (
+                <button
+                  key={w._id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedWarehouse(w._id);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 ${
+                    selectedWarehouse === w._id ? 'bg-teal-50 text-teal-600' : 'text-gray-900'
+                  }`}
+                >
+                  {w.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Login Button */}
