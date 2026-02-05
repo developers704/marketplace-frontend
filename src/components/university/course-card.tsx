@@ -3,6 +3,7 @@ import { getImageUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { FaLock } from 'react-icons/fa';
 
 interface CourseCardProps {
   _id: string;
@@ -18,7 +19,6 @@ interface CourseCardDataProps {
 }
 
 export default function CourseCard({ data }: any) {
-  console.log(data, 'courseCardData');
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API || '';
   const router = useRouter();
 
@@ -38,7 +38,6 @@ export default function CourseCard({ data }: any) {
 
   return (
     <div
-      // href={`/valliani-university/courses/chapters/${data?._id}`}
       onClick={() => {
         if (data?.canAccess) {
           router.push(`/valliani-university/courses/${data?._id}`);
@@ -46,64 +45,88 @@ export default function CourseCard({ data }: any) {
           toast.error('You do not have access to this course yet');
         }
       }}
-      className="bg-white w-fix rounded-2xl shadow-sm border p-2 border-gray-200 overflow-hidden max-w-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+      className="
+        group relative cursor-pointer
+        rounded-2xl border border-neutral-200 bg-white
+        transition-all duration-500 ease-out
+        hover:-translate-y-2 hover:scale-[1.02]
+        hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)]
+        overflow-hidden max-w-sm
+      "
     >
-      {/* Course Image */}
-      <div className="relative rounded-2xl aspect-square">
-        {/* <div className="absolute top-3 left-3 z-10">
-          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-brand-blue">
-            {data?.courseType === 'Short Course' ? 'Short Course' : 'Main Course'}
-          </span>
-        </div>
-        <div className="absolute top-3 right-3 z-10">
-          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-white/90 text-gray-700 border">
-            {gradeLabel} • {gradePercentage}%
-          </span>
-        </div> */}
+      {/* ✨ Luxury glow */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-brand/10 via-transparent to-black/5 pointer-events-none" />
+
+      {/* Image */}
+      <div className="relative aspect-square overflow-hidden rounded-2xl">
         <Image
-          src={getImageUrl(BASE_API, data?.thumbnail || '', '/assets/images/Course2.jpg')}
-          alt={'image'}
+          src={getImageUrl(
+            BASE_API,
+            data?.thumbnail || '',
+            '/assets/images/Course2.jpg'
+          )}
+          alt={data?.name || 'course'}
           fill
-          className="object-cover rounded-2xl"
+          className="
+            object-cover transition-transform duration-700 ease-out
+            group-hover:scale-110
+          "
         />
+
+        {/* Lock overlay */}
+        {!data?.canAccess && (
+          <div className="
+            absolute inset-0 flex items-center justify-center
+            bg-black/40 backdrop-blur-sm
+            opacity-0 group-hover:opacity-100
+            transition duration-500
+          ">
+            <FaLock className="text-white text-2xl animate-pulse" />
+          </div>
+        )}
       </div>
 
-      {/* Course Content */}
-      <div className="p-4">
-        {/* Course Title */}
-        <h3 className="text-base font-semibold text-gray-900 mb-3">
-          {data?.name}
+      {/* Content */}
+      <div className="p-4 flex flex-col gap-3">
+        <h3 className="
+          text-base font-semibold text-neutral-900
+          line-clamp-2 group-hover:text-brand
+          transition-colors duration-300
+        ">
+          {data?.name || '-'}
         </h3>
-
-        {/* Course Details */}
-        <div className="flex justify-between items-center mb-4">
-          {/* <span className="text-blue-600 font-medium text-xs">
+   {/* Course Details */}
+        {/* <div className="flex justify-between items-center mb-4">
+          <span className="text-blue-600 font-medium text-xs">
             Approx. {data?.duration}
-          </span> */}
+          </span>
           <span className="text-gray-500 text-sm">
             {data?.totalVideos} Videos
           </span>
-        </div>
-
-        {/* Progress Bar */}
+        </div> */}
+        {/* Progress */}
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-2 rounded-full bg-neutral-200 overflow-hidden">
               <div
-                className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: `${progress}%`,
-                }}
-              ></div>
+                className="
+                  h-full rounded-full
+                  bg-gradient-to-r from-green-400 to-green-600
+                  transition-all duration-700 ease-out
+                "
+                style={{ width: `${progress}%` }}
+              />
             </div>
-            <span className="text-sm font-medium text-gray-600 min-w-fit">
+            <span className="text-sm font-medium text-neutral-600">
               {progress}%
             </span>
           </div>
-          {/* <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>Grade: {gradeLabel}</span>
-            <span>Score: {gradePercentage}%</span>
-          </div> */}
+           <div className="mt-auto flex justify-between items-center">
+           <span className="text-xs uppercase tracking-wider text-neutral-400">
+            {data?.level || '-'}
+           </span>
+             {!data?.canAccess && <FaLock className="text-brand text-xl animate-pulse" />}
+           </div>
         </div>
       </div>
     </div>

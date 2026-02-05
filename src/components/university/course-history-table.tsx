@@ -114,16 +114,25 @@ const courseData: CourseSection[] = [
 const CourseHistoryTable = ({ data, summary }: any) => {
   // console.log(data, 'data progress table');
   const [sections, setSections] = useState<CourseSection[]>([]);
+  const [courseDataState, setCourseDataState] = useState<any[]>(data || []);
   const router = useRouter();
+  
   useEffect(() => {
     setSections(courseData);
   }, []);
+
+  // Update local state when data prop changes
+  useEffect(() => {
+    if (data) {
+      setCourseDataState(data);
+    }
+  }, [data]);
 
   if (!data || data?.length === 0) {
     return (
       <div className="w-full py-12 text-center">
         <div className="text-gray-500 mb-2">
-          <FaUnlock className="w-12 h-12 mx-auto" />
+          <FaUnlock className="w-12 h-12 mx-auto text-brand text-xl animate-pulse" />
         </div>
         <p className="text-gray-500 font-medium">No courses available</p>
       </div>
@@ -144,7 +153,7 @@ const CourseHistoryTable = ({ data, summary }: any) => {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {data?.map((section: any, index: number) => (
+          {courseDataState?.map((section: any, index: number) => (
             <tr
               key={section._id}
               className="hover:bg-gray-50 transition-colors duration-150"
@@ -252,7 +261,27 @@ const CourseHistoryTable = ({ data, summary }: any) => {
                         const res = await requestCertificate(section?._id);
                         if (res?.success) {
                           toast.success(res?.message || 'Certificate request submitted for approval');
-                          router.refresh?.();
+                          
+                          // Update local state immediately without refresh
+                          setCourseDataState((prevData: any[]) =>
+                            prevData.map((course: any) =>
+                              course?._id === section?._id
+                                ? {
+                                    ...course,
+                                    certificateInfo: {
+                                      ...course?.certificateInfo,
+                                      canRequest: false,
+                                      requestStatus: 'Requested',
+                                    },
+                                  }
+                                : course
+                            )
+                          );
+                          
+                          // Optional: Refresh after a delay to sync with server
+                          setTimeout(() => {
+                            router.refresh?.();
+                          }, 1000);
                         } else {
                           toast.error(res?.message || 'Unable to submit certificate request');
                         }

@@ -59,12 +59,12 @@ export default function CourseContent({
   refetchChapters,
   courseId: propCourseId,
   sectionsIsLoading,
-  onNavigate, // optional: parent can load another section/quiz into the right panel
-
+  onNavigate, 
+  selectedVideo,
+  setSelectedVideo
 }: any) {
   const params = useParams() as { chapterId: string; sectionId: string };
   // prefer courseId passed from parent (modal), fallback to URL param
-
   const paramCourseId = params?.chapterId;
   const paramSectionId = params?.sectionId;
   const courseId = propCourseId ?? paramCourseId;
@@ -78,7 +78,7 @@ export default function CourseContent({
     2,
   ]);
   const [activeSidebar, setActiveSidebar] = useState<any>(1);
-  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  // const [selectedVideo, setSelectedVideo] = useState<any>(null);
   const [isQuizStarted, setIsQuizStarted] = useState<any>(false);
   // const [videoReaction, setVideoReaction] = useState<any>('');
   const [watchedDuration, setWatchedDuration] = useState<any>(0);
@@ -118,10 +118,11 @@ export default function CourseContent({
     const isManualSection = !isQuizPage && !hasVideos && !hasQuiz && !sectionData?.quiz;
     // Check if section has only introduction (for display purposes)
     const hasOnlyIntroduction = hasIntroduction && !hasVideos && !hasQuiz && !sectionData?.quiz;
-    // Check if timer is required (only applies if section has videos)
+    // Check if timer is required (applies if section has requiredTime, even without videos)
     const requiredTime = sectionData?.requiredTime || null;
     console.log('requiredTime:', requiredTime);
-    const hasTimer = requiredTime !== null && requiredTime > 0 && hasVideos;
+    // ✅ FIX: Timer should work even if only introduction exists (no videos)
+    const hasTimer = requiredTime !== null && requiredTime > 0;
     // Videos should be shown only if timer is completed or not required
     const shouldShowVideos = !hasTimer || timerCompleted;
 
@@ -617,7 +618,7 @@ const nextVideoHandler = async () => {
                 <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <div className="w-1 h-8 bg-white rounded-full"></div>
-                    Introduction
+                    {sectionData?.title || '-'}
                   </h2>
                 </div>
                 <div className="p-8 md:p-12">
@@ -644,10 +645,8 @@ const nextVideoHandler = async () => {
             </div>
           </div>
         )}
-              
-
-                
-                {isManualSection && (
+                {/* ✅ FIX: Show button only if timer is completed (if timer exists) or no timer */}
+                {isManualSection && (!hasTimer || timerCompleted) && (
                   <div className="px-6 pb-6 flex justify-end">
                    
                       <button
@@ -671,12 +670,12 @@ const nextVideoHandler = async () => {
                 <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <Play className="w-8 h-8" />
-                    Course Videos
+                    Videos {sectionData?.title  || '-'}
                   </h2>
                 </div>
                 <div className="p-8">
-                  {/* Video List - Enhanced Design */}
-                  <div className="space-y-4 mb-8">
+                  {/* Video List - Professional Horizontal Layout */}
+                  <div className="flex flex-wrap gap-4 mb-8">
                     {sectionData.content.map((video: any, idx: number) => {
                       const isSelected = selectedVideo === video._id;
                       const isCompleted = video?.status === 'Completed';
@@ -694,61 +693,93 @@ const nextVideoHandler = async () => {
                             }
                             setSelectedVideo(video._id);
                           }}
-                          className={`w-full text-left p-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] ${
+                          className={`flex-1 min-w-[280px] max-w-full sm:max-w-[220px] text-left p-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.03] hover:shadow-2xl relative overflow-hidden group ${
                             isSelected
-                              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-500 shadow-lg'
-                              : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent hover:border-gray-300 shadow-md hover:shadow-lg'
+                              ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-500 shadow-xl ring-4 ring-blue-200'
+                              : isLocked
+                              ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-300 shadow-md opacity-75 cursor-not-allowed'
+                              : 'bg-gradient-to-br from-white to-gray-50 border-2 border-transparent hover:border-blue-300 shadow-lg hover:shadow-xl'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6 flex-1">
-                              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                          {/* Decorative gradient overlay on hover */}
+                          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${
+                            isSelected ? 'from-blue-400 to-purple-400' : 'from-blue-400 to-indigo-400'
+                          }`}></div>
+                          
+                          <div className="relative z-10 flex flex-col h-full">
+                            {/* Top section with number/icon and status */}
+                            <div className="flex items-start justify-between mb-4">
+                              <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg transition-all duration-300 ${
                                 isSelected 
-                                  ? 'bg-blue-600 text-white' 
+                                  ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white ring-4 ring-blue-200' 
                                   : isCompleted
-                                  ? 'bg-green-500 text-white'
-                                  : 'bg-gray-300 text-gray-600'
+                                  ? 'bg-gradient-to-br from-green-500 to-emerald-500 text-white'
+                                  : isLocked
+                                  ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-600'
+                                  : 'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 group-hover:from-blue-100 group-hover:to-indigo-100'
                               }`}>
                                 {isCompleted ? (
                                   <CheckCircle2 className="w-6 h-6" />
                                 ) : (
-                                  idx + 1
+                                  <span className="text-lg font-extrabold">{idx + 1}</span>
                                 )}
                               </div>
-                              <div className="flex-1">
-                                <h3 className={`text-lg font-semibold mb-2 ${
-                                  isSelected ? 'text-blue-900' : 'text-gray-800'
-                                }`}>
-                                  {video.title}
-                                </h3>
-                                {video.duration && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Clock className="w-4 h-4" />
-                                    <span>
-                                      {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')} min
-                                    </span>
+                              
+                              {/* Status badges */}
+                              <div className="flex flex-col items-end gap-2">
+                                {isSelected && (
+                                  <div className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full text-xs font-bold shadow-md flex items-center gap-1.5 animate-pulse">
+                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    Playing
+                                  </div>
+                                )}
+                                {isCompleted && !isSelected && (
+                                  <div className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-xs font-semibold shadow-md flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    Done
+                                  </div>
+                                )}
+                                {isLocked && (
+                                  <div className="px-3 py-1.5 bg-gray-300 text-gray-700 rounded-full text-xs font-semibold shadow-md flex items-center gap-1.5">
+                                    <Lock className="w-3.5 h-3.5" />
+                                    Locked
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              {isCompleted && (
-                                <div className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-2">
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  Completed
+
+                            {/* Video title */}
+                            <div className="flex-1 mb-4">
+                              <h3 className={`text-base font-bold leading-tight line-clamp-2 ${
+                                isSelected 
+                                  ? 'text-blue-900' 
+                                  : isLocked
+                                  ? 'text-gray-500'
+                                  : 'text-gray-800 group-hover:text-blue-700'
+                              }`}>
+                                {video.title}
+                              </h3>
+                            </div>
+
+                            {/* Bottom section with duration */}
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                              {video.duration && (
+                                <div className={`flex items-center gap-2 text-sm font-medium ${
+                                  isSelected ? 'text-blue-700' : 'text-gray-600'
+                                }`}>
+                                  <Clock className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
+                                  <span>
+                                    {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
+                                  </span>
                                 </div>
                               )}
-                              {isLocked && (
-                                <div className="px-4 py-2 bg-gray-200 text-gray-600 rounded-full text-sm font-medium flex items-center gap-2">
-                                  <Lock className="w-4 h-4" />
-                                  Locked
-                                </div>
-                              )}
-                              {isSelected && (
-                                <div className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium">
-                                  Playing
-                                </div>
-                              )}
+                              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                isSelected 
+                                  ? 'bg-blue-600 animate-pulse' 
+                                  : isCompleted
+                                  ? 'bg-green-500'
+                                  : 'bg-gray-300'
+                              }`}></div>
                             </div>
                           </div>
                         </button>

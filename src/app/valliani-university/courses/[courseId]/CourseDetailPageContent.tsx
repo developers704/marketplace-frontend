@@ -20,6 +20,7 @@ export default function CourseDetailPageContent() {
   const [sectionsIsLoading, setSectionsIsLoading] = useState<boolean>(false);
   const [courseName, setCourseName] = useState<string>('');
   const [autoLoaded, setAutoLoaded] = useState(false);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
  
   const {
     data: chapters,
@@ -187,6 +188,8 @@ export default function CourseDetailPageContent() {
           ) : sectionData ? (
             <CourseContent
               sectionData={sectionData}
+              selectedVideo={selectedVideoId}
+              setSelectedVideo={setSelectedVideoId}
               refetchSectionData={refetchSelectedSection}
               refetchChapters={refetchSectionData}
               courseId={courseId}
