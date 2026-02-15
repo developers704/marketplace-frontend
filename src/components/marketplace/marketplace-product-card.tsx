@@ -22,14 +22,15 @@ export default function MarketplaceProductCard({
   lang,
   product,
   className,
+  returnUrl,
 }: {
   lang: string;
   product: VendorProductListItem;
   className?: string;
+  returnUrl?: string;
 }) {
   const router = useRouter();
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
-// console.log('product in card', product);
   const title = product?.title || "-";
   const brand = product?.brand || '';
   const totalQty = product?.totalInventory ?? 0;
@@ -47,14 +48,28 @@ export default function MarketplaceProductCard({
   const defaultImage = product?.defaultSku?.images?.[0];
   const imageUrl = buildImageUrl(BASE_API, defaultImage);
 
+  const productHref = product?._id
+    ? `/${lang}/marketplace/${product._id}${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`
+    : '#';
+
+  const handleClick = () => {
+    if (!product?._id) return;
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('marketplaceScrollPosition', String(window.scrollY));
+      } catch (_) {}
+    }
+    router.push(productHref);
+  };
+
   return (
     <article
       className={cn(
         'bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer h-full flex flex-col',
         className,
       )}
-      onClick={() => product?._id && router.push(`/${lang}/marketplace/${product._id}`)}
-      title={title}
+      onClick={handleClick}
+      title={title || '-'}
     >
       <div className="relative">
         <div className="relative w-full aspect-square bg-gray-50">
@@ -69,10 +84,10 @@ export default function MarketplaceProductCard({
       <div className="p-4 flex-1 flex flex-col">
         <div className="text-sm font-bold text-gray-900 line-clamp-2">{title}</div>
         <div className="mt-3 flex items-center justify-between">
-        {brand ? <div className="text-xs text-gray-500 mt-1">Brand: {brand}</div> : null}
+        {brand ? <div className="text-xs text-gray-500 mt-1">Brand: {brand || "-"}</div> : null}
          <div className="">
           <span className="text-xs text-gray-500 mt-1">
-            Qty: {totalQty}
+            Qty: {totalQty || "-"}
           </span>
         </div>
         </div>

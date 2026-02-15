@@ -41,16 +41,12 @@ export default function ElegantLayout({
   const isAuthPage = pathname?.includes('/signin');
 
   return (
-    <div className="flex flex-col ">
-      {/* <ClientRenderedHightLightedBar lang={lang} /> */}
-      {/* remove the mounted check */}
-      {/* End of highlighted bar  */}
+    <div className="flex flex-col min-h-screen">
+      {/* Fixed header at top of viewport */}
       {!isAuthPage && <Header lang={lang} />}
+      {/* Page scroll on body; main has no overflow so sticky works relative to viewport */}
       <main
         className="relative flex-grow "
-        style={{
-          WebkitOverflowScrolling: 'touch',
-        }}
       >
         {children}
       </main>

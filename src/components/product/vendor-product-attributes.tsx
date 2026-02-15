@@ -39,6 +39,7 @@ const VendorProductAttributes: React.FC<VendorProductAttributesProps> = ({ attri
 
   const renderSection = (title: string, data: Record<string, any>) => {
     const rows = filterEmpty(data);
+    
     if (!rows.length) return null;
 
     return (
@@ -65,48 +66,48 @@ const VendorProductAttributes: React.FC<VendorProductAttributesProps> = ({ attri
     {
       title: 'General Information',
       data: {
-        Description: attributes.descriptionname,
-        Style: attributes.style,
-        Subcategory: attributes.subcategorydepartment,
-        'Brand Design': attributes.branddesign,
-        Gender: attributes.gender,
+        Description: attributes?.descriptionname,
+        Style: attributes?.style,
+        Subcategory: attributes?.subcategorydepartment,
+        'Brand Design': attributes?.branddesign,
+        Gender: attributes?.gender,
       },
     },
     {
       title: 'Metal Information',
       data: {
-        'Average Weight': attributes.avgweight
-          ? `${attributes.avgweight} g`
+        'Average Weight': attributes?.avgweight
+          ? `${attributes?.avgweight} g`
           : null,
       },
     },
     {
       title: 'Center Stone Details',
       data: {
-        'Stone Type': attributes.stonetype,
-        Stone: attributes.centerstone,
-        Shape: attributes.centershape,
-        'Carat Weight': attributes.centercarat
-          ? `${attributes.centercarat} ct`
+        'Stone Type': attributes?.stonetype,
+        Stone: attributes?.centerstone,
+        Shape: attributes?.centershape,
+        'Carat Weight': attributes?.centercarat
+          ? `${attributes?.centercarat} ct`
           : null,
-        Color: attributes.centercolor,
-        Clarity: attributes.centerclarity,
+        Color: attributes?.centercolor,
+        Clarity: attributes?.centerclarity,
       },
     },
     {
       title: 'Side Stone Details',
       data: {
-        'Stone Type': attributes.sidestone,
-        'Carat Weight': attributes.sidecarat
-          ? `${attributes.sidecarat} ct`
+        'Stone Type': attributes?.sidestone,
+        'Carat Weight': attributes?.sidecarat
+          ? `${attributes?.sidecarat} ct`
           : null,
-        Color: attributes.sidecolor,
-        Clarity: attributes.sideclarity,
+        Color: attributes?.sidecolor,
+        Clarity: attributes?.sideclarity,
       },
     },
-  ].filter((s) => filterEmpty(s.data).length > 0);
+  ].filter((s) => filterEmpty(s?.data)?.length > 0);
 
-  const visible = expanded ? sections : sections.slice(0, 2);
+  const visible = expanded ? sections : sections?.slice(0, 2);
 
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-6 lg:p-8 space-y-6">
@@ -116,7 +117,7 @@ const VendorProductAttributes: React.FC<VendorProductAttributesProps> = ({ attri
           Product Specifications
         </h2>
 
-        {sections.length > 2 && (
+        {sections?.length > 2 && (
           <button
             onClick={() => setExpanded(!expanded)}
             className="flex items-center gap-1 text-sm font-medium text-brand-blue hover:text-brand-blue/80 transition"
@@ -137,7 +138,7 @@ const VendorProductAttributes: React.FC<VendorProductAttributesProps> = ({ attri
       {/* Content */}
       <div className="grid grid-cols-1 gap-4">
         {visible.map((section) =>
-          renderSection(section.title, section.data),
+          renderSection(section?.title, section?.data),
         )}
       </div>
     </section>

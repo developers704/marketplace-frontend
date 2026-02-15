@@ -41,6 +41,33 @@ const mapQueryToParams = (options: any, pageParam: string | number | null) => {
     params.maxPrice = parseFloat(q.maxPrice);
   }
 
+  // Sort: featured | new-arrivals | best-sellers | price-asc | price-desc
+  if (q?.sort) params.sort = q.sort;
+
+  // Quantity filter: min inventory (vendor total quantity)
+  if (q?.minQuantity !== undefined && q?.minQuantity !== null && q?.minQuantity !== '') {
+    const n = parseInt(String(q.minQuantity), 10);
+    if (!isNaN(n) && n >= 0) params.minQuantity = n;
+  }
+
+  // Jewelry filters (SKU-level)
+  if (q?.metalColor) params.metalColor = q.metalColor;
+  if (q?.metalType) params.metalType = q.metalType;
+  if (q?.size) params.size = q.size;
+  if (q?.stonetype) params.stonetype = q.stonetype;
+  if (q?.centerclarity) params.centerclarity = q.centerclarity;
+
+  // Dynamic attribute filters (defaultSku.attributes keys from API)
+  const knownKeys = new Set([
+    'search', 'text', 'brand', 'category', 'subcategory', 'subsubcategory',
+    'minPrice', 'maxPrice', 'sort', 'minQuantity', 'metalColor', 'metalType', 'size', 'stonetype', 'centerclarity',
+  ]);
+  Object.entries(q || {}).forEach(([key, val]) => {
+    if (knownKeys.has(key)) return;
+    if (val === undefined || val === null || val === '') return;
+    params[key] = Array.isArray(val) ? val.join(',') : String(val);
+  });
+
   // Also allow direct options.text
   if (options?.text) params.search = options.text;
   if (options?.search) params.search = options.search;

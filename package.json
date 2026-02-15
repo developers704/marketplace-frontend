@@ -5,6 +5,7 @@
   "scripts": {
     "clean": "rimraf .next dist build out node_modules",
     "dev": "next dev",
+    "tab":"next dev -H 0.0.0.0",
     "build": "next build && next export",
     "export": "next export",
     "start": "NODE_ENV=production node server.js",

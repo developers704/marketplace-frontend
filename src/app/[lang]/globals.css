@@ -41,6 +41,7 @@
     outline: 0px solid !important;
   }
   :root {
+    --header-height: 64px;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -316,6 +317,13 @@ input:checked + .slider:before {
 
 .header-five.sticky-header.is-scrolling .innerSticky .categories-header-button {
   display: none;
+}
+
+/* Header height for fixed header + sticky filter bar (mobile 64px, desktop 80px) */
+@media (min-width: 1024px) {
+  :root {
+    --header-height: 80px;
+  }
 }
 
 /* sticky site header styles */

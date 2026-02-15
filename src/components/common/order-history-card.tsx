@@ -99,13 +99,13 @@ const OrderHistroyCard = ({ setOrderDetail, setStatusTitle, data }: any) => {
                   </div>
                 </div>
                 <div className="flex-1 w-full text-center text-[20px] font-semibold">
-                  $ {item?.price}
+                  $ {item?.price || ""}
                 </div>
                 <div className="flex-1 w-full text-center flex items-center justify-center text-[20px] font-semibold">
-                  {item?.quantity}
+                  {item?.quantity || ""}
                 </div>
                 <div className="flex-1 w-full text-center text-[20px] font-semibold">
-                  $ {item?.price * item?.quantity}
+                  $ {item?.price * item?.quantity || ""}
                 </div>
               </div>
             );
@@ -119,7 +119,7 @@ const OrderHistroyCard = ({ setOrderDetail, setStatusTitle, data }: any) => {
         >
           <div className="bg-brand-blue text-white font-semibold rounded-lg mt-3 px-5 py-2 w-[220px] flex items-center gap-2">
             Grand Total:{' '}
-            <span className="font-normal"> ${data?.grandTotal}</span>{' '}
+            <span className="font-normal"> ${data?.grandTotal || ""}</span>{' '}
           </div>
         </div>
       </div>

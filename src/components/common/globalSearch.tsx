@@ -1,70 +1,66 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import SearchIcon from '../icons/search-icon';
 import CloseIcon from '../icons/close-icon';
 import { cn } from '@/lib/utils';
-import { searchGlobal } from '@/framework/basic-rest/search/useSearch';
-import Link from 'next/link';
+import { searchV2Products } from '@/framework/basic-rest/search/useSearch';
+import type { VendorProductListItem } from '@/framework/basic-rest/types/catalogV2';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
+
+const DEBOUNCE_MS = 300;
 
 const GlobalSearch = ({
-  placeholder = 'What are you looking for?',
+  placeholder = 'Search by product name, SKU, or vendor model...',
   lang = 'en',
 }: any) => {
-  const [searchQuery, setSearchQuery] = useState<any | string>('');
-  const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [filteredResults, setFilteredResults] = useState<any>();
-  const [sampleData, setSampleData] = useState<any>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<VendorProductListItem[]>([]);
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
+  // Debounce search input (same idea as marketplace page)
   useEffect(() => {
-    const fetchGlobalSearch = async () => {
-      if (isFocused) {
-        // console.log('Fetching search results...'); // Debugging
-        const response = await searchGlobal();
-        // console.log(response, '===>>> response');
-        if (response.message === 'Invalid token. Please log in again.') {
-          toast.error('Please log in to Search.');
-        }
-        if (response.length > 0) {
-          setSampleData(response);
-        } else {
-          console.log('something went wrong');
-        }
-      }
-    };
-    fetchGlobalSearch();
-  }, [isFocused]); // Run only when input is focused
-
-  useEffect(() => {
-    if (searchQuery === '') {
-      setFilteredResults([]);
-    } else {
-      // Filter sampleData based on searchQuery
-      const results = sampleData.filter((item: any) =>
-        item?.name.toLowerCase().includes(searchQuery),
-      );
-      setFilteredResults(results);
-    }
+    const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), DEBOUNCE_MS);
+    return () => clearTimeout(t);
   }, [searchQuery]);
 
-  //   console.log(filteredResults, '===>>> filteredResults');
-
-  const routeHandler = (item: any) => {
-    if (item?.productType === 'Special') {
-      router.push(`${lang}/specialProducts/${item?._id}`);
-    } else {
-      router.push(`${lang}/products/${item?._id}`);
+  // Fetch v2 products by search (same API as marketplace)
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
     }
-  };
+    let cancelled = false;
+    setIsSearching(true);
+    searchV2Products(debouncedQuery).then((data) => {
+      console.log(data,"data images")
+      if (!cancelled) {
+        setSearchResults(Array.isArray(data) ? data : []);
+        setIsSearching(false);
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setSearchResults([]);
+        setIsSearching(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [debouncedQuery]);
+
+  const goToProduct = useCallback((product: VendorProductListItem) => {
+    if (!product?._id) return;
+    setSearchQuery('');
+    setSearchResults([]);
+    router.push(`/${lang}/marketplace/${product?._id}`);
+  }, [lang, router]);
 
   return (
     //  {/* Search */}
 
-    <div className="relative z-30 flex flex-col justify-center w-fit shrink-0 ">
-      <div className="flex flex-col w-[250px]  ">
+    <div className="relative z-30 flex flex-col justify-center w-fit shrink-0">
+      <div className="flex flex-col w-[380px]  ">
         <div
           className="relative flex w-full rounded-full"
           // noValidate
@@ -89,8 +85,6 @@ const GlobalSearch = ({
               autoComplete="off"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsFocused(true)} // ✅ Set focus to true
-              onBlur={() => setIsFocused(false)} // ✅ Set focus to false when unfocused
               // onFocus={onFocus}
               // ref={ref}
               // {...rest}
@@ -111,29 +105,29 @@ const GlobalSearch = ({
             </span>
           )}
         </div>
-        {filteredResults?.length > 0 && (
-          <ul className="absolute top-[55px] left-0 w-full bg-white border border-gray-200 rounded-lg shadow-md max-h-60 overflow-y-auto">
-            {filteredResults.map((item: any, index: number) => (
-              // href={`/${lang}/${item?.category[0].name}/${item?.subcategory[0]?.name}/${item?.name}?id=${item?._id}`}
-              <Link
-                href={
-                  item?.productType === 'Special'
-                    ? `/${lang}/specialProducts/${item?._id}`
-                    : item?.productType === 'Regular'
-                      ? `/${lang}/${item?.category?.name}/${item?.subcategory?.name}/${item?.name}?id=${item?._id}`
-                      : ''
-                }
-                key={index}
-                className="px-4 block py-2 cursor-pointer hover:bg-gray-100"
-                // onMouseDown={() => setSearchQuery(item?.name)} // Prevents onBlur from closing too soon
-                onClick={() => {
-                  setSearchQuery(item?.name);
-                  routeHandler(item);
-                }}
-              >
-                {item?.name}
-              </Link>
-            ))}
+        {searchQuery && (searchResults?.length > 0 || isSearching || debouncedQuery) && (
+          <ul className="absolute top-[55px] left-0 w-full bg-white border border-gray-200 rounded-lg shadow-md max-h-60 overflow-y-auto z-50">
+            {isSearching ? (
+              <li className="px-4 py-3 text-brand-muted text-sm">Searching...</li>
+            ) : searchResults?.length === 0 ? (
+              <li className="px-4 py-3 text-brand-muted text-sm">No products found.</li>
+            ) : (
+              searchResults?.map((item) => (
+                <li key={item?._id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => goToProduct(item)}
+                  >
+                    <span className="text-sm">{item?.defaultSku?.attributes?.descriptionname || item?.vendorModel || '-'}</span>
+                    {item?.brand ? (
+                      <span className="ml-2 text-brand-muted text-sm  font-medium ">({item?.brand || "-"})</span>
+                    ) : null}
+                  </button>
+                </li>
+              ))
+            )}
           </ul>
         )}
       </div>

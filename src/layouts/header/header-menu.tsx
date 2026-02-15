@@ -1,6 +1,6 @@
 'use client';
+
 import Link from '@components/ui/link';
-import { FaChevronDown } from 'react-icons/fa';
 import ListMenu from '@components/ui/list-menu';
 import cn from 'classnames';
 import { useTranslation } from 'src/app/i18n/client';
@@ -16,185 +16,125 @@ interface MenuProps {
   userPermission?: any;
 }
 
-// deactive menu = #666665
-// group-hover:text-brand-underline_color before:absolute before:w-0 before:ltr:right-0 rtl:left-0 before:bg-brand-underline_color before:h-[3px] before:transition-all before:duration-300 before:-bottom-[14px] group-hover:before:w-full ltr:group-hover:before:left-0 rtl:group-hover:before:right-0 lrt:group-hover:before:right-auto rtl:group-hover:before:left-auto
-
 const HeaderMenu: React.FC<MenuProps> = ({
   lang,
   data,
   className,
-  // userPermission,
 }) => {
   const { t } = useTranslation(lang, 'menu');
   const path = usePathname();
   const [activePath, setActivePath] = useState(path);
-  const [menuToShow, setMenuToShow] = useState<any>(null);
   const { permissions: userPermission } = useContext(PermissionsContext);
   const { isAuthorized } = useUI();
-  const key = 'Cart';
 
   const menuItems = [
-    {
-      id: 1,
-      path: `/${lang}/`,
-      label: 'Home',
-    },
-    {
-      id: 2,
-      path: '/valliani-university',
-      label: 'Valliani University',
-    },
-    // {
+    { id: 1, path: `/${lang}/`, label: 'Home' },
+    { id: 2, path: '/valliani-university', label: 'Valliani University' },
+      // {
     //   id: 3,
     //   path: '/inventory-orders',
     //   label: 'Inventory Order',
     // },
-     {
-      id: 10,
-      path: `/${lang}/marketplace`,
-      label: 'Inventory',
-    },
-    // {
+    { id: 10, path: `/${lang}/marketplace`, label: 'Inventory' },
+        // {
     //   id: 9,
     //   path: `/${lang}/Inventory`,
     //   label: 'Inventory',
     // },
-    {
-      id: 4,
-      path: `/${lang}/marketing`,
-      label: 'Marketing',
-    },
-    {
-      id: 5,
-      path: `/${lang}/supplies`,
-      label: 'Supplies',
-    },
-   
-    {
-      id: 11,
-      path: `/${lang}/marketplace/store-inventory`,
-      label: 'My inventory',
-    },
-    
-    {
-      id: 6,
-      path: `/${lang}/tool-findings`,
-      label: 'Tool Finding',
-    },
-    // {
+    { id: 4, path: `/${lang}/marketing`, label: 'Marketing' },
+    { id: 5, path: `/${lang}/supplies`, label: 'Supplies' },
+    { id: 11, path: `/${lang}/marketplace/store-inventory`, label: 'My inventory' },
+    { id: 6, path: `/${lang}/tool-findings`, label: 'Tool Finding' },
+    { id: 8, path: `/${lang}/GWP`, label: 'GWP' },
+     // {
     //   id: 7,
     //   path: '/packaging',
     //   label: 'GWP',
     // },
-    {
-      id: 8,
-      path: `/${lang}/GWP`,
-      label: 'GWP',
-    },
-    {
-      id: 8,
-      path: `${lang}/GWP/`,
-      label: 'Special Order',
-    },
+    { id: 9, path: `/${lang}/GWP/`, label: 'Special Order' },
   ];
 
-  // console.log(path)
-  // console.log(userPermission, '====>>> active userPermission');
-  // console.log(data, '=====> data');
   const isHome = `/${lang}` === activePath;
-  // console.log(isHome, '====>>> isHome path');
+
   useEffect(() => {
     setActivePath(path);
   }, [path]);
 
-  // const normalizeKey = (label: string) =>
-  //   label.trim().replace(/\s*\/\s*/g, '-'); // Normalize menu labels to match permission keys
-
   const normalizeKey = (label: string) => {
-    const mapping: any = {
-      Inventory: 'Inventory Order', // Map Inventory to inventory-orders
+    const mapping: Record<string, string> = {
+      Inventory: 'Inventory Order',
     };
-
     return mapping[label] || label.trim().replace(/\s*\/\s*/g, '-');
   };
 
   const filteredMenu = menuItems.filter((item) => {
-    // Marketplace is an internal visibility tab — show for authorized users even if permission key is not configured yet.
     if (item.label === 'Marketplace') return true;
-
     const permissionKey = normalizeKey(item.label);
-    // console.log(permissionKey, '====>>> permissionKey');
-
-    // Check if permissionKey exists in userPermissions
-    if (!userPermission?.hasOwnProperty(permissionKey)) {
-      return false; // Skip if permission is missing
-    }
-
+    if (!userPermission?.hasOwnProperty(permissionKey)) return false;
     return userPermission[permissionKey]?.View === true;
   });
 
-  // console.log(filteredMenu, '====>>> filteredMenu');
-
   if (!isAuthorized) return <div>Login to continue</div>;
+
+  const items = filteredMenu.length === 0 ? menuItems : filteredMenu;
 
   return (
     <nav
       className={cn(
-        'headerMenu  flex overflow-x-auto space-x-2 scrollbar-thin scrollbar-custom',
-        className,
-      )}
+    'headerMenu flex flex-nowrap  items-center justify-start gap-2 py-1 w-full overflow-hidden',
+    className
+  )}
     >
-      {/* (filteredMenu.length === 0 ? menuItems : filteredMenu) */}
-      {(filteredMenu.length === 0 ? menuItems : filteredMenu)?.map(
-        (item: any) => {
-          const isActive = `${item.path}` === activePath;
-          const isHomeCondition = `/${lang}` === '' && isHome; // Special condition for home page
-          // console.log(isHomeCondition)
-          return (
-            <Link
-              href={`${item.path}`}
-              className={`relative inline-flex items-center justify-center text-[10px] font-semibold xl:text-[14px] text-brand-light text-center`}
-            >
-              <div
-                className={cn(
-                  'min-w-max text-white xl:py-[8px] xl:px-[20px] lg:py-[5px] lg:px-[10px] md:py-[3px] px-[10px] text-[10px] xl:text-[14px] rounded-full shadow-lg hover:bg-blue-400 transition-colors',
-                  {
-                    'bg-[#3A7BD5]': isActive || isHome, // Active state background or home condition
-                    'bg-[#666665]': !isActive && !isHomeCondition, // Inactive state background
-                  },
-                )}
-                key={item.id}
-              >
-                {/* {console.log(`/${lang}${item.path}`)} */}
+      {items.map((item: { id: number; path: string; label: string; subMenu?: any }) => {
+        const isActive = item.path === activePath;
+        const isHomeCondition = `/${lang}` === '' && isHome;
+        const active = isActive || isHomeCondition;
 
-                {t(item.label)}
+        return (
+          <Link
+            key={item.id}
+            href={item.path}
+            className="relative inline-flex items-center justify-center  text-center group "
+          >
+            <span
+              className={cn(
+            'relative flex-shrink min-w-0 text-center font-semibold text-white whitespace-nowrap',         
+            'text-[clamp(9px,0.85vw,14px)]',
+            'transition-all duration-100 ease-out',
+             'transform hover:-translate-y-0.5 hover:scale-[1.02]',
+            'active:translate-y-0 active:scale-[0.97]',
+            'px-[clamp(6px,1vw,18px)] py-[clamp(4px,0.7vw,10px)]',
+            'rounded-tl-xl rounded-br-2xl transition-all duration-150 ease-out',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700',
+             active
+              ? 'bg-blue-900/95 ring-1 ring-blue-400/20  hover:bg-blue-800/90 hover:shadow-[0_12px_35px_rgba(30,64,175,0.45)] hover:ring-blue-300/40 active:bg-slate-900 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]'
+              : 'bg-black/90  ring-1 ring-black/10 hover:bg-blue-900/95 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:ring-white/10 active:bg-slate-600 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.25)]'
+          )}
+        >
+              {t(item.label)}
+            </span>
 
-                {item?.subMenu && Array.isArray(item?.subMenu) && (
-                  <div className="absolute z-30 opacity-0 subMenu shadow-dropDown transition-all duration-300 invisible bg-brand-light ltr:left-0 rtl:right-0 w-[220px] xl:w-[240px] group-hover:opacity-100">
-                    <ul className="py-5 text-sm text-brand-muted">
-                      {item.subMenu.map((menu: any, index: number) => {
-                        const dept: number = 1;
-                        const menuName: string = `sidebar-menu-${dept}-${index}`;
-                        return (
-                          <ListMenu
-                            dept={dept}
-                            data={menu}
-                            hasSubMenu={menu.subMenu}
-                            menuName={menuName}
-                            key={menuName}
-                            menuIndex={index}
-                            lang={lang}
-                          />
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
+            {item?.subMenu && Array.isArray(item.subMenu) && (
+              <div className="absolute top-full z-30 mt-2 w-[220px] rounded-2xl border border-slate-200/80 bg-white py-3 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.18)] opacity-0 invisible translate-y-1 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 xl:w-[240px] ltr:left-0 rtl:right-0 rtl:left-auto">
+                <ul className="text-sm text-slate-600">
+                  {item.subMenu.map((menu: any, index: number) => (
+                    <ListMenu
+                      key={`sidebar-menu-1-${index}`}
+                      dept={1}
+                      data={menu}
+                      hasSubMenu={menu.subMenu}
+                      menuName={`sidebar-menu-1-${index}`}
+                      
+                      menuIndex={index}
+                      lang={lang}
+                    />
+                  ))}
+                </ul>
               </div>
-            </Link>
-          );
-        },
-      )}
+            )}
+          </Link>
+        );
+      })}
     </nav>
   );
 };

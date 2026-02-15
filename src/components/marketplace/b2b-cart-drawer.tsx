@@ -117,13 +117,13 @@ const debounceTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   });
 
   const handlePlaceOrder = async () => {
-    if (!cart || cart.items.length === 0) {
+    if (!cart || cart?.items?.length === 0) {
       toast.error('Cart is empty');
       return;
     }
 
-    const walletBalance = cart.walletBalance || 0;
-    const subtotal = cart.subtotal || 0;
+    const walletBalance = cart?.walletBalance || 0;
+    const subtotal = cart?.subtotal || 0;
 
     if (walletBalance < subtotal) {
       toast.error(`Insufficient wallet balance. Available: ${walletBalance.toFixed(2)}, Required: ${subtotal.toFixed(2)}`);
@@ -154,19 +154,19 @@ const debounceTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
     const updatedCart = {
       ...currentCart,
-      items: currentCart.items.map((item) =>
+      items: currentCart?.items.map((item) =>
         item._id === itemId ? { ...item, quantity: newQty } : item
       ),
     };
 
-    updatedCart.subtotal = updatedCart.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+    updatedCart.subtotal = updatedCart?.items.reduce(
+      (sum, item) => sum + item?.price * item?.quantity,
       0
     );
 
-    if (updatedCart.walletBalance !== undefined) {
+    if (updatedCart?.walletBalance !== undefined) {
       updatedCart.remainingBalance =
-        updatedCart.walletBalance - updatedCart.subtotal;
+        updatedCart?.walletBalance - updatedCart?.subtotal;
     }
 
     queryClient.setQueryData(['v2-b2b-cart'], updatedCart);
@@ -214,9 +214,9 @@ if (!isOpen) return null;
           <div className="flex items-center gap-2">
             <ShoppingCart className="text-brand-blue" size={24} />
             <h2 className="text-lg font-bold text-gray-900">B2B Cart</h2>
-            {cart && cart.items.length > 0 && (
+            {cart && cart?.items?.length > 0 && (
               <span className="px-2 py-0.5 bg-brand-blue text-white text-xs font-semibold rounded-full">
-                {cart.items.length}
+                {cart?.items?.length || "-"}
               </span>
             )}
           </div>
@@ -233,35 +233,35 @@ if (!isOpen) return null;
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
             <div className="text-center py-8 text-gray-500">Loading cart...</div>
-          ) : !cart || cart.items.length === 0 ? (
+          ) : !cart || cart?.items?.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingCart className="mx-auto text-gray-300 mb-4" size={48} />
               <p className="text-gray-500">Your cart is empty</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {cart.items.map((item) => {
-                const itemTotal = item.price * item.quantity;
+              {cart?.items?.map((item) => {
+                const itemTotal = item?.price * item?.quantity;
                 const { price: displayPrice } = getPrice({
                   amount: itemTotal,
-                  currencyCode: item.currency || 'USD',
+                  currencyCode: item?.currency || 'USD',
                 });
 
                 return (
-                  <div key={item._id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={item?._id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{item.vendorProductId.title}</h3>
-                        <p className="text-sm text-gray-500">{item.vendorProductId.vendorModel}</p>
+                        <h3 className="font-semibold text-gray-900">{item?.vendorProductId?.title || "-"}</h3>
+                        <p className="text-sm text-gray-500">{item?.vendorProductId?.vendorModel || "-"}</p>
                         <p className="text-xs text-gray-400 mt-1">
-                          SKU: {item.skuId.sku}
-                          {item.skuId.metalColor && ` • ${item.skuId.metalColor}`}
-                          {item.skuId.metalType && ` • ${item.skuId.metalType}`}
-                          {item.skuId.size && ` • Size: ${item.skuId.size}`}
+                          SKU: {item?.skuId?.sku || "-"}
+                          {item?.skuId?.metalColor && ` • ${item?.skuId?.metalColor || "-"}`}
+                          {item?.skuId?.metalType && ` • ${item?.skuId?.metalType || "-"}`}
+                          {item?.skuId?.size && ` • Size: ${item?.skuId?.size || "-"}`}
                         </p>
                       </div>
                       <button
-                        onClick={() => removeItemMutation.mutate(item._id)}
+                        onClick={() => removeItemMutation.mutate(item?._id)}
                         className="p-1 text-red-600 hover:bg-red-50 rounded"
                         aria-label="Remove item"
                       >
@@ -274,16 +274,16 @@ if (!isOpen) return null;
                         <span className="text-sm text-gray-600">Qty:</span>
                       <Counter
                         lang={lang}
-                        value={item.quantity}
+                        value={item?.quantity}
                         variant="mercury"
-                        onDecrement={() => handleUpdateQuantity(item._id, item.quantity - 1)}
-                        onIncrement={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                        onDecrement={() => handleUpdateQuantity(item?._id, item?.quantity - 1)}
+                        onIncrement={() => handleUpdateQuantity(item?._id, item?.quantity + 1)}
                       />
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-gray-900">{displayPrice}</p>
                         <p className="text-xs text-gray-500">
-                          {item.currency || 'USD'} {item.price.toFixed(2)} × {item.quantity}
+                          {item?.currency || 'USD'} {item?.price?.toFixed(2)} × {item?.quantity || "-"}
                         </p>
                       </div>
                     </div>
@@ -295,7 +295,7 @@ if (!isOpen) return null;
         </div>
 
         {/* Footer */}
-        {cart && cart.items.length > 0 && (
+        {cart && cart?.items?.length > 0 && (
           <div className="border-t bg-gray-50 p-4 space-y-3">
             {/* Wallet Balance */}
             <div className="flex items-center justify-between text-sm">
@@ -304,7 +304,7 @@ if (!isOpen) return null;
                 Wallet Balance:
               </span>
               <span className={cn('font-semibold', hasInsufficientBalance ? 'text-red-600' : 'text-green-600')}>
-                {walletBalance.toFixed(2)} {cart.items[0]?.currency || 'USD'}
+                {walletBalance?.toFixed(2)} {cart?.items[0]?.currency || 'USD'}
               </span>
             </div>
 
@@ -312,7 +312,7 @@ if (!isOpen) return null;
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Subtotal:</span>
               <span className="font-semibold text-gray-900">
-                {subtotal.toFixed(2)} {cart.items[0]?.currency || 'USD'}
+                {subtotal?.toFixed(2)} {cart?.items[0]?.currency || 'USD'}
               </span>
             </div>
 
@@ -320,7 +320,7 @@ if (!isOpen) return null;
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Remaining Balance:</span>
               <span className={cn('font-semibold', remainingBalance < 0 ? 'text-red-600' : 'text-green-600')}>
-                {remainingBalance.toFixed(2)} {cart.items[0]?.currency || 'USD'}
+                {remainingBalance?.toFixed(2)} {cart?.items[0]?.currency || 'USD'}
               </span>
             </div>
 
@@ -333,8 +333,8 @@ if (!isOpen) return null;
             {/* Place Order Button */}
             <Button
               className="w-full"
-              disabled={hasInsufficientBalance || isPlacingOrder || placeOrderMutation.isPending}
-              loading={isPlacingOrder || placeOrderMutation.isPending}
+              disabled={hasInsufficientBalance || isPlacingOrder || placeOrderMutation?.isPending}
+              loading={isPlacingOrder || placeOrderMutation?.isPending}
               onClick={handlePlaceOrder}
             >
               Place Purchase Request

@@ -122,11 +122,11 @@ export default function B2BPurchasePanel({
           <div className="text-xs text-gray-500">Available: {availableQty || 0}</div>
         </div>
 
-        <div className="flex text-sm items-center gap-3 md:ml-auto ">
+        <div className="flex text-sm items-center gap-3 md:ml-auto">
           <Button
             disabled={!canSubmit || addToCartMutation?.isPending}
             loading={addToCartMutation?.isPending}
-            className='text-sm'
+            className='text-sm bg-black rounded-tl-2xl rounded-br-3xl  hover:bg-blue-900 '
             onClick={() => {
               if (!skuId) return toast.error('Select a SKU first');
               if (availableQty <= 0) return toast.error('Selected SKU is out of stock');

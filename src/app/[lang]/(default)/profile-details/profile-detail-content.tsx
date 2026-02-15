@@ -43,10 +43,10 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
       id: 4,
       title: 'Store Wallet',
     },
-    {
-      id: 5,
-      title: 'My Course',
-    },
+    // {
+    //   id: 5,
+    //   title: 'My Course',
+    // },
   ];
 
   // Add Approvals tabs only for DM and CM

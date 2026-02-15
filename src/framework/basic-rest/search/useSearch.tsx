@@ -3,6 +3,7 @@ import http from '@framework/utils/http';
 import { API_ENDPOINTS } from '@framework/utils/api-endpoints';
 import { useQuery } from '@tanstack/react-query';
 import { getToken } from '../utils/get-token';
+import type { VendorProductListItem, VendorProductsListResponse } from '../types/catalogV2';
 
 // export const fetchProduct = async (_slug: string) => {
 //   const { data } = await http.get(`${API_ENDPOINTS.PRODUCT}`);
@@ -31,6 +32,20 @@ export async function searchGlobal() {
   }
   // console.log('response from login api is ', data);
   return data;
+}
+
+/** Search marketplace v2 products (same collection as marketplace page). Returns list for global search dropdown. */
+export async function searchV2Products(searchQuery: string): Promise<VendorProductListItem[]> {
+  const q = (searchQuery || '').trim();
+  if (!q) return [];
+  try {
+    const { data } = await http.get<VendorProductsListResponse>('/api/v2/products', {
+      params: { search: q, limit: 10, page: 1 },
+    });
+    return data?.data ?? [];
+  } catch {
+    return [];
+  }
 }
 
 // export async function readNotifications(id: any) {

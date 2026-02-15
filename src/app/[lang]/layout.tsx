@@ -69,7 +69,7 @@ export default function RootLayout({
               <WishlistProvider>
                 <ProfileProvider>
                   <ManagedUIContext>
-                    <div className="w-full overflow-x-hidden">
+                    <div className="w-full">
                       {/* <PreventScreenCapture /> */}
                       <ElegantLayout lang={lang}>{children}</ElegantLayout>
                       {/* <ManagedModal lang={lang} />

@@ -182,7 +182,12 @@ const VendorProductSingleDetails: React.FC<{
 
   const skuLabel = (s: any) => {
     const parts = [s?.metalColor, s?.metalType, s?.size].filter(Boolean);
-    return `${parts.join(' / ') || 'Variant'} — ${s?.sku || ''}`;
+    const model =
+    s?.attributes?.modelno ||
+    product?.vendorModel || s?.sku 
+    "";
+    return `${parts.join(' / ') || ''} ${model} `;
+    // ${s?.attributes?.modelno ? s?.attributes?.modelno : s?.vendorModel ? s?.vendorModel : ""}
   };
   const descriptionName =
   typeof displaySku?.attributes?.descriptionname === 'string'
@@ -215,12 +220,12 @@ const VendorProductSingleDetails: React.FC<{
               transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
             }}
           >
-            <Image src={displayImage} alt={product.title} fill className="object-cover" />
+            <Image src={displayImage} alt={product?.title || "-"} fill className="object-cover" />
           </div>
         </div>
-        {displayImages.length > 0 ? (
+        {displayImages?.length > 0 ? (
           <div className="grid grid-cols-5 gap-2 mt-3 max-w-md mx-auto">
-            {displayImages.slice(0, 5).map((img: string) => (
+            {displayImages?.slice(0, 5)?.map((img: string) => (
               <div key={img} className="relative aspect-square rounded-md overflow-hidden border border-gray-200">
                 <Image src={buildImageUrl(BASE_API, img)} alt="thumb" fill className="object-cover cursor-pointer" />
               </div>
@@ -254,7 +259,7 @@ const VendorProductSingleDetails: React.FC<{
                 )}
               </div>
               {product?.vendorModel ? (
-                <div className="text-xs text-gray-500 mt-1">Vendor Model: {product?.vendorModel}</div>
+                <div className="text-xs text-gray-500 mt-1">Vendor Model: {product?.vendorModel || "-"}</div>
               ) : null}
             </div>
             <div className="text-right">
@@ -264,7 +269,7 @@ const VendorProductSingleDetails: React.FC<{
               <div className="text-lg font-bold text-brand-dark">{price}</div>
               <div className="text-xs text-gray-500">Selected SKU stock: {totalSelectedQty}</div>
               <div className="text-xs text-gray-500 flex items-center justify-end gap-2">
-                <span>Total stock (all SKUs): {product?.totalInventory}</span>
+                <span>Total stock : {product?.totalInventory || "-" }</span>
                 <InventoryStatusBadge quantity={Number(product?.totalInventory || 0)} />
               </div>
             </div>
@@ -285,7 +290,7 @@ const VendorProductSingleDetails: React.FC<{
               </option>
             ))}
           </select>
-          <div className="text-xs text-gray-500 mt-2">{skus?.length} SKUs under this vendor model</div>
+          <div className="text-xs text-gray-500 mt-2">{skus?.length || "-"} SKUs under this vendor model</div>
         </div>
 
         {/* Option Selectors */}
@@ -319,10 +324,10 @@ const VendorProductSingleDetails: React.FC<{
                 value={selectedMetalType || ''}
                 onChange={(e) => handleMetalTypeSelect(e.target.value)}
               >
-                <option value="">All</option>
+                <option value="">Metal Type</option>
                 {filteredMetalTypes.map((m) => (
                   <option key={m} value={m}>
-                    {m}
+                    {m || ''}
                   </option>
                 ))}
               </select>
@@ -334,10 +339,10 @@ const VendorProductSingleDetails: React.FC<{
                 value={selectedSize || ''}
                 onChange={(e) => handleSizeSelect(e.target.value)}
               >
-                <option value="">All</option>
+                <option value="">Size</option>
                 {filteredSizes.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {s || "-"}
                   </option>
                 ))}
               </select>
@@ -367,7 +372,7 @@ const VendorProductSingleDetails: React.FC<{
                   </thead>
                   <tbody>
                     {(isInventoryExpanded 
-                      ? skuDetails.inventories 
+                      ? skuDetails?.inventories 
                       : skuDetails.inventories.slice(0, 3)
                     ).map((inv: any) => (
                       <tr key={inv?._id} className="border-b last:border-b-0">
@@ -393,7 +398,7 @@ const VendorProductSingleDetails: React.FC<{
                     </>
                   ) : (
                     <>
-                      <span>View More ({skuDetails.inventories.length - 3} more)</span>
+                      <span>View More ({skuDetails?.inventories?.length - 3} more)</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -437,5 +442,3 @@ const VendorProductSingleDetails: React.FC<{
 };
 
 export default VendorProductSingleDetails;
-
-
