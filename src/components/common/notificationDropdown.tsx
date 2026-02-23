@@ -107,7 +107,7 @@ export default function NotificationDropdown({ lang = 'en' }: any) {
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-full hover:bg-gray-200"
       >
-        <Bell className="w-6 h-6 text-opacity-40 text-brand-dark" />
+        <Bell className="w-6 h-6 text-opacity-40 text-brand-dark hover:text-brand-blue" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount}
@@ -126,23 +126,23 @@ export default function NotificationDropdown({ lang = 'en' }: any) {
             <ul>
               {unreadNotifications.map((notification: any) => (
                 <li
-                  key={notification._id}
+                  key={notification?._id}
                   className="flex flex-col p-2 border-b last:border-none"
                 >
                   <span
                     className={cn(
                       'text-sm',
-                      notification.read ? 'text-gray-500' : 'font-bold',
+                      notification?.read ? 'text-gray-500' : 'font-bold',
                     )}
                   >
-                    {notification.content}
+                    {notification?.content}
                   </span>
                   <span className="text-xs text-gray-400">
-                    {formatDate(notification.createdAt)}
+                    {formatDate(notification?.createdAt)}
                   </span>
                   {!notification.read && (
                     <button
-                      onClick={() => markAsRead(notification._id)}
+                      onClick={() => markAsRead(notification?._id)}
                       className="text-blue-500 hover:text-blue-700 self-end"
                     >
                       <CheckCircle className="w-5 h-5" />

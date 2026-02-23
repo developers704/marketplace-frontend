@@ -64,6 +64,7 @@ export async function addToB2BCart(payload: {
   vendorProductId: string;
   skuId: string;
   quantity: number;
+  warehouseId: string;
 }): Promise<B2BCart> {
   const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
   if (!token) throw new Error('Not authenticated');

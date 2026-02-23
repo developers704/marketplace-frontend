@@ -6,13 +6,13 @@ import usePrice from '@framework/product/use-price';
 import { productPlaceholder } from '@assets/placeholders';
 import { useRouter } from 'next/navigation';
 import type { VendorProductListItem } from '@framework/types/catalogV2';
-import InventoryStatusBadge from './inventory-status-badge';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const buildImageUrl = (baseApi: string | undefined, src: string | undefined) => {
   if (!src) return productPlaceholder;
   const s = String(src).trim();
   if (!s) return productPlaceholder;
-  if (s.startsWith('http://') || s.startsWith('https://')) return s;
+  if (s.startsWith('http')) return s;
   if (!baseApi) return s.startsWith('/') ? s : `/${s}`;
   if (s.startsWith('/')) return `${baseApi}${s}`;
   return `${baseApi}/${s}`;
@@ -29,8 +29,10 @@ export default function MarketplaceProductCard({
   className?: string;
   returnUrl?: string;
 }) {
+
   const router = useRouter();
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+
   const title = product?.title || "-";
   const brand = product?.brand || '';
   const totalQty = product?.totalInventory ?? 0;
@@ -38,6 +40,7 @@ export default function MarketplaceProductCard({
   const defaultSkuPrice = Number(product?.defaultSku?.price ?? 0);
   const rawMin = Number(product?.minPrice ?? 0);
   const rawMax = Number(product?.maxPrice ?? 0);
+
   const minAmount = rawMin > 0 ? rawMin : defaultSkuPrice;
   const maxAmount = rawMax > 0 ? rawMax : defaultSkuPrice;
   const currencyCode = product?.defaultSku?.currency ?? 'USD';
@@ -62,37 +65,67 @@ export default function MarketplaceProductCard({
     router.push(productHref);
   };
 
+  const inStock = totalQty > 0;
+
   return (
     <article
-      className={cn(
-        'bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer h-full flex flex-col',
-        className,
-      )}
       onClick={handleClick}
-      title={title || '-'}
+      className={cn(
+        `
+        group relative flex flex-col h-full cursor-pointer
+        rounded-2xl border border-neutral-200 bg-white
+        transition-all duration-500 ease-out
+        hover:-translate-y-2 hover:scale-[1.02]
+        hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)]
+        `,
+        className
+      )}
     >
-      <div className="relative">
-        <div className="relative w-full aspect-square bg-gray-50">
-          <Image src={imageUrl} alt={title} fill className="object-cover" />
-        </div>
-        <div className="absolute top-3 right-2">
-          <InventoryStatusBadge quantity={totalQty} />
+
+      {/* Hover glow overlay */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-brand/10 via-transparent to-black/5 pointer-events-none" />
+
+      {/* Image */}
+      <div className="relative w-full aspect-square overflow-hidden rounded-t-2xl bg-neutral-100">
+
+        <Image
+          src={imageUrl}
+          alt={title}
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+        />
+
+        {/* Stock badge NEW */}
+        <div className="absolute top-3 right-3 z-20">
+          <div className={cn(
+            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md border shadow-sm transition",
+            inStock
+              ? " text-black "
+              : "bg-red-500/90 text-white border-red-400"
+          )}>
+            {inStock ? <FaCheckCircle /> : <FaTimesCircle />}
+            {inStock ? "In Stock" : "Out"}
+          </div>
+
         </div>
        
       </div>
 
-      <div className="p-4 flex-1 flex flex-col">
-        <div className="text-sm font-bold text-gray-900 line-clamp-2">{title}</div>
-        <div className="mt-3 flex items-center justify-between">
-        {brand ? <div className="text-xs text-gray-500 mt-1">Brand: {brand || "-"}</div> : null}
+      {/* Content */}
+      <div className="flex flex-col flex-1 p-4 gap-2 ">
+        {/* Title with hover color change */}
+        <div className=" text-sm font-bold  text-neutral-900 line-clamp-2 tracking-tight group-hover:text-brand transition-colors duration-300">{title}</div>
+        <div className=" flex items-center  justify-between ">
+        
+        {brand && (<div className="text-xs text-gary-900 font-medium tracking-wide uppercase">{brand}</div>)}
          <div className="">
           <span className="text-xs text-gray-500 mt-1">
             Qty: {totalQty || "-"}
           </span>
         </div>
         </div>
-        <div className="mt-3 flex items-center justify-between">
-          <div className="text-sm font-semibold text-brand-dark">
+        <div className="mt-auto flex items-center justify-between ">
+          <div className="text-sm font-semibold tracking-tight text-neutral-900 group-hover:text-brand transition-colors">
             {minAmount === maxAmount ? minPrice : `${minPrice} - ${maxPrice}`}
           </div>
           <div className="text-xs text-gray-500">{product?.skuCount ?? 0} SKUs</div>

@@ -687,7 +687,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
               </div>
             ) : categories && categories?.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {categories.map((category) => (
+                {categories.map((category : any) => (
                   <button
                     key={category._id}
                     onClick={() => handleCategoryClick(category)}
@@ -743,7 +743,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
               </div>
             ) : subcategories && subcategories.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {subcategories.map((subcategory) => (
+                {subcategories.map((subcategory : any) => (
                   <button
                     key={subcategory._id}
                     onClick={() => handleSubcategoryClick(subcategory)}
@@ -807,7 +807,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
               </div>
             ) : subsubcategories && subsubcategories?.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {subsubcategories.map((subsubcategory) => (
+                {subsubcategories.map((subsubcategory : any) => (
                   <button
                     key={subsubcategory?._id}
                     onClick={() => handleSubSubcategoryClick(subsubcategory)}
@@ -1111,7 +1111,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                     <div key={item.key} className="bg-white">
                       <button
                         type="button"
-                        onClick={() => setOpenFilterKey((k) => (k === item?.key ? null : item?.key))}
+                        onClick={() => setOpenFilterKey((k: any) => (k === item?.key ? null : item?.key))}
                         className={cn(
                           'w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors',
                           isOpen ? 'bg-[#f5f5f5]' : 'hover:bg-[#fafafa]',

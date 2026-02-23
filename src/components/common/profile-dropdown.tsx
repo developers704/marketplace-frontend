@@ -39,62 +39,97 @@ const ProfileDropdownComp = ({
     logout();
   };
 
-  return (
-    <div className="w-[300px] h-[300px] bg-white !z-[10000] shadow-lg absolute py-[20px] px-[15px] top-10 right-[75%] rounded">
-      {isAuthorized && (
-        <>
-          <div className="flex gap-4 items-center border-b py-3">
-            {/* <Image
-              // src={
-              //   `${BASE_API}${profileImage}` ||
-              //   `/assets/images/placeholderimg.jpeg`
-              // }
-              src={`https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8=`}
-              alt="Profile"
-              className="border border-brand-dark rounded-full"
-              width={70}
-              height={70}
-            /> */}
-            <FiUser className="text-opacity-40 text-[40px]" />
-            <div className="font-bold capitalize">
-              {username}{' '}
-              <div className="font-normal text-brand-blue capitalize">
-                {role}
-              </div>
-            </div>
+ return (
+  <div
+    className="absolute right-[70%] top-12 w-[260px] rounded-xl 
+    bg-[linear-gradient(145deg,#0B0F19,#111827)] 
+    border border-white/10
+    shadow-[0_25px_70px_rgba(0,0,0,0.55)]
+    backdrop-blur-xl text-white overflow-hidden z-[10000]"
+  >
+    {isAuthorized && (
+      <>
+        {/* HEADER */}
+        <div className="flex items-center gap-2 p-4
+        border-b border-white/10
+        bg-gradient-to-r from-white/[0.04] to-transparent">
+
+          {/* Avatar */}
+          <div className="relative w-[40px] h-[40px] rounded-full 
+          bg-gradient-to-tr from-indigo-600 via-blue-600 to-slate-800
+          flex items-center justify-center
+          shadow-[0_8px_25px_rgba(59,130,246,0.35)]
+          ring-1 ring-white/20">
+
+            <FiUser className="text-[24px] " />
+
+            {/* subtle luxury highlight */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent opacity-40"></div>
           </div>
+
+          {/* Name */}
+          <div className="leading-tight">
+            <p className="font-semibold tracking-wide text-[15px]">
+              {username}
+            </p>
+            <p className="text-[12px] text-white capitalize tracking-wider">
+              {role}
+            </p>
+          </div>
+        </div>
+
+        {/* MENU */}
+        <div className="py-2">
+
           <Link
             href={`/${lang}/profile-details?options=profile info`}
-            className="flex items-center justify-between py-4 cursor-pointer"
+            className="flex items-center gap-3 px-6 py-3
+            hover:bg-white/[0.04]
+            transition-all duration-200 group "
           >
-            <div className="flex items-center gap-3 hover:text-brand-blue transition-all duration-200">
-              <FiUser className="text-opacity-40 text-2xl" />
-              <p className="mt-1">My Profile</p>
-            </div>
+            <FiUser className="text-[18px] text-white/60 group-hover:text-amber-300 transition" />
+            <span className="text-[14px] tracking-wide">
+              My Profile
+            </span>
           </Link>
+
           <Link
             href={`/${lang}/notifications/all`}
-            className="flex items-center justify-between py-4 cursor-pointer"
+            className="flex items-center gap-3 px-6 py-3
+            hover:bg-white/[0.04]
+            transition-all duration-200 group"
           >
-            <div className="flex items-center gap-3 hover:text-brand-blue transition-all duration-200">
-              <FiBell className="text-opacity-40 text-2xl" />
-              <p>Notification</p>
-            </div>
-            {/* toggleSwitch */}
+            <FiBell className="text-[18px] text-white/60 group-hover:text-amber-300 transition" />
+            <span className="text-[14px] tracking-wide">
+              Notifications
+            </span>
           </Link>
-          <div
-            onClick={() => router.push(`/${lang}/signin`)}
-            className="flex items-center justify-between py-4 cursor-pointer"
+
+        </div>
+
+        {/* FOOTER LOGOUT */}
+        <div className="p-4 border-t border-white/10">
+          <button
+            onClick={() => {
+              handleLogout();
+              router.push(`/${lang}/signin`);
+            }}
+                  className="w-full py-2 rounded-tl-2xl rounded-br-2xl flex items-center justify-center gap-2
+                  bg-[linear-gradient(120deg,#3B2F05,#0F172A)]
+                  hover:bg-[linear-gradient(120deg,#5A4308,#020617)]
+                  transition-all duration-200
+                  active:scale-[0.97]"
           >
-            <div className="flex items-center gap-3" onClick={handleLogout}>
-              <AiOutlineLogout className="text-[#2C8CD4] text-2xl" />
-              <p className="text-[#2C8CD4]">Log Out</p>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
+          <AiOutlineLogout className="text-[18px] text-amber-200" />
+          <span className="tracking-wide font-medium text-amber-200">Log Out</span>
+
+          </button>
+        </div>
+      </>
+    )}
+  </div>
+);
+
 };
 
 export default ProfileDropdownComp;

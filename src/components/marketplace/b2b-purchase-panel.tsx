@@ -16,17 +16,23 @@ export default function B2BPurchasePanel({
   vendorProductId,
   skuId,
   availableQty,
+  hasMainWarehouse,
+  warehouseId,
   className,
 }: {
   lang: string;
   vendorProductId: string;
   skuId: string | null;
   availableQty: number;
+  hasMainWarehouse: boolean;
+  warehouseId:string
   className?: string;
 }) {
   const queryClient = useQueryClient();
   const { permissions } = useContext(PermissionsContext);
+  console.log("permissons", permissions)
   const { data: userData } = useUserDataQuery();
+  const canAddToCart = hasMainWarehouse === true;
 
   const roleName = String(userData?.role?.role_name || '').toLowerCase().trim();
 
@@ -40,6 +46,12 @@ export default function B2BPurchasePanel({
   }, [roleName, permissions]);
 
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | undefined>(undefined);
+  const canAddToCartPermission = permissions?.['Cart']?.View;
+  const canRequestPermission = permissions?.['Request order']?.View;
+  const showAddToCartButton = canAddToCart && canAddToCartPermission;
+  const showRequestButton = !canAddToCart && canRequestPermission;
+
+
 
   useEffect(() => {
     try {
@@ -53,12 +65,19 @@ export default function B2BPurchasePanel({
   }, []);
 
   const [qty, setQty] = useState(1);
+  // useEffect(() => {
+  //   setQty(1);
+  // }, [skuId]);
+  
   useEffect(() => {
-    setQty(1);
-  }, [skuId]);
+  if (qty > availableQty) {
+    setQty(Math.max(1, availableQty));
+  }
+  }, [availableQty, warehouseId , skuId]);
 
   const canSubmit =
     isStoreManager &&
+    //  hasMainWarehouse &&  
     !!vendorProductId &&
     !!skuId &&
     Number.isFinite(availableQty) &&
@@ -72,10 +91,12 @@ export default function B2BPurchasePanel({
   const addToCartMutation = useMutation({
     mutationFn: async () => {
       if (!skuId) throw new Error('Select a SKU first');
+      if (!warehouseId) throw new Error('Please select warehouse first');
       return await addToB2BCart({
         vendorProductId,
         skuId,
         quantity: qty,
+        warehouseId
       });
     },
     onSuccess: () => {
@@ -116,28 +137,77 @@ export default function B2BPurchasePanel({
             value={qty}
             variant="mercury"
             disabled={outOfStock || qty >= availableQty}
-            onDecrement={() => setQty((v) => Math.max(1, v - 1))}
-            onIncrement={() => setQty((v) => Math.min(Math.max(1, availableQty || 1), v + 1))}
+            onDecrement={() => setQty((v: any) => Math.max(1, v - 1))}
+            onIncrement={() => setQty((v : any) => Math.min(Math.max(1, availableQty || 1), v + 1))}
           />
           <div className="text-xs text-gray-500">Available: {availableQty || 0}</div>
         </div>
-
-        <div className="flex text-sm items-center gap-3 md:ml-auto">
+        {/* <div className="flex text-sm items-center gap-3 md:ml-auto">
+      
           <Button
-            disabled={!canSubmit || addToCartMutation?.isPending}
+            // disabled={!canSubmit}
+            disabled={!permissions?.['Request order']?.View}
+            
             loading={addToCartMutation?.isPending}
-            className='text-sm bg-black rounded-tl-2xl rounded-br-3xl  hover:bg-blue-900 '
             onClick={() => {
-              if (!skuId) return toast.error('Select a SKU first');
-              if (availableQty <= 0) return toast.error('Selected SKU is out of stock');
-              if (qty > availableQty) return toast.error('Requested quantity exceeds available stock');
+              if (!canAddToCart) {
+                toast.info("Request sent to admin");
+                return;
+              }
               addToCartMutation.mutate();
             }}
           >
-            Add to Cart
+            {canAddToCart ? "Add to Cart" : "Request to Admin"}
           </Button>
+        </div> */}
+       <div className="flex text-sm items-center gap-3 md:ml-auto">
+
+      {showAddToCartButton && (
+        <Button
+          disabled={!canSubmit}
+          loading={addToCartMutation?.isPending}
+          onClick={() => addToCartMutation.mutate()}
+          className={cn(
+              'relative flex-shrink min-w-0 text-center font-semibold text-white whitespace-nowrap',
+              'text-[clamp(11px,0.85vw,14px)]',
+              'transition-all duration-100 ease-out',
+              'transform hover:-translate-y-0.5 hover:scale-[1.02]',
+              'active:translate-y-0 active:scale-[0.97]',
+              'px-[clamp(10px,1vw,18px)] py-[clamp(6px,0.7vw,10px)]',
+              'rounded-tl-xl rounded-br-2xl',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700',
+              'bg-black/90 ring-1 ring-black/10',
+              'hover:bg-blue-900/95 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:ring-white/10',
+              'active:bg-slate-600 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.25)]'
+            )}
+        >
+            Add to Cart
+        </Button>
+      )}
+
+      {showRequestButton && (
+        <Button
+          disabled={!canSubmit}
+          onClick={() => toast.info("Request sent to admin comming soon")}
+            className={cn(
+              'relative flex-shrink min-w-0 text-center font-semibold text-white whitespace-nowrap',
+              'text-[clamp(11px,0.85vw,14px)]',
+              'transition-all duration-100 ease-out',
+              'transform hover:-translate-y-0.5 hover:scale-[1.02]',
+              'active:translate-y-0 active:scale-[0.97]',
+              'px-[clamp(10px,1vw,18px)] py-[clamp(6px,0.7vw,10px)]',
+              'rounded-tl-xl rounded-br-2xl',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700',
+              'bg-black/90 ring-1 ring-black/10',
+              'hover:bg-blue-900/95 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:ring-white/10',
+              'active:bg-slate-600 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.25)]'
+            )}
+            >
+            Request to Admin
+            </Button>
+          )}
         </div>
-      </div>
+          </div>
 
       {skuId && availableQty <= 0 ? (
         <div className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2">

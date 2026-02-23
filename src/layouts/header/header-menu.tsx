@@ -51,7 +51,7 @@ const HeaderMenu: React.FC<MenuProps> = ({
     //   path: '/packaging',
     //   label: 'GWP',
     // },
-    { id: 9, path: `/${lang}/GWP/`, label: 'Special Order' },
+    { id: 9, path: `/${lang}/special-order`, label: 'Special Order' },
   ];
 
   const isHome = `/${lang}` === activePath;

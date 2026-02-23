@@ -12,6 +12,8 @@ import InventoryStatusBadge from '@components/marketplace/inventory-status-badge
 import B2BPurchasePanel from '@components/marketplace/b2b-purchase-panel';
 import VendorProductAttributes from '@components/product/vendor-product-attributes';
 import VendorProductReviews from '@components/product/vendor-product-reviews';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { cn } from '@/lib/utils';
 
 const buildImageUrl = (baseApi: string | undefined, src: string | undefined) => {
   if (!src) return productPlaceholder;
@@ -44,6 +46,10 @@ const VendorProductSingleDetails: React.FC<{
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedMetalType, setSelectedMetalType] = useState<string>('');
+  const [selectedWarehouse, setSelectedWarehouse] = useState<any>(null);
+  const selectedWarehouseQty = selectedWarehouse?.quantity || 0;
+  const selectedWarehouseIsMain = selectedWarehouse?.warehouse?.isMain === true;
+  const selectedWarehouseId = selectedWarehouse?.warehouse?._id;
 
   // Image zoom state
   const [isHovering, setIsHovering] = useState(false);
@@ -62,19 +68,43 @@ const VendorProductSingleDetails: React.FC<{
     }
   }, [defaultSku?._id]);
 
-  // Reset inventory expanded state when SKU changes
+  // Reset inventory expanded state and warehouse when SKU changes
   useEffect(() => {
     setIsInventoryExpanded(false);
+    setSelectedWarehouse(null);
   }, [selectedSkuId]);
 
  const selectedSkuLite: VendorSkuLite | null =
   (selectedSkuId
-    ? skus?.find((s) => String(s._id) === String(selectedSkuId))
+    ? skus?.find((s: any) => String(s._id) === String(selectedSkuId))
     : null)
   ?? defaultSku
   ?? null;
 
   const { data: skuDetails, isLoading: skuLoading } = useSkuQuery(selectedSkuId);
+
+  const inventories = skuDetails?.inventories ?? [];
+
+  // Auto-select first available warehouse when inventories load (first time view)
+  useEffect(() => {
+    if (inventories.length === 0 || selectedWarehouse) return;
+    // Prefer first warehouse with quantity > 0, else first warehouse
+    const withStock = inventories.find((inv: any) => (inv?.quantity ?? 0) > 0);
+    const first = withStock ?? inventories[0];
+    if (first) setSelectedWarehouse(first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skuDetails?.inventories, selectedSkuId]);
+
+// const hasMainWarehouse = useMemo(() => {
+//   if (!inventories.length) return false;
+//   return inventories.some(
+//     (inv: any) => inv?.warehouse?.isMain === true
+//   );
+// }, [inventories]);
+
+// // 👇 returns should come AFTER hooks
+// if (!skuDetails) return null;
+
 
   const displaySku = (skuDetails?.sku as any) || selectedSkuLite;
   const displayImages: string[] = displaySku?.images?.length ? displaySku?.images : [];
@@ -178,13 +208,14 @@ const VendorProductSingleDetails: React.FC<{
   }
 
   const product = data.product;
+  // console.log("products of data", displaySku)
   const totalSelectedQty = skuDetails?.totalQuantity ?? (selectedSkuLite?.totalQuantity ?? 0);
 
   const skuLabel = (s: any) => {
-    const parts = [s?.metalColor, s?.metalType, s?.size].filter(Boolean);
+    const parts = [s?.metalColor, s?.metalType, s?.size, s.sku].filter(Boolean);
     const model =
     s?.attributes?.modelno ||
-    product?.vendorModel || s?.sku 
+    product?.vendorModel || s?.sku  
     "";
     return `${parts.join(' / ') || ''} ${model} `;
     // ${s?.attributes?.modelno ? s?.attributes?.modelno : s?.vendorModel ? s?.vendorModel : ""}
@@ -193,6 +224,7 @@ const VendorProductSingleDetails: React.FC<{
   typeof displaySku?.attributes?.descriptionname === 'string'
     ? displaySku?.attributes?.descriptionname
     : displaySku?.sku || product?.title;
+
 
   return (
     <div className="space-y-8 py-6">
@@ -263,15 +295,37 @@ const VendorProductSingleDetails: React.FC<{
               ) : null}
             </div>
             <div className="text-right">
-              <div className="flex justify-end mb-2">
+              {/* <div className="flex justify-end mb-2">
                 <InventoryStatusBadge quantity={totalSelectedQty} />
-              </div>
+              </div> */}
               <div className="text-lg font-bold text-brand-dark">{price}</div>
-              <div className="text-xs text-gray-500">Selected SKU stock: {totalSelectedQty}</div>
+              <div className="text-xs text-gray-500 flex items-center gap-2">Selected SKU stock: {totalSelectedQty}
+              <span className={cn(
+            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md border shadow-sm transition",
+            totalSelectedQty > 0
+              ? " text-black "
+              : "bg-red-500/90 text-white border-red-400"
+          )}>
+            {totalSelectedQty ? <FaCheckCircle /> : <FaTimesCircle />}
+            {totalSelectedQty > 0 ? "In Stock" : "Out"}
+          </span>      
+              </div>
               <div className="text-xs text-gray-500 flex items-center justify-end gap-2">
                 <span>Total stock : {product?.totalInventory || "-" }</span>
                 <InventoryStatusBadge quantity={Number(product?.totalInventory || 0)} />
               </div>
+              {/* <div className="absolute top-3 right-3 z-20">
+          <div className={cn(
+            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md border shadow-sm transition",
+            inStock
+              ? " text-black "
+              : "bg-red-500/90 text-white border-red-400"
+          )}>
+            {inStock ? <FaCheckCircle /> : <FaTimesCircle />}
+            {inStock ? "In Stock" : "Out"}
+          </div>
+
+        </div> */}
             </div>
           </div>
         </div>
@@ -293,62 +347,79 @@ const VendorProductSingleDetails: React.FC<{
           <div className="text-xs text-gray-500 mt-2">{skus?.length || "-"} SKUs under this vendor model</div>
         </div>
 
-        {/* Option Selectors */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-          <div>
-            <div className="text-sm font-semibold text-gray-900 mb-2">Metal Color</div>
-            <div className="flex flex-wrap gap-2">
-              {unique((data?.availableColors || []) as string[]).map((c) => {
-                const active = selectedColor === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => handleColorSelect(c)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                      active ? 'bg-brand-blue text-white border-brand-blue' : 'bg-white text-gray-700 border-gray-300'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        {/* Option Selectors - only show when at least one option exists */}
+        {(() => {
+          const hasColors = unique((data?.availableColors || []) as string[]).length > 0;
+          const hasMetalTypes = filteredMetalTypes.length > 0;
+          const hasSizes = filteredSizes.length > 0;
+          if (!hasColors && !hasMetalTypes && !hasSizes) return null;
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm font-semibold text-gray-900 mb-2">Metal Type</div>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                value={selectedMetalType || ''}
-                onChange={(e) => handleMetalTypeSelect(e.target.value)}
-              >
-                <option value="">Metal Type</option>
-                {filteredMetalTypes.map((m) => (
-                  <option key={m} value={m}>
-                    {m || ''}
-                  </option>
-                ))}
-              </select>
+          return (
+            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+              {hasColors && (
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 mb-2">Metal Color</div>
+                  <div className="flex flex-wrap gap-2">
+                    {unique((data?.availableColors || []) as string[]).map((c) => {
+                      const active = selectedColor === c;
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => handleColorSelect(c)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                            active ? 'bg-brand-blue text-white border-brand-blue' : 'bg-white text-gray-700 border-gray-300'
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {(hasMetalTypes || hasSizes) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {hasMetalTypes && (
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 mb-2">Metal Type</div>
+                      <select
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        value={selectedMetalType || ''}
+                        onChange={(e) => handleMetalTypeSelect(e.target.value)}
+                      >
+                        <option value="">Metal Type</option>
+                        {filteredMetalTypes.map((m : any) => (
+                          <option key={m} value={m}>
+                            {m || ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {hasSizes && (
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 mb-2">Size</div>
+                      <select
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        value={selectedSize || ''}
+                        onChange={(e) => handleSizeSelect(e.target.value)}
+                      >
+                        <option value="">Size</option>
+                        {filteredSizes.map((s : any) => (
+                          <option key={s} value={s}>
+                            {s || "-"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <div>
-              <div className="text-sm font-semibold text-gray-900 mb-2">Size</div>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                value={selectedSize || ''}
-                onChange={(e) => handleSizeSelect(e.target.value)}
-              >
-                <option value="">Size</option>
-                {filteredSizes.map((s) => (
-                  <option key={s} value={s}>
-                    {s || "-"}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Inventory Breakdown */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -367,6 +438,7 @@ const VendorProductSingleDetails: React.FC<{
                     <tr className="text-left text-xs text-gray-500 border-b">
                       {/* <th className="py-2 pr-4">City</th> */}
                       <th className="py-2 pr-4">Warehouse</th>
+                      <th className="py-2 pr-4">Warehouse _id</th>
                       <th className="py-2 text-right">Qty</th>
                     </tr>
                   </thead>
@@ -375,9 +447,13 @@ const VendorProductSingleDetails: React.FC<{
                       ? skuDetails?.inventories 
                       : skuDetails.inventories.slice(0, 3)
                     ).map((inv: any) => (
-                      <tr key={inv?._id} className="border-b last:border-b-0">
+                      <tr key={inv?._id}  onClick={() => setSelectedWarehouse(inv)}  className={cn(
+                        "border-b last:border-b-0 cursor-pointer",
+                        selectedWarehouse?._id === inv?._id && "bg-blue-50 border-blue-400"
+                      )}>
                         {/* <td className="py-2 pr-4">{inv?.city?.name ?? '—'}</td> */}
                         <td className="py-2 pr-4">{inv?.warehouse?.name ?? '—'}</td>
+                        <td className="py-2 pr-4">{inv?.warehouse?._id ?? '—'}</td>
                         <td className="py-2 text-right font-semibold">{inv?.quantity ?? 0}</td>
                       </tr>
                     ))}
@@ -418,7 +494,10 @@ const VendorProductSingleDetails: React.FC<{
             lang={lang}
             vendorProductId={String(product?._id)}
             skuId={selectedSkuId}
-            availableQty={Number(totalSelectedQty || 0)}
+            // availableQty={Number(totalSelectedQty || 0)}
+            availableQty={selectedWarehouseQty}
+            hasMainWarehouse={selectedWarehouseIsMain}
+            warehouseId={selectedWarehouseId}
           />
         ) : null}
 

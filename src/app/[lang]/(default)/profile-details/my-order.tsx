@@ -75,7 +75,7 @@ const MyOrder = () => {
       <div>
         <div className="flex justify-center items-center">
           <h1 className="text-4xl text-[#666665] font-semibold">
-            You don't have permission to view this page
+            You dont have permission to view this page
           </h1>
         </div>
       </div>
@@ -91,14 +91,14 @@ const MyOrder = () => {
           </h1>
           <div className=" w-full flex items-center flex-wrap space-x-4 mt-7 border-b-[3px] pb-3 mb-5">
             {filters.map((item) => {
-              const isSelected = selectedItem === item.title;
+              const isSelected = selectedItem === item?.title;
               return (
                 <div
                   className={`cursor-pointer flex-1  ${isSelected ? 'border-b-[#0081FE]' : ''} ${isSelected ? 'border-b-[3px]' : 'border-b-0'} text-[#666665] font-bold py-[10px] px-[15px]`}
-                  onClick={() => setSelectedItem(item.title)}
-                  key={item.id}
+                  onClick={() => setSelectedItem(item?.title)}
+                  key={item?.id}
                 >
-                  {item.title}
+                  {item?.title || "-"}
                 </div>
               );
             })}

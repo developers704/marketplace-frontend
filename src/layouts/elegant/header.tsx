@@ -221,6 +221,13 @@ function Header({ lang }: { lang: string }) {
     // console.log(permission, 'permission');
   }, [isAuthorized]);
 
+      const luxuryIconBtn =
+      "flex items-center justify-center p-2 rounded-md \
+      text-slate-600 \
+      transition-all duration-200 ease-out \
+      hover:text-brand-blue hover:scale-[1.08] \
+      active:scale-[0.95]";
+
   return (
     <header
       id="siteHeader"
@@ -254,23 +261,21 @@ function Header({ lang }: { lang: string }) {
               )}
             </div>
           </div>
-          {/* End of Category */}
-          {/* logo will change here */}
+   
           <div className="lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 relative">
             <Logo className="logo -mt-1.5 md:mt-2 md:mx-auto ltr:pl-3 rtl:pr-3 md:ltr:pl-0 md:rtl:pr-0 lg:mx-0  sm:w-[200px] md:w-[250px] lg:w-[320px]   " />
           </div>
-          {/* End of logo */}
-          {/* <LocationSelector /> */}
-          {/* <div className="flex lg:hidden lg:flex-1">
-            <FaRegBell />
-          </div> */}
+  
           <div className="flex lg:hidden lg:flex-1 items-center gap-3">
             <WalletBalance lang={lang} />
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors"
-              aria-label="Open cart"
-            >
+               {permissions['Request order']?.View && (
+
+                 <button
+                 onClick={() => setIsCartOpen(true)}
+                 // className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors"
+                 className={`${luxuryIconBtn}`}
+                 aria-label="Open cart"
+                 >
               <ShoppingCart size={24} />
               {b2bCartItemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-brand-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -278,15 +283,10 @@ function Header({ lang }: { lang: string }) {
                 </span>
               )}
             </button>
+                )}
           </div>
 
-          {/* <Search
-            searchId="top-bar-search"
-            className="hidden lg:flex lg:max-w-[650px] 2xl:max-w-[800px] lg:mx-8"
-            variant="fill"
-            lang={lang}
-          /> */}
-          {/* End of search */}
+      
 
           <div className="ltr:ml-auto rtl:mr-auto md:ltr:ml-0 md:rtl:mr-0">
             <div className="shrink-0 -mx-2.5 xl:-mx-3.5 hidden lg:flex items-center ">
@@ -296,7 +296,8 @@ function Header({ lang }: { lang: string }) {
               <Link href={`/${lang}/profile-details?option=Store Wallet`}>
                 <WalletBalance lang={lang} />
               </Link>
-              <button
+              {permissions['Request order']?.View && (
+                 <button
                 onClick={() => setIsCartOpen(true)}
                 className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors xl:mx-3.5 mx-2.5 hidden lg:flex"
                 aria-label="Open cart"
@@ -308,9 +309,11 @@ function Header({ lang }: { lang: string }) {
                   </span>
                 )}
               </button>
+              )}
+             
               <Link
                 href={`/${lang}/wishlist`}
-                className="xl:mx-3.5 mx-2.5 hidden lg:flex"
+                className={`xl:mx-3.5 mx-2.5 hidden lg:flex ${luxuryIconBtn}`}
               >
                 <WishlistCounter count={wishlistCounter} />
               </Link>
@@ -330,9 +333,9 @@ function Header({ lang }: { lang: string }) {
                 <div className="relative" ref={profileBtnRef}>
                   <div
                     onClick={() => handleProfileDropwown()}
-                    className="cursor-pointer"
+                    className={`${luxuryIconBtn} cursor-pointer`}
                   >
-                    <UserIcon className="text-brand-dark text-opacity-40" />
+                    <UserIcon className="text-brand-dark  hover:text-brand-blue" />
                   </div>
                   {/* {console.log(userData)} */}
                   {profileDropdown && (
@@ -348,13 +351,13 @@ function Header({ lang }: { lang: string }) {
 
         <div className="hidden navbar lg:block bg-brand-light">
           <Container className="h-20 flex justify-between gap-4 items-center py-2.5">
-            {/* <Logo className="!w-0 transition-all duration-200 ease-in-out opacity-0 navbar-logo " /> */}
+          
 
             {!isAuthorized ? (
               ''
             ) : (
               <>
-                {/* End of logo */}
+              
                 <div
                   ref={parentRef}
                   className="relative categories-header-button rtl:ml-8 shrink-0 flex flex-1"
@@ -364,17 +367,12 @@ function Header({ lang }: { lang: string }) {
                     onClick={handleCategoryMenu}
                   >
                     <FiMenu className="text-2xl ltr:mr-3 rtl:ml-3" />
-                    {/* {t('text-all-categories')} */}
+                 
                   </button>
                   {categoryMenu && <CategoryDropdownMenu />}
                   <div>
                     <GlobalSearch />
-                    {/* <Search
-                  searchId="top-bar-search"
-                  className="hidden lg:flex lg:max-w-[650px] 2xl:max-w-[800px]"
-                  variant="fill"
-                  lang={lang}
-                /> */}
+             
                   </div>
                 </div>
 
@@ -398,14 +396,7 @@ function Header({ lang }: { lang: string }) {
                 />
               </div>
             )}
-            {/* <div className="flex items-center justify-center w-full h-full px-4 sticky-search">
-              <Search
-                ref={siteSearchRef}
-                className="max-w-[780px] xl:max-w-[830px] 2xl:max-w-[1000px]"
-                lang={lang}
-              />
-            </div> */}
-            {/* End of conditional search  */}
+   
 
             <div className="flex items-center ltr:ml-auto rtl:mr-auto">
               {isScrolled && (
@@ -414,28 +405,13 @@ function Header({ lang }: { lang: string }) {
                 </div>
               )}
               <div className="flex items-center w-0 py-4 overflow-hidden transition-all duration-200 ease-in-out opacity-0 navbar-right">
-                {/* <button
-                  type="button"
-                  aria-label="Search Toggle"
-                  onClick={() => openSearch()}
-                  title="Search toggle"
-                  className="flex items-center justify-center w-12 h-full transition duration-200 ease-in-out outline-none ltr:mr-6 rtl:ml-6 md:w-14 hover:text-heading focus:outline-none"
-                >
-                  <SearchIcon className="w-[22px] h-[22px] text-brand-dark text-opacity-40" />
-                </button> */}
-                {/* <div className="flex items-center justify-center w-full h-full px-4 sticky-search">
-                  <Search
-                    ref={siteSearchRef}
-                    className="max-w-[780px] xl:max-w-[830px] 2xl:max-w-[1000px]"
-                    lang={lang}
-                  />
-                </div> */}
-                {/* End of search handler btn */}
+              
 
                 <div className="">
                   <WalletBalance lang={lang} />
                 </div>
-                <button
+                {permissions['Request order']?.View && (
+                    <button
                   onClick={() => setIsCartOpen(true)}
                   className="relative p-2 text-gray-700 hover:text-brand-blue transition-colors ltr:mr-7 rtl:ml-7 hidden lg:flex"
                   aria-label="Open cart"
@@ -447,6 +423,8 @@ function Header({ lang }: { lang: string }) {
                     </span>
                   )}
                 </button>
+                )}
+             
                 <Link
                   href={`/${lang}/wishlist`}
                   className="ltr:mr-7 rtl:ml-7 hidden lg:flex"
@@ -463,53 +441,14 @@ function Header({ lang }: { lang: string }) {
                     />
                   </Link>
                 )}
-                {/* <Link href={`/${lang}/cart`} className="ltr:mr-7 rtl:ml-7">
-                  <CartButton lang={lang} cartItemsLength={cartItemsLength} />
-                </Link> */}
 
-                {/* End of cart btn */}
-
-                <div className="flex items-center shrink-0 ltr:ml-7 rtl:mr-7 relative">
-                  <div className="">
-                    {/* <div
-                      onClick={() => setprofileDropdown(!profileDropdown)}
-                      className="cursor-pointer"
-                      // ref={profileBtnRef}
-                    >
-                      <UserIcon className="text-brand-dark text-opacity-40" />
-                    </div> */}
-                    {/* {profileDropdown && <ProfileDropdownComp lang={lang} />} */}
-                  </div>
-                  {/* <AuthMenu
-                    isAuthorized={isAuthorized}
-                    href={`/${lang}${ROUTES.ACCOUNT}`}
-                    btnProps={{
-                      children: t('text-sign-in'),
-                      onClick: handleLogin,
-                    }}
-                  >
-                    {t('text-account')}
-                  </AuthMenu> */}
-                </div>
-                {/* End of auth */}
               </div>
-              {/* <Delivery lang={lang} /> */}
-              {/* <div className="text-brand-dark">
-                <Link href={'/en/careers'} className="ml-3 hover:text-blue-900">
-                  Careers
-                </Link>
-                <Link
-                  href={'/en/about-us'}
-                  className="ml-3 hover:text-blue-900"
-                >
-                  About Us
-                </Link>
-              </div> */}
+            
             </div>
           </Container>
         </div>
 
-        {/* End of menu part */}
+   
       </div>
 
       {/* B2B Cart Drawer */}
