@@ -85,16 +85,16 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
+    setForm((p : any) => ({ ...p, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setAttachments((p) => [...p, ...files].slice(0, 10));
+    setAttachments((p : any) => [...p, ...files].slice(0, 10));
   };
 
   const removeFile = (index: number) => {
-    setAttachments((p) => p.filter((_, i) => i !== index));
+    setAttachments((p: any) => p.filter((_:any, i : any) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -376,7 +376,7 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                 />
                 {attachments.length > 0 && (
                   <ul className="mt-3 space-y-2">
-                    {attachments.map((f, i) => (
+                    {attachments.map((f : any, i: any) => (
                       <li key={i} className="flex items-center justify-between gap-2 text-sm text-slate-600 bg-slate-50 rounded-lg px-3 py-2">
                         <span className="flex items-center gap-2 truncate">
                           <FileText className="h-4 w-4 shrink-0" />
