@@ -8,6 +8,7 @@ import MyCourses from './my-courses';
 import Approvals from './approvals';
 import B2BApprovalsV2 from './b2b-approvals-v2';
 import B2BMyOrders from './b2b-my-orders';
+import B2BMySpoOrders from './b2b-my-spo-orders';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Breadcrumb from '@/components/ui/breadcrumb';
@@ -43,6 +44,10 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
     {
       id: 8,
       title: 'B2B MY Orders',
+    },
+    {
+      id: 9,
+      title: 'B2B MY (SPO) Orders',
     },
     {
       id: 4,
@@ -133,6 +138,8 @@ useEffect(() => {
               <B2BApprovalsV2 lang={lang} />
             ) : selectedOption === 'B2B MY Orders' ? (
               <B2BMyOrders />
+            ) : selectedOption === 'B2B MY (SPO) Orders' ? (
+              <B2BMySpoOrders />
             ) : (
               ''
             )}

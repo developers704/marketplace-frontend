@@ -212,7 +212,7 @@ const VendorProductSingleDetails: React.FC<{
   const totalSelectedQty = skuDetails?.totalQuantity ?? (selectedSkuLite?.totalQuantity ?? 0);
 
   const skuLabel = (s: any) => {
-    const parts = [s?.metalColor, s?.metalType, s?.size, s.sku].filter(Boolean);
+    const parts = [s?.metalColor, s?.metalType, s?.size, ].filter(Boolean);
     const model =
     s?.attributes?.modelno ||
     product?.vendorModel || s?.sku  
@@ -437,8 +437,8 @@ const VendorProductSingleDetails: React.FC<{
                   <thead>
                     <tr className="text-left text-xs text-gray-500 border-b">
                       {/* <th className="py-2 pr-4">City</th> */}
-                      <th className="py-2 pr-4">Warehouse</th>
-                      <th className="py-2 pr-4">Warehouse _id</th>
+                      <th className="py-2 pr-4">Store</th>
+                      {/* <th className="py-2 pr-4">Warehouse _id</th> */}
                       <th className="py-2 text-right">Qty</th>
                     </tr>
                   </thead>
@@ -446,14 +446,15 @@ const VendorProductSingleDetails: React.FC<{
                     {(isInventoryExpanded 
                       ? skuDetails?.inventories 
                       : skuDetails.inventories.slice(0, 3)
-                    ).map((inv: any) => (
+                    ).sort((a :any, b :any) => (a.warehouse?.name === "MAIN" ? -1 : b.warehouse?.name === "MAIN" ? 1 : 0))
+                    .map((inv: any) => (
                       <tr key={inv?._id}  onClick={() => setSelectedWarehouse(inv)}  className={cn(
                         "border-b last:border-b-0 cursor-pointer",
                         selectedWarehouse?._id === inv?._id && "bg-blue-50 border-blue-400"
                       )}>
                         {/* <td className="py-2 pr-4">{inv?.city?.name ?? '—'}</td> */}
                         <td className="py-2 pr-4">{inv?.warehouse?.name ?? '—'}</td>
-                        <td className="py-2 pr-4">{inv?.warehouse?._id ?? '—'}</td>
+                        {/* <td className="py-2 pr-4">{inv?.warehouse?._id ?? '—'}</td> */}
                         <td className="py-2 text-right font-semibold">{inv?.quantity ?? 0}</td>
                       </tr>
                     ))}
