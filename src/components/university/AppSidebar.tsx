@@ -18,44 +18,50 @@ interface NavigationItem {
 
 const navigationItems: NavigationItem[] = [
   {
-    title: 'Home',
+    title: 'Marketplace',
     url: '/en/',
-    icon: `/icons/HomeIcon.svg`,
+    icon: `/icons/arrow-left.svg`,
     activeIcon: '/icons/DashboardIconActive.svg',
   },
   {
-    title: 'Dashboard',
+    title: 'Reports',
     url: '/valliani-university/dashboard',
     icon: `/icons/dashboardIcon.svg`,
     activeIcon: '/icons/Homer.svg',
   },
   {
-    title: 'Training',
-    url: '/',
-    icon: `/icons/CourseIcon.svg`,
-    activeIcon: '/icons/Course.svg',
-    hasDropdown: true,
-    subItems: [
-      {
-        title: 'Course',
+    title: 'Valliani University',
         url: '/valliani-university/courses',
         icon: `/icons/CourseIcon.svg`,
         activeIcon: '/icons/Course.svg',
-      },
-      {
-        title: 'Short courses',
-        url: '/valliani-university/tasks',
-        icon: `/icons/TaskIcon.svg`,
-        activeIcon: '/icons/Task.svg',
-      },
-      {
-        title: 'Achievement',
-        url: '/valliani-university/achievements',
-        icon: `/icons/AchievementIcon.svg`,
-        activeIcon: '/icons/Achievement.svg',
-      },
-    ],
   },
+  // {
+  //   title: 'Training',
+  //   url: '/',
+  //   icon: `/icons/CourseIcon.svg`,
+  //   activeIcon: '/icons/Course.svg',
+  //   hasDropdown: true,
+  //   subItems: [
+  //     {
+  //       title: 'Course',
+  //       url: '/valliani-university/courses',
+  //       icon: `/icons/CourseIcon.svg`,
+  //       activeIcon: '/icons/Course.svg',
+  //     },
+  //     {
+  //       title: 'Short courses',
+  //       url: '/valliani-university/tasks',
+  //       icon: `/icons/TaskIcon.svg`,
+  //       activeIcon: '/icons/Task.svg',
+  //     },
+  //     {
+  //       title: 'Achievement',
+  //       url: '/valliani-university/achievements',
+  //       icon: `/icons/AchievementIcon.svg`,
+  //       activeIcon: '/icons/Achievement.svg',
+  //     },
+  //   ],
+  // },
   {
     title: 'Policies',
     url: '/valliani-university/policies',

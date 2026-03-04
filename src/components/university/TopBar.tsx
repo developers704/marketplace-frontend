@@ -63,7 +63,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <Menu className="h-5 w-5" />
           </button>
           <div className="hidden md:block">
-            <h3 className="text-lg font-semibold text-gray-900">Dashboard</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Reports</h3>
           </div>
         </div>
 

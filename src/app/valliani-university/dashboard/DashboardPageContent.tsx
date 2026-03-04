@@ -56,7 +56,7 @@ const Dashboard = () => {
     <div className="">
       <div className="flex justify-between items-center pb-6">
         <h1 className="text-xl md:text-[26px] lg:text-[32px] font-bold capitalize text-brand-blue">
-          Welcome To University Dashboard
+          Welcome 
         </h1>
         <SearchBar
           onSearch={(query) => console.log('Searching for:', query)}
