@@ -70,10 +70,10 @@ export default function RootLayout({
                 <ProfileProvider>
                   <ManagedUIContext>
                     <div className="w-full">
-                      {/* <PreventScreenCapture /> */}
+                      <PreventScreenCapture />
                       <ElegantLayout lang={lang}>{children}</ElegantLayout>
                       {/* <ManagedModal lang={lang} />
-                  <ManagedDrawer lang={lang} /> */}
+                      <ManagedDrawer lang={lang} /> */}
                       <ToasterProvider />
                     </div>
                   </ManagedUIContext>

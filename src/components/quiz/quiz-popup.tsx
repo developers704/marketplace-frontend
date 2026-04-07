@@ -367,13 +367,13 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
     
     return (
       <div className="max-w-xl mx-auto p-6 text-center space-y-6 ">
-        <div className={`p-6 rounded-2xl ${!passed ? '  border-green-200' : 'bg-red-50 border-2 border-red-400'}`}>
+        <div className={`p-6 rounded-2xl ${!passed ? '  border-[#6f4e37]' : 'bg-red-50 border-2 border-red-400'}`}>
           <h2 className="text-3xl font-bold mb-4">{passed ? 'Congratulations!' : 'Quiz Completed'}</h2>
           <p className="text-lg font-semibold mb-2">{quizResult?.result?.message}</p>
           <div className="space-y-2">
             <p className="text-lg">
               <span className="font-semibold">Grade:</span>{' '}
-              <span className={`font-bold ${passed ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`font-bold ${passed ? 'text-black' : 'text-black'}`}>
                 {quizResult?.result?.grade}
               </span>
             </p>
@@ -391,7 +391,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
         {/* Navigation Button */}
         <button
           onClick={handleNavigateNext}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 transform hover:scale-105"
+          className="w-full bg-[#EDE8D0] text-[#6f4e37] font-semibold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 transform hover:scale-105"
         >
           <ArrowRight className="w-5 h-5" />
           {buttonText}
@@ -404,7 +404,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
     <div className="max-w-3xl mx-auto px-4 py-8">
   {/* Header */}
   <div className="flex items-center justify-between mb-6">
-    <h2 className="text-xl font-semibold text-gray-800">
+    <h2 className="text-xl font-semibold text-[#6f4e37]">
       Question {currentQuestion + 1}
       <span className="text-gray-400 font-normal">
         {" "} / {quizData?.totalQuestions}
@@ -412,7 +412,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
     </h2>
 
     {quizData?.enableTimer && (
-      <div className="flex items-center gap-2 bg-white border border-gray-200 shadow-sm rounded-lg px-4 py-1 text-green-700 font-medium">
+      <div className="flex items-center gap-2 bg-white border border-gray-200 shadow-sm rounded-lg px-4 py-1 text-[#6f4e37] font-medium">
         <Clock7 size={20} />
         <span className="tabular-nums">{formatTime(timeLeft)}</span>
       </div>
@@ -439,7 +439,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
               transition-all
               ${
                 isSelected
-                  ? "border-green-600 bg-green-50"
+                  ? "border-[#6f4e37] bg-[#EDE8D0]"
                   : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
               }
               ${isSubmitted ? "cursor-not-allowed opacity-70" : ""}
@@ -452,7 +452,7 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
               disabled={isSubmitted}
               checked={isSelected}
               onChange={() => handleAnswerSelect(index)}
-              className="w-5 h-5 accent-green-600 cursor-pointer"
+              className="w-5 h-5 accent-[#EDE8D0] cursor-pointer"
             />
 
             {/* Option Text */}
@@ -470,12 +470,12 @@ export default function QuizPage({ isCompleted, quizData, refetchChapters, refet
         onClick={handleNext}
         disabled={selectedAnswerIndex === null}
         className={`
-          px-6 py-2.5 rounded-lg font-medium text-white
+          px-6 py-2.5 rounded-lg font-medium text-[#6f4e37]
           transition-all
           ${
             selectedAnswerIndex === null
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
+              ? "bg-[#EDE8D0] cursor-not-allowed"
+              : "bg-[#EDE8D0] "
           }
         `}
       >

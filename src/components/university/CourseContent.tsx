@@ -31,7 +31,7 @@ const IntroductionComp = ({ content }: any) => {
  return (
    <>
     <div className="w-full">
-      <div className="max-w-5xl mx-auto">
+      <div >
         <TipTapRenderer content={content} className="introduction-content" />
       </div>
     </div>
@@ -610,18 +610,18 @@ const nextVideoHandler = async () => {
           </div>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className=" px-2 sm:px-2 lg:px-2 py-2  ">
           {/* Introduction Section - Luxurious Design */}
           {!isQuizPage && hasIntroduction && (
             <div className="mb-12">
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
+                <div className="bg-[#6f4e37] px-8 py-6">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <div className="w-1 h-8 bg-white rounded-full"></div>
                     {sectionData?.title || '-'}
                   </h2>
                 </div>
-                <div className="p-8 md:p-12">
+                <div className="p-4 md:p-8">
                   <IntroductionComp content={sectionData?.introduction} />
                 </div>
                 
@@ -652,7 +652,7 @@ const nextVideoHandler = async () => {
                       <button
                         type="button"
                         onClick={handleManualCompleteSection}
-                        className="group flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                        className="group flex items-center justify-center gap-3 px-6 py-4 bg-[#EDE8D0] text-[#6f4e37] rounded-xl hover:from-[#EDE8D0]  transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
                         <span>Go to Next</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -667,10 +667,10 @@ const nextVideoHandler = async () => {
           {!isQuizPage && hasVideos && shouldShowVideos && (
             <div className="mb-12">
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
+                <div className="bg-[#6f4e37] px-8 py-6">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
                     <Play className="w-8 h-8" />
-                    Videos {sectionData?.title  || '-'}
+                   {sectionData?.title  || '-'}
                   </h2>
                 </div>
                 <div className="p-8">
@@ -693,22 +693,22 @@ const nextVideoHandler = async () => {
                             }
                             setSelectedVideo(video._id);
                           }}
-                          className={`flex-1 min-w-[280px] max-w-full sm:max-w-[220px] text-left p-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.03] hover:shadow-2xl relative overflow-hidden group ${
+                          className={`flex-1 min-w-[160px]   sm:max-w-[160px] text-left p-2 rounded-xl transition-all duration-300 transform hover:scale-[1.03] hover:shadow-2xl relative overflow-hidden group ${
                             isSelected
-                              ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-500 shadow-xl ring-4 ring-blue-200'
+                              ? 'bg-gradient-to-br from-[#EDE8D0] to-[#EDE8D0] border-2 border-[#EDE8D0] shadow-xl ring-4 ring-[#EDE8D0]'
                               : isLocked
                               ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-300 shadow-md opacity-75 cursor-not-allowed'
-                              : 'bg-gradient-to-br from-white to-gray-50 border-2 border-transparent hover:border-blue-300 shadow-lg hover:shadow-xl'
+                              : 'bg-gradient-to-br from-white to-gray-50 border-2 border-transparent hover:border-[#EDE8D0] shadow-lg hover:shadow-xl'
                           }`}
                         >
-                          {/* Decorative gradient overlay on hover */}
+                         
                           <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${
-                            isSelected ? 'from-blue-400 to-purple-400' : 'from-blue-400 to-indigo-400'
+                            isSelected ? 'from-[#EDE8D0] to-[#EDE8D0]' : 'from-blue-400 to-indigo-400'
                           }`}></div>
                           
                           <div className="relative z-10 flex flex-col h-full">
-                            {/* Top section with number/icon and status */}
-                            <div className="flex items-start justify-between mb-4">
+                    
+                            {/* <div className="flex items-start justify-between mb-4">
                               <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg transition-all duration-300 ${
                                 isSelected 
                                   ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white ring-4 ring-blue-200' 
@@ -724,9 +724,8 @@ const nextVideoHandler = async () => {
                                   <span className="text-lg font-extrabold">{idx + 1}</span>
                                 )}
                               </div>
-                              
-                              {/* Status badges */}
-                              <div className="flex flex-col items-end gap-2">
+                  
+                              <div className="flex flex-col items-end gap-2 ">
                                 {isSelected && (
                                   <div className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full text-xs font-bold shadow-md flex items-center gap-1.5 animate-pulse">
                                     <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -746,38 +745,38 @@ const nextVideoHandler = async () => {
                                   </div>
                                 )}
                               </div>
-                            </div>
+                            </div> */}
 
-                            {/* Video title */}
-                            <div className="flex-1 mb-4">
+                         
+                            <div className="flex-1 mb-1">
                               <h3 className={`text-base font-bold leading-tight line-clamp-2 ${
                                 isSelected 
-                                  ? 'text-blue-900' 
+                                  ? 'text-[#6f4e37]' 
                                   : isLocked
                                   ? 'text-gray-500'
-                                  : 'text-gray-800 group-hover:text-blue-700'
+                                  : 'text-[#6f4e37] group-hover:text-[#6f4e37]'
                               }`}>
-                                {video.title}
+                                {video?.title || "-"}
                               </h3>
                             </div>
 
-                            {/* Bottom section with duration */}
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                              {video.duration && (
+                    
+                            <div className="flex items-center justify-between pt-2 border-t border-[#d8b8a0] ">
+                              {video?.duration && (
                                 <div className={`flex items-center gap-2 text-sm font-medium ${
-                                  isSelected ? 'text-blue-700' : 'text-gray-600'
+                                  isSelected ? 'text-[#6f4e37]' : 'text-gray-600'
                                 }`}>
-                                  <Clock className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
+                                  <Clock className={`w-4 h-4 ${isSelected ? 'text-[#6f4e37]' : 'text-[#6f4e37]'}`} />
                                   <span>
-                                    {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
+                                    {Math.floor(video?.duration / 60)}:{(video?.duration % 60).toString().padStart(2, '0')}
                                   </span>
                                 </div>
                               )}
                               <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
                                 isSelected 
-                                  ? 'bg-blue-600 animate-pulse' 
+                                  ? 'bg-[#6f4e37] animate-pulse' 
                                   : isCompleted
-                                  ? 'bg-green-500'
+                                  ? 'bg-[#6f4e37]'
                                   : 'bg-gray-300'
                               }`}></div>
                             </div>
@@ -787,7 +786,7 @@ const nextVideoHandler = async () => {
                     })}
                   </div>
 
-                  {/* Video Player - Enhanced */}
+      
                   {selectedVideo && (
                     <div className="mt-8">
                       <div className="p-2 rounded-xl overflow-hidden shadow-2xl">
@@ -799,13 +798,13 @@ const nextVideoHandler = async () => {
                           refetchSectionData={refetchSectionData}
                         />
                       </div>
-                      {/* Show Continue button only if timer is completed or not required */}
+                
                       {(!hasTimer || timerCompleted) && (
                         <div className="flex justify-end mt-6">
                           <button
                             type="button"
                             onClick={nextVideoHandler}
-                            className="group flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                            className="group flex items-center gap-3 px-5 py-4 bg-[#EDE8D0] text-[#6f4e37] rounded-xl  transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
                           >
                             <span>Continue to Next</span>
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -880,7 +879,7 @@ const nextVideoHandler = async () => {
                             toast.error('Failed to navigate');
                           }
                         }}
-                        className="group flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                        className="group flex items-center gap-3 px-6 py-4 bg-[#EDE8D0] text-[#6f4e37] rounded-xl hover:from-[#EDE8D0]  transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
                         <span>Go to Next Chapter</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -897,7 +896,7 @@ const nextVideoHandler = async () => {
             <div className={`${isQuizPage ? '' : 'mt-12'}`}>
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                 {isQuizPage && (
-                  <div className="bg-gradient-to-r from-green-500 to-green-700 px-8 py-12 text-center">
+                  <div className="bg-[#6f4e37] px-8 py-12 text-center">
                     <h1 className="text-5xl font-bold text-white mb-4">
                       Chapter Quiz
                     </h1>
@@ -926,4 +925,6 @@ const nextVideoHandler = async () => {
     </div>
   );
 }
+
+
 

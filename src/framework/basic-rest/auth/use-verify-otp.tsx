@@ -57,7 +57,8 @@ export async function verifyOTP(input: VerifyOTPInputType, setPermissions?: any)
 }
 
 export interface ResendOTPInputType {
-  email: string;
+  email?: string;
+  userId?: string;
 }
 
 export async function resendOTP(input: ResendOTPInputType) {
@@ -70,6 +71,7 @@ export async function resendOTP(input: ResendOTPInputType) {
       },
       body: JSON.stringify({
         email: input.email,
+        userId: input.userId,
       }),
     });
 

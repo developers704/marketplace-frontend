@@ -51,6 +51,16 @@ export type VendorProductsListResponse = {
   success: boolean;
   message?: string;
   data: VendorProductListItem[];
+  filters?: {
+    brands: string[];
+    metalColors: string[];
+    metalTypes: string[];
+    sizes: string[];
+    stoneTypes: string[];
+    centerClarities: string[];
+    availableAttributes: Array<{ _id: string; values: string[] }>;
+    priceRange: { min: number; max: number };
+  };
   paginatorInfo?: {
     page: number | null;
     limit: number;

@@ -5,13 +5,17 @@ import { FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
-const CourseCard2 = ({ data }: any) => {
+const CourseCard2 = ({ data, onCourseSelect }: any) => {
   const router = useRouter();
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
   const handleCardClick = () => {
     if (data?.canAccess) {
-      router.push(`/valliani-university/courses/${data?._id}`);
+      if (onCourseSelect) {
+        onCourseSelect(data);
+      } else {
+        router.push(`/valliani-university/courses/${data?._id}`);
+      }
     } else {
       toast.error('You do not have access to this course yet');
     }
@@ -64,7 +68,7 @@ const CourseCard2 = ({ data }: any) => {
       <div className="flex flex-col flex-1 p-4 gap-2">
         <h2 className="
           text-base md:text-lg font-bold text-neutral-900
-          line-clamp-2 group-hover:text-brand
+          line-clamp-2 group-hover:text-[#6f4e37]
           transition-colors duration-300
         ">
           {data?.name || "-"}

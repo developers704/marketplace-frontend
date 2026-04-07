@@ -54,7 +54,7 @@ const QuizStart = ({ setIsQuizOpen, quizData, setActiveSidebar }: any) => {
 
       <button
         onClick={() => quizStartHandler()}
-        className="w-full bg-green-600 hover:bg-green-800 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md flex items-center justify-center gap-2"
+        className="w-full bg-[#EDE8D0]  text-[#6f4e37] font-semibold py-3 rounded-xl transition duration-300 shadow-md flex items-center justify-center gap-2"
       >
         <Play size={18} /> Start Quiz
       </button>
@@ -233,11 +233,11 @@ const QuizSection = ({
               <div className="relative rounded-3xl bg-white border border-gray-200 shadow-xl overflow-hidden">
                 
                 {/* Top Gradient Strip */}
-                <div className="h-2 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500" />
+                <div className="h-2 bg-[#EDE8D0]" />
 
                 <div className="p-8 space-y-6">
                   {/* Icon */}
-                  <div className="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-green-100 text-green-600 shadow-sm">
+                  <div className="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-[#EDE8D0] shadow-sm">
                     <Medal />
                   </div>
 
@@ -289,9 +289,8 @@ const QuizSection = ({
                   <button
                     onClick={handleNavigateNext}
                     className="
-                      w-full py-4 rounded-xl font-semibold text-white
-                      bg-gradient-to-r from-green-600 to-emerald-600
-                      hover:from-green-700 hover:to-emerald-700
+                      w-full py-4 rounded-xl font-semibold text-[#6f4e37]
+                      bg-[#EDE8D0]
                       transition-all duration-300
                       shadow-lg hover:shadow-xl
                       flex items-center justify-center gap-2

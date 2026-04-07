@@ -34,10 +34,18 @@ const VendorProductSingleDetails: React.FC<{
 }> = ({ lang, vendorProductId, enableB2BPurchase = false }) => {
   const searchParams = useSearchParams();
   const productId = vendorProductId || searchParams.get('id');
+  const sortParam = searchParams.get('sort');
+  const filterMainParam = searchParams.get('filterMain');
+  const filterOwnParam = searchParams.get('filterOwn');
+  const isFilterMain = filterMainParam === 'true' || sortParam === 'isMain';
+  const isFilterOwn = filterOwnParam === 'true' || sortParam === 'own-inventory';
 
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
-
-  const { data, isLoading, error } = useVendorProductQuery(productId);
+  
+  const { data, isLoading, error } = useVendorProductQuery(productId, {
+    filterMain: isFilterMain,
+    filterOwn: isFilterOwn,
+  });
 
   const skus = data?.skus ?? [];
   const defaultSku = data?.defaultSku ?? null;
@@ -81,7 +89,10 @@ const VendorProductSingleDetails: React.FC<{
   ?? defaultSku
   ?? null;
 
-  const { data: skuDetails, isLoading: skuLoading } = useSkuQuery(selectedSkuId);
+  const { data: skuDetails, isLoading: skuLoading } = useSkuQuery(selectedSkuId, {
+    filterMain: isFilterMain,
+    filterOwn: isFilterOwn,
+  });
 
   const inventories = skuDetails?.inventories ?? [];
 
@@ -207,7 +218,8 @@ const VendorProductSingleDetails: React.FC<{
     );
   }
 
-  const product = data.product;
+  const product = data?.product;
+  const price99 = displaySku?.attributes?.["99price"]
   // console.log("products of data", displaySku)
   const totalSelectedQty = skuDetails?.totalQuantity ?? (selectedSkuLite?.totalQuantity ?? 0);
 
@@ -292,6 +304,9 @@ const VendorProductSingleDetails: React.FC<{
               </div>
               {product?.vendorModel ? (
                 <div className="text-xs text-gray-500 mt-1">Vendor Model: {product?.vendorModel || "-"}</div>
+              ) : null}
+              {price99 ? (
+                <div className="text-xs text-gray-500 mt-1">99Price : {price99 || "-"}</div>
               ) : null}
             </div>
             <div className="text-right">
@@ -424,7 +439,7 @@ const VendorProductSingleDetails: React.FC<{
         {/* Inventory Breakdown */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-semibold text-gray-900">Inventory by City/Warehouse</div>
+            <div className="text-sm font-semibold text-gray-900">Inventory</div>
             <div className="text-xs text-gray-500">{skuLoading ? 'Loading…' : `Total: ${totalSelectedQty}`}</div>
           </div>
 

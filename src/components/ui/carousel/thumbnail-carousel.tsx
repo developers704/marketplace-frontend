@@ -240,3 +240,4 @@ const ThumbnailCarousel: React.FC<Props> = ({
 };
 
 export default ThumbnailCarousel;
+

@@ -142,7 +142,7 @@ const dislikeHandler = async () => {
           />   
        
           <div className="flex items-center justify-between my-4">
-            <h1 className="text-xl font-bold">{selectedVideo?.title}</h1>
+            <h1 className="text-xl font-bold">{selectedVideo?.title || "-"}</h1>
             <div className="flex items-center gap-4">
               <div onClick={() => likeHandler()} className="flex items-center gap-2 cursor-pointer">
                 

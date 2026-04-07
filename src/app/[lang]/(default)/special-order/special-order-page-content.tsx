@@ -18,6 +18,7 @@ const TYPE_OPTIONS = [
   { value: 'STULLER_ITEM', label: 'STULLER ITEM' },
   { value: 'QG_ITEM', label: 'QG ITEM' },
   { value: 'CUSTOM_JEWELRY_PIECE', label: 'CUSTOM JEWELRY PIECE' },
+  { value: 'OTHERS', label: 'OTHERS' },
 ];
 
 const METAL_OPTIONS = [
@@ -185,13 +186,28 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
             >
               {/* STORE - Auto, Read-only */}
+                <div>
+                  
+                <label className="block text-sm font-semibold text-slate-700 mb-2">CUSTOMIZATION  <span className="text-red-500">*</span></label>
+                <textarea
+                  name="customization"
+                  required
+                  value={form.customization}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 transition-all focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue resize-none"
+                  placeholder="Describe customization requirements"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  <Store className="inline h-4 w-4 mr-1.5" style={{ color: GOLD_ACCENT }} /> STORE
+                  <Store className="inline h-4 w-4 mr-1.5" style={{ color: GOLD_ACCENT }} /> STORE  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   readOnly
+                  required
                   value={store?.name || '— Select warehouse and log in again —'}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-slate-600 cursor-not-allowed focus:ring-2 focus:ring-slate-200"
                 />
@@ -199,10 +215,11 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Receipt Number</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Receipt Number  <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="receiptNumber"
+                    required
                     value={form.receiptNumber}
                     onChange={handleChange}
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 transition-all focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
@@ -210,9 +227,10 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Customer Number</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Customer Number  <span className="text-red-500">*</span></label>
                   <input
                     type="text"
+                    required
                     name="customerNumber"
                     value={form.customerNumber}
                     onChange={handleChange}
@@ -334,17 +352,7 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">CUSTOMIZATION</label>
-                <textarea
-                  name="customization"
-                  value={form.customization}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 transition-all focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue resize-none"
-                  placeholder="Describe customization requirements"
-                />
-              </div>
+            
 
               {/* Drawing Canvas - responsive wrapper */}
               <div>
@@ -370,6 +378,7 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                 <input
                   type="file"
                   accept="image/*,video/*"
+                  capture="environment"
                   multiple
                   onChange={handleFileChange}
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 file:mr-4 file:rounded-lg file:border-0 file:px-4 file:py-2 file:bg-slate-100 file:text-slate-700 file:font-medium file:text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
@@ -393,7 +402,7 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                     ))}
                   </ul>
                 )}
-              </div>
+              </div>             
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">NOTES</label>

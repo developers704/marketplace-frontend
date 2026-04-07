@@ -90,10 +90,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               </div>
               <div className="flex flex-col items-start">
                 <span className="text-black font-semibold leading-3 capitalize">
-                  {userData?.username}
+                  {userData?.username || "-"}
                 </span>
                 <span className="text-[14px] text-brand-blue capitalize">
-                  {userData?.role?.role_name}
+                  {userData?.role?.role_name || "-"}
                 </span>
               </div>
               {/* <ChevronDown className="h-4 w-4 text-gray-600 hidden sm:block" /> */}
@@ -112,10 +112,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                <PulseLoader color="#21caff" size={10} />
                 </>) : (<div>
                   <div className="font-semibold capitalize">
-                    {userData?.username}
+                    {userData?.username || "-"}
                   </div>
                   <div className="text-sm text-gray-500 capitalize">
-                    {userData?.role?.role_name}
+                    {userData?.role?.role_name || '-'}
                   </div>
                 </div>)}
                 

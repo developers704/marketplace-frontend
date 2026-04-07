@@ -7,6 +7,7 @@ import { productPlaceholder } from '@assets/placeholders';
 import { useRouter } from 'next/navigation';
 import type { VendorProductListItem } from '@framework/types/catalogV2';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { useSearchParams } from 'next/navigation';
 
 const buildImageUrl = (baseApi: string | undefined, src: string | undefined) => {
   if (!src) return productPlaceholder;
@@ -31,6 +32,10 @@ export default function MarketplaceProductCard({
 }) {
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sortParam = searchParams.get('sort');
+  const filterMainParam = searchParams.get('filterMain');
+  const filterOwnParam = searchParams.get('filterOwn');
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
 
   const title = product?.title || "-";
@@ -55,15 +60,31 @@ export default function MarketplaceProductCard({
     ? `/${lang}/marketplace/${product._id}${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`
     : '#';
 
-  const handleClick = () => {
-    if (!product?._id) return;
-    if (typeof window !== 'undefined') {
-      try {
-        sessionStorage.setItem('marketplaceScrollPosition', String(window.scrollY));
-      } catch (_) {}
-    }
-    router.push(productHref);
-  };
+const handleClick = () => {
+  if (!product?._id) return;
+
+  const currentUrl = new URL(window.location.href);
+  const sortParam = currentUrl.searchParams.get('sort');
+
+  const params = new URLSearchParams();
+
+  if (sortParam === 'isMain' || filterMainParam === 'true') {
+    params.set('filterMain', 'true');
+  }
+  if (sortParam === 'own-inventory' || filterOwnParam === 'true') {
+    params.set('filterOwn', 'true');
+  }
+
+  if (returnUrl) {
+    params.set('returnUrl', returnUrl);
+  }
+
+  const queryString = params.toString();
+
+  const url = `/${lang}/marketplace/${product._id}${queryString ? `?${queryString}` : ''}`;
+
+  router.push(url);
+};
 
   const inStock = totalQty > 0;
 
@@ -96,9 +117,9 @@ export default function MarketplaceProductCard({
         />
 
         {/* Stock badge NEW */}
-        <div className="absolute top-3 right-3 z-20">
+        <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition duration-300">
           <div className={cn(
-            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md border shadow-sm transition",
+            "flex items-center  gap-1 px-2 py-1 rounded-full text-xs  backdrop-blur-md border shadow-sm transition",
             inStock
               ? " text-black "
               : "bg-red-500/90 text-white border-red-400"
@@ -114,7 +135,7 @@ export default function MarketplaceProductCard({
       {/* Content */}
       <div className="flex flex-col flex-1 p-4 gap-2 ">
         {/* Title with hover color change */}
-        <div className=" text-sm font-bold  text-neutral-900 line-clamp-2 tracking-tight group-hover:text-brand transition-colors duration-300">{title}</div>
+        <div className=" text-xs font-bold  text-neutral-900 line-clamp-2 tracking-tight group-hover:text-brand transition-colors duration-300">{title}</div>
         <div className=" flex items-center  justify-between ">
         
         {brand && (<div className="text-xs text-gary-900 font-medium tracking-wide uppercase">{brand}</div>)}
@@ -128,7 +149,7 @@ export default function MarketplaceProductCard({
           <div className="text-sm font-semibold tracking-tight text-neutral-900 group-hover:text-brand transition-colors">
             {minAmount === maxAmount ? minPrice : `${minPrice} - ${maxPrice}`}
           </div>
-          <div className="text-xs text-gray-500">{product?.skuCount ?? 0} SKUs</div>
+          <div className="text-sm text-gray-500">{product?.skuCount ?? 0} SKUs</div>
         </div>
       </div>
     </article>

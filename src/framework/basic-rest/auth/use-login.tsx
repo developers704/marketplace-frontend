@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 
 
 export interface LoginInputType {
-  email: string;
+  userId: string;
   password: string;
   remember_me: boolean;
   setUser?: (user: any) => void
@@ -21,7 +21,7 @@ export async function login(input: LoginInputType & { warehouseId?: string }, se
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: input.email,
+        userId: input.userId,
         password: input.password,
         warehouseId: input.warehouseId,
       }),
@@ -64,7 +64,7 @@ export async function login(input: LoginInputType & { warehouseId?: string }, se
     const message = error.message || 'Something went wrong';
 
     // Handle specific backend errors
-    if (error.data?.message === 'Invalid email or password') {
+    if ((error.data?.message || '').toLowerCase().includes('invalid') && (error.data?.message || '').toLowerCase().includes('password')) {
       toast.error(message);
     } 
     else if (error.data?.message?.includes('IP address is not authorized')) {

@@ -27,6 +27,8 @@ import {
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils';
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 
 export default function MarketplacePageContent({ lang }: { lang: string }) {
   const searchParams = useSearchParams();
@@ -41,7 +43,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
   const [selectedSubsubcategory, setSelectedSubsubcategory] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [sortBy, setSortBy] = useState<string>('featured');
+  const [sortBy, setSortBy] = useState<string>('isMain');
   const [minQuantity, setMinQuantity] = useState('');
   const [metalColor, setMetalColor] = useState('');
   const [metalType, setMetalType] = useState('');
@@ -254,8 +256,18 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     newQuery: filterQuery,
   } as any);
 
+  const serverFilters = useMemo(() => {
+    return data?.pages?.find((p: any) => p?.filters)?.filters || null;
+  }, [data]);
+
   // Extract unique brands and category names from products (for filter dropdown)
   const { brands, productCategories } = useMemo(() => {
+    if (serverFilters) {
+      return {
+        brands: (serverFilters.brands || []).slice(),
+        productCategories: [],
+      };
+    }
     const brandSet = new Set<string>();
     const categorySet = new Set<string>();
     
@@ -274,11 +286,14 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       brands: Array.from(brandSet).sort(),
       productCategories: Array.from(categorySet).sort(),
     };
-  }, [data]);
+  }, [data, serverFilters]);
 
   // Dynamic attribute filters: derive from current products' defaultSku.attributes (dropdown/checkbox options)
   const SKIP_ATTRIBUTE_KEYS = new Set(['featureimageslink', 'galleryimagelink', 'descriptionname', 'stonetype', 'centerclarity']);
   const availableAttributes = useMemo(() => {
+    if (serverFilters) {
+      return serverFilters.availableAttributes || [];
+    }
     const map = new Map<string, Set<string>>();
     data?.pages?.forEach((page: any) => {
       (page?.data || []).forEach((product: VendorProductListItem) => {
@@ -297,10 +312,21 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       _id: id,
       values: Array.from(set).sort((a, b) => String(a).localeCompare(String(b))),
     }));
-  }, [data]);
+  }, [data, serverFilters]);
 
   // Dynamic Metal options from defaultSku (show Metal section only if any exist)
   const { metalColors, metalTypes, sizes, hasMetal } = useMemo(() => {
+    if (serverFilters) {
+      const colors = serverFilters.metalColors || [];
+      const types = serverFilters.metalTypes || [];
+      const sz = serverFilters.sizes || [];
+      return {
+        metalColors: colors,
+        metalTypes: types,
+        sizes: sz,
+        hasMetal: colors.length > 0 || types.length > 0 || sz.length > 0,
+      };
+    }
     const colors = new Set<string>();
     const types = new Set<string>();
     const sz = new Set<string>();
@@ -319,10 +345,19 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       sizes: Array.from(sz).sort((a, b) => a.localeCompare(b)),
       hasMetal: colors.size > 0 || types.size > 0 || sz.size > 0,
     };
-  }, [data]);
+  }, [data, serverFilters]);
 
   // Dynamic Stone & Clarity from defaultSku.attributes (show section only if any exist)
   const { stoneTypes, centerClarities, hasStoneClarity } = useMemo(() => {
+    if (serverFilters) {
+      const st = serverFilters.stoneTypes || [];
+      const cc = serverFilters.centerClarities || [];
+      return {
+        stoneTypes: st,
+        centerClarities: cc,
+        hasStoneClarity: st.length > 0 || cc.length > 0,
+      };
+    }
     const st = new Set<string>();
     const cc = new Set<string>();
     data?.pages?.forEach((page: any) => {
@@ -338,10 +373,51 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       centerClarities: Array.from(cc).sort((a, b) => a.localeCompare(b)),
       hasStoneClarity: st.size > 0 || cc.size > 0,
     };
-  }, [data]);
+  }, [data, serverFilters]);
+
+  const { sliderMinBound, sliderMaxBound } = useMemo(() => {
+    if (serverFilters?.priceRange) {
+      const minBound = Math.max(0, Math.floor(Number(serverFilters.priceRange.min || 0)));
+      const maxRaw = Math.ceil(Number(serverFilters.priceRange.max || 0));
+      const maxBound = maxRaw > 0 ? maxRaw : 1000;
+      return { sliderMinBound: minBound, sliderMaxBound: Math.max(minBound, maxBound) };
+    }
+    let minCandidate = Number.POSITIVE_INFINITY;
+    let maxCandidate = 0;
+
+    data?.pages?.forEach((page: any) => {
+      (page?.data || []).forEach((product: VendorProductListItem) => {
+        const fallbackPrice = Number((product?.defaultSku as any)?.price ?? 0);
+        const pMin = Number(product?.minPrice ?? fallbackPrice);
+        const pMax = Number(product?.maxPrice ?? fallbackPrice);
+
+        if (Number.isFinite(pMin) && pMin >= 0) minCandidate = Math.min(minCandidate, pMin);
+        if (Number.isFinite(pMax) && pMax >= 0) maxCandidate = Math.max(maxCandidate, pMax);
+      });
+    });
+
+    const minBound = Number.isFinite(minCandidate) ? Math.floor(minCandidate) : 0;
+    const maxBound = Number.isFinite(maxCandidate) && maxCandidate > 0 ? Math.ceil(maxCandidate) : 1000;
+    return { sliderMinBound: Math.max(0, minBound), sliderMaxBound: Math.max(minBound, maxBound) };
+  }, [data, serverFilters]);
+
+  const selectedMinPrice = minPrice !== '' ? Number(minPrice) : sliderMinBound;
+  const selectedMaxPrice = maxPrice !== '' ? Number(maxPrice) : sliderMaxBound;
+  const safeSelectedMin = Math.max(sliderMinBound, Math.min(selectedMinPrice, selectedMaxPrice));
+  const safeSelectedMax = Math.min(sliderMaxBound, Math.max(selectedMaxPrice, selectedMinPrice));
+
+  const handlePriceRangeChange = (values: number | number[]) => {
+    if (!Array.isArray(values) || values.length !== 2) return;
+    const nextMin = Math.max(sliderMinBound, Math.min(Number(values[0]), Number(values[1])));
+    const nextMax = Math.min(sliderMaxBound, Math.max(Number(values[0]), Number(values[1])));
+    setMinPrice(String(nextMin));
+    setMaxPrice(String(nextMax));
+  };
 
   const options = [
-  { value: "featured", label: "Featured" },
+    { value: "featured", label: "All Inventory" },
+    { value: "isMain", label: "Available In Main" },
+    { value: "own-inventory", label: "Own inventory" },
   { value: "best-sellers", label: "Best Sellers" },
   { value: "new-arrivals", label: "New Arrivals" },
   { value: "price-desc", label: "Price: High to Low" },
@@ -410,7 +486,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     setSelectedBrand('');
     setMinPrice('');
     setMaxPrice('');
-    setSortBy('featured');
+    setSortBy('isMain');
     setMinQuantity('');
     setMetalColor('');
     setMetalType('');
@@ -439,7 +515,8 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     };
   }, [showFilters]);
 
-  const hasActiveFilters = debouncedSearchText || selectedBrand || minPrice || maxPrice || minQuantity || metalColor || metalType || size || stonetype || centerclarity || Object.values(attributeFilters).some((arr) => arr.length > 0);
+  const hasActiveFilters = debouncedSearchText || selectedBrand || minPrice || maxPrice || minQuantity || metalColor || metalType || size || stonetype || centerclarity || Object.values(attributeFilters).some((arr) => arr.length > 0) ||
+  (sortBy && sortBy !== 'isMain');;
 
   // Fetch cart to show item count
   const { data: cart } = useQuery({
@@ -537,7 +614,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                       )}
                     </div>
                   </>
-                )}
+                )}  
               </div>
             )}
 
@@ -686,7 +763,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                 ))}
               </div>
             ) : categories && categories?.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                 {categories.map((category : any) => (
                   <button
                     key={category._id}
@@ -897,6 +974,24 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                 <div className="divide-y divide-[#e8e8e8]">
                 {[
                   {
+                    key: 'sort',
+                    label: 'Sort By',
+                    hasActive: !!(sortBy && sortBy !== 'featured'),
+                    content: (
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30 transition-colors"
+                      >
+                        {options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    ),
+                  },
+                  {
                     key: 'brand',
                     label: 'Brand',
                     hasActive: !!selectedBrand,
@@ -918,30 +1013,64 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                     label: 'Price Range',
                     hasActive: !!(minPrice || maxPrice),
                     content: (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Min (USD)</label>
-                          <input
-                            type="number"
-                            placeholder="0"
-                            value={minPrice}
-                            onChange={(e) => setMinPrice(e.target.value)}
-                            min={0}
-                            step={0.01}
-                            className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                      <div className="space-y-4">
+                        <div className="px-1 pt-2">
+                          <Slider
+                            range
+                            min={sliderMinBound}
+                            max={sliderMaxBound}
+                            value={[safeSelectedMin, safeSelectedMax]}
+                            onChange={handlePriceRangeChange}
+                            allowCross={false}
+                            step={1}
+                            trackStyle={[{ backgroundColor: '#2563eb', height: 6 }]}
+                            railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
+                            handleStyle={[
+                              { borderColor: '#2563eb', width: 16, height: 16, marginTop: -5, backgroundColor: '#fff', opacity: 1 },
+                              { borderColor: '#2563eb', width: 16, height: 16, marginTop: -5, backgroundColor: '#fff', opacity: 1 },
+                            ]}
                           />
+                          <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+                            <span>${safeSelectedMin}</span>
+                            <span>${safeSelectedMax}</span>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-xs text-gray-500 mb-1">Max (USD)</label>
-                          <input
-                            type="number"
-                            placeholder="—"
-                            value={maxPrice}
-                            onChange={(e) => setMaxPrice(e.target.value)}
-                            min={0}
-                            step={0.01}
-                            className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
-                          />
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">Min (USD)</label>
+                            <input
+                              type="number"
+                              placeholder="0"
+                              value={minPrice}
+                              onChange={(e) => {
+                                const next = e.target.value;
+                                if (next === '') return setMinPrice('');
+                                const parsed = Math.max(0, Number(next));
+                                setMinPrice(String(Math.min(parsed, safeSelectedMax)));
+                              }}
+                              min={0}
+                              step={1}
+                              className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">Max (USD)</label>
+                            <input
+                              type="number"
+                              placeholder="—"
+                              value={maxPrice}
+                              onChange={(e) => {
+                                const next = e.target.value;
+                                if (next === '') return setMaxPrice('');
+                                const parsed = Math.max(0, Number(next));
+                                setMaxPrice(String(Math.max(parsed, safeSelectedMin)));
+                              }}
+                              min={0}
+                              step={1}
+                              className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                            />
+                          </div>
                         </div>
                       </div>
                     ),

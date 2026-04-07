@@ -17,14 +17,14 @@ const NewlyAddedProduct = ({ lang }: any) => {
     isLoading,
     error,
   } = useProductsQuery({
-    limit: 10, // Show 10 newest products
+    limit: 24, // Show 10 newest products
     newQuery: {},
   } as any);
 
   // Extract products from all pages
   const products: VendorProductListItem[] = React.useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap((page: any) => page?.data || []).slice(0, 10);
+    return data.pages.flatMap((page: any) => page?.data || []).slice(0, 24);
   }, [data]);
 
   if (!isAuthorized) {
@@ -65,7 +65,7 @@ const NewlyAddedProduct = ({ lang }: any) => {
             'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 2xl:gap-5',
           )}
         >
-          {Array.from({ length: 10 }).map((_, idx) => (
+          {Array.from({ length: 24 }).map((_, idx) => (
             <ProductCardLoader key={`newly-added-loader-${idx}`} uniqueKey={`newly-added-loader-${idx}`} />
           ))}
         </div>
@@ -78,7 +78,7 @@ const NewlyAddedProduct = ({ lang }: any) => {
         <>
           <div
             className={cn(
-              'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 2xl:gap-5',
+              'grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6  lg:grid-cols-8 xl:grid-cols-12 2xl:grid-cols-12 gap-3 md:gap-4 2xl:gap-5',
             )}
           >
             {products.map((product: VendorProductListItem) => (
@@ -89,11 +89,11 @@ const NewlyAddedProduct = ({ lang }: any) => {
               />
             ))}
           </div>
-          {products.length >= 10 && (
+          {products.length >= 24 && (
             <div className="mt-8 text-center">
               <Link
                 href={`/${lang}/marketplace`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 transition-colors font-semibold"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#6f4e37] text-[#EDE8D0] rounded-lg hover:bg-[#6f4e37] transition-colors font-semibold"
               >
                 View All Products
               </Link>

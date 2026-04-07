@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rimraf .next dist build out node_modules",
     "dev": "next dev",
-    "tab":"next dev -H 0.0.0.0",
+    "tab": "next dev -H 0.0.0.0",
     "build": "next build && next export",
     "export": "next export",
     "start": "NODE_ENV=production node server.js",
@@ -66,6 +66,7 @@
     "rc-drawer": "^7.2.0",
     "rc-pagination": "^4.1.0",
     "rc-rate": "^2.13.0",
+    "rc-slider": "^11.1.9",
     "rc-table": "^7.46.1",
     "react": "18.3.1",
     "react-content-loader": "^7.0.0",

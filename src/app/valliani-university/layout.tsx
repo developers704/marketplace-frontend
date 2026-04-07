@@ -42,7 +42,7 @@ const UniversityLayout = ({ children }: { children: React.ReactNode }) => {
           {/* <ProfileProvider> */}
           <ManagedUIContext>
             <div className={`${jost.variable} ${styleScript.variable}`}>
-              {/* <PreventScreenCapture /> */}
+              <PreventScreenCapture />
               <ClientLayout>{children}</ClientLayout>
               {/* <ManagedModal lang={lang} />
                    <ManagedDrawer lang={lang} /> */}

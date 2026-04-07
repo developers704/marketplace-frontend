@@ -5,6 +5,7 @@ import type { VendorProductListItem, VendorProductsListResponse } from '../types
 
 type PaginatedVendorProducts = {
   data: VendorProductListItem[];
+  filters?: VendorProductsListResponse['filters'];
   paginatorInfo: VendorProductsListResponse['paginatorInfo'];
 };
 
@@ -83,6 +84,7 @@ const fetchProducts = async ({ queryKey, pageParam }: any): Promise<PaginatedVen
 
   return {
     data: data?.data || [],
+    filters: data?.filters,
     paginatorInfo: data?.paginatorInfo,
   };
 };

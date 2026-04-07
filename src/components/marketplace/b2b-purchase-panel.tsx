@@ -123,7 +123,7 @@ export default function B2BPurchasePanel({
     <div className={cn('bg-white rounded-xl border border-gray-200 p-5', className)}>
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
-          <div className="text-sm font-semibold text-gray-900">B2B Store Purchase</div>
+          <div className="text-sm font-semibold text-gray-900">Purchase</div>
           <div className="text-xs text-gray-500">Request admin approval before adding to your store inventory.</div>
         </div>
         {/* Status badge removed - cart-based flow doesn't show status here */}

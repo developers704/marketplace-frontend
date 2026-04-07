@@ -14,7 +14,7 @@ import Image from 'next/image';
 const LoginForm = ({ lang }: { lang: string }) => {
    const { setUser } = useUI();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [remember_me, setRemember_me] = useState(false);
   const [warehouses, setWarehouses] = useState<any[]>([]);
@@ -79,7 +79,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
       }
     }
 
-    const loginData = { email, password, remember_me, warehouseId: selectedWarehouse , setUser};
+    const loginData = { userId, password, remember_me, warehouseId: selectedWarehouse , setUser};
 
     try {
       const response = await login(loginData, setPermissions, setUser);
@@ -102,7 +102,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
     return await verifyOTP({ otpCode: otp, email }, setPermissions);
   };
   const handleResendOTP = async (email: string) => {
-    return await resendOTP({ email });
+    return await resendOTP({ email, userId: email });
   };
   const handleOTPSuccess = () => {
     setShowOTPModal(false);
@@ -131,14 +131,14 @@ const LoginForm = ({ lang }: { lang: string }) => {
       {/* HIGHLIGHT: Login Form - Upar dikhega */}
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
         <h2 className="mb-6 text-center text-3xl font-bold text-gray-800">Sign in</h2>
-
-        {/* Email */}
+      
+        {/* User ID */}
         <div className="mb-4">
           <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Enter your user ID"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
           />
         </div>
@@ -228,7 +228,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
       <OTPVerificationModal
         isOpen={showOTPModal}
         onClose={handleCloseOTPModal}
-        email={email}
+        email={userId}
         onVerifySuccess={handleOTPSuccess}
         verifyOTP={handleOTPVerification}
         resendOTP={handleResendOTP}
