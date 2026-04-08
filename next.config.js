@@ -11,6 +11,11 @@ module.exports = {
   // },
  images: {
     remotePatterns: [
+       {
+      protocol: 'http',
+      hostname: '192.168.18.67', // <-- aapka PC ka IP
+      port: '5000',
+    },
       {
         protocol: 'https',
         hostname: 'vallianimarketplace.com',
