@@ -18,7 +18,9 @@ const NewlyAddedProduct = ({ lang }: any) => {
     error,
   } = useProductsQuery({
     limit: 24, // Show 10 newest products
-    newQuery: {},
+    newQuery: {
+      sort : "new-arrivals"
+    },
   } as any);
 
   // Extract products from all pages
@@ -51,7 +53,7 @@ const NewlyAddedProduct = ({ lang }: any) => {
         </div>
         {products.length > 0 && (
           <Link
-            href={`/${lang}/marketplace`}
+            href={`/${lang}/marketplace/newly-added`}
             className="text-sm font-semibold text-brand-blue hover:underline"
           >
             View All →
@@ -92,10 +94,10 @@ const NewlyAddedProduct = ({ lang }: any) => {
           {products.length >= 24 && (
             <div className="mt-8 text-center">
               <Link
-                href={`/${lang}/marketplace`}
+                href={`/${lang}/marketplace/newly-added`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#6f4e37] text-[#EDE8D0] rounded-lg hover:bg-[#6f4e37] transition-colors font-semibold"
               >
-                View All Products
+                View New Products
               </Link>
             </div>
           )}

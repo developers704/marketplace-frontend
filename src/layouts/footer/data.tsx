@@ -1,7 +1,4 @@
-import { FaLinkedinIn } from 'react-icons/fa';
-import { FaFacebookF } from 'react-icons/fa';
-import { FaInstagram } from 'react-icons/fa';
-import { FaYoutube } from 'react-icons/fa';
+import {FaInstagram, FaTwitter , FaFacebookF , FaLinkedinIn  } from 'react-icons/fa';
 
 export const footer = {
   widgets: [
@@ -150,25 +147,25 @@ export const footer = {
   social: [
     {
       id: 1,
-      path: 'https://www.facebook.com/redqinc/',
+      path: 'https://www.facebook.com/vallianijewelers/',
       image: '/assets/images/social/facebook.svg',
       name: 'facebook',
-      width: 20,
-      height: 20,
-      icon: <FaLinkedinIn />,
-    },
-    {
-      id: 2,
-      path: 'https://twitter.com/redqinc',
-      image: '/assets/images/social/twitter.svg',
-      name: 'twitter',
       width: 20,
       height: 20,
       icon: <FaFacebookF />,
     },
     {
+      id: 2,
+      path: 'https://www.linkedin.com/company/vallianijewelers',
+      image: '/assets/images/social/twitter.svg',
+      name: 'Linkedin',
+      width: 20,
+      height: 20,
+      icon: <FaLinkedinIn />,
+    },
+    {
       id: 3,
-      path: 'https://www.instagram.com/redqinc/',
+      path: 'https://www.instagram.com/vallianijewelers',
       image: '/assets/images/social/instagram.svg',
       name: 'instagram',
       width: 20,
@@ -177,12 +174,12 @@ export const footer = {
     },
     {
       id: 4,
-      path: 'https://www.youtube.com/channel/UCjld1tyVHRNy_pe3ROLiLhw',
-      image: '/assets/images/social/youtube.svg',
-      name: 'youtube',
+      path: 'https://x.com/VallianiJ',
+      image: '/assets/images/social/twitter.svg',
+      name: 'twitter',
       width: 20,
       height: 20,
-      icon: <FaYoutube />,
+      icon: <FaTwitter />,
     },
   ],
 };

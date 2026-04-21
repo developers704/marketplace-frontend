@@ -3,7 +3,7 @@
 import Widgets from '@layouts/footer/widget/widget';
 import Copyright from '@layouts/footer/copyright';
 import { footer } from './data';
-const { widgets, payment } = footer;
+const { widgets } = footer;
 
 interface FooterProps {
   variant?: 'default' | 'medium';

@@ -57,10 +57,10 @@ const B2BMyOrders = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-          B2B My Orders
+         Inventory Orders
         </h1>
         <p className="mt-1 text-slate-600">
-          Track your B2B purchase requests and approval status
+          Track your Inventory Orders purchase requests and approval status
         </p>
       </div>
 
@@ -139,11 +139,11 @@ const B2BMyOrders = () => {
         <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 py-16">
           <Package className="h-16 w-16 text-slate-300" />
           <p className="mt-4 text-lg font-medium text-slate-600">
-            No B2B orders found
+            No Inventory orders found
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {selectedFilter === 'all'
-              ? 'Your B2B purchase requests will appear here'
+              ? 'Your Inventory Orders purchase requests will appear here'
               : `No ${selectedFilter} requests`}
           </p>
         </div>

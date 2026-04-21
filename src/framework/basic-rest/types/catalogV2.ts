@@ -10,6 +10,7 @@ export type VendorSkuLite = {
   price: number;
   currency?: string;
   images?: string[];
+  gallery?: string[];
   metalColor?: string;
   metalType?: string;
   size?: string;
@@ -22,6 +23,8 @@ type CategoryInfo = string | { _id: string; name: string; image?: string; descri
 export type VendorProductListItem = {
   _id: string;
   vendorModel: string;
+  /** Alternate key from some API responses */
+  vendorModelKey?: string;
   title: string;
   brand?: string;
   category?: CategoryInfo;

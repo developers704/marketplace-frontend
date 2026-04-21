@@ -126,7 +126,6 @@ const SingleProductSuppliesPage: React.FC<{
       });
     }
   }
-
   function addToWishlist() {
     // to show btn feedback while product wishlist
     setAddToWishlistLoader(true);

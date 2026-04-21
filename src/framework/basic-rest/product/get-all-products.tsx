@@ -24,8 +24,9 @@ const mapQueryToParams = (options: any, pageParam: string | number | null) => {
   // URL query params coming from the UI (filters)
   const q = options?.newQuery ?? {};
 
-  // Common filter keys in this frontend: brand, category, subcategory, subsubcategory, text, search
+  // Common filter keys in this frontend: brand, vendor, category, subcategory, subsubcategory, text, search
   if (q?.brand) params.brand = q.brand;
+  if (q?.vendor) params.vendor = q.vendor;
   if (q?.category) params.category = q.category;
   if (q?.subcategory) params.subcategory = q.subcategory;
   if (q?.subsubcategory) params.subsubcategory = q.subsubcategory;
@@ -60,7 +61,7 @@ const mapQueryToParams = (options: any, pageParam: string | number | null) => {
 
   // Dynamic attribute filters (defaultSku.attributes keys from API)
   const knownKeys = new Set([
-    'search', 'text', 'brand', 'category', 'subcategory', 'subsubcategory',
+    'search', 'text', 'brand', 'vendor', 'category', 'subcategory', 'subsubcategory',
     'minPrice', 'maxPrice', 'sort', 'minQuantity', 'metalColor', 'metalType', 'size', 'stonetype', 'centerclarity',
   ]);
   Object.entries(q || {}).forEach(([key, val]) => {

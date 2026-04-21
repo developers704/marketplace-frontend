@@ -40,6 +40,7 @@ export default function MarketplaceProductCard({
 
   const title = product?.title || "-";
   const brand = product?.brand || '';
+  const vendorLabel = (product?.vendorModelKey || product?.vendorModel || '').trim();
   const totalQty = product?.totalInventory ?? 0;
 
   const defaultSkuPrice = Number(product?.defaultSku?.price ?? 0);
@@ -136,6 +137,11 @@ const handleClick = () => {
       <div className="flex flex-col flex-1 p-4 gap-2 ">
         {/* Title with hover color change */}
         <div className=" text-xs font-bold  text-neutral-900 line-clamp-2 tracking-tight group-hover:text-brand transition-colors duration-300">{title}</div>
+        {vendorLabel ? (
+          <div className="text-[11px] font-medium text-neutral-600 truncate" title={vendorLabel}>
+            {vendorLabel}
+          </div>
+        ) : null}
         <div className=" flex items-center  justify-between ">
         
         {brand && (<div className="text-xs text-gary-900 font-medium tracking-wide uppercase">{brand}</div>)}
@@ -155,5 +161,3 @@ const handleClick = () => {
     </article>
   );
 }
-
-

@@ -29,6 +29,44 @@ import { getImageUrl } from '@/lib/utils';
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
+
+const RANGE_ATTRIBUTE_FILTER_KEYS = ['avgweight', 'centercarat', '99price', 'sidecarat'] as const;
+const RANGE_ATTRIBUTE_FILTER_KEY_SET = new Set<string>(RANGE_ATTRIBUTE_FILTER_KEYS);
+
+/** Large brand lists: require typing before showing full search results */
+const BRAND_SEARCH_MIN_CHARS = 2;
+const BRAND_RESULT_CAP = 500;
+const BRAND_LARGE_LIST_THRESHOLD = 200;
+
+type RangeAttributeMeta = {
+  values: Array<{ raw: string; num: number }>;
+  min: number;
+  max: number;
+};
+
+type ListingFilters = {
+  brands: string[];
+  metalColors: string[];
+  metalTypes: string[];
+  sizes: string[];
+  stoneTypes: string[];
+  centerClarities: string[];
+  availableAttributes: Array<{ _id: string; values: string[] }>;
+  priceRange?: { min: number; max: number };
+};
+
+const areQueriesEqual = (a: Record<string, any>, b: Record<string, any>) => {
+  const aKeys = Object.keys(a || {}).sort();
+  const bKeys = Object.keys(b || {}).sort();
+  if (aKeys.length !== bKeys.length) return false;
+  for (let i = 0; i < aKeys.length; i += 1) {
+    const key = aKeys[i];
+    if (key !== bKeys[i]) return false;
+    if (String(a[key] ?? '') !== String(b[key] ?? '')) return false;
+  }
+  return true;
+};
 
 export default function MarketplacePageContent({ lang }: { lang: string }) {
   const searchParams = useSearchParams();
@@ -37,7 +75,8 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState<string[]>([]);
+  const [selectedVendor, setSelectedVendor] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [selectedSubsubcategory, setSelectedSubsubcategory] = useState('');
@@ -45,30 +84,62 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
   const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState<string>('isMain');
   const [minQuantity, setMinQuantity] = useState('');
-  const [metalColor, setMetalColor] = useState('');
-  const [metalType, setMetalType] = useState('');
-  const [size, setSize] = useState('');
-  const [stonetype, setStonetype] = useState('');
-  const [centerclarity, setCenterclarity] = useState('');
+  const [metalColor, setMetalColor] = useState<string[]>([]);
+  const [metalType, setMetalType] = useState<string[]>([]);
+  const [size, setSize] = useState<string[]>([]);
+  const [stonetype, setStonetype] = useState<string[]>([]);
+  const [centerclarity, setCenterclarity] = useState<string[]>([]);
   const [attributeFilters, setAttributeFilters] = useState<Record<string, string[]>>({});
+  const [attributeRangeFilters, setAttributeRangeFilters] = useState<Record<string, { min: number; max: number }>>({});
   const [showFilters, setShowFilters] = useState(false);
   const [openFilterKey, setOpenFilterKey] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'categories' | 'subcategories' | 'subsubcategories' | 'products'>('categories');
   const [selectedCategoryData, setSelectedCategoryData] = useState<V2Category | null>(null);
   const [selectedSubcategoryData, setSelectedSubcategoryData] = useState<V2SubCategory | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastInternalQuerySyncRef = useRef('');
+  const lastKnownCategoryIdRef = useRef('');
+  const shouldHydrateCommittedFiltersRef = useRef(false);
+  const [committedFilterQuery, setCommittedFilterQuery] = useState<Record<string, any>>({});
+  const [categoryScopedFilters, setCategoryScopedFilters] = useState<ListingFilters | null>(null);
 
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API || '';
+
+  const { data: user, isLoading: userLoading } = useUserDataQuery();
+  const isSuperAdmin = useMemo(
+    () => String(user?.role?.role_name ?? '').trim().toLowerCase() === 'super admin',
+    [user?.role?.role_name]
+  );
+
+  const [brandSearchDraft, setBrandSearchDraft] = useState('');
+  const [vendorSearchDraft, setVendorSearchDraft] = useState('');
+  const [metalColorSearchDraft, setMetalColorSearchDraft] = useState('');
+  const [metalTypeSearchDraft, setMetalTypeSearchDraft] = useState('');
+  const [sizeSearchDraft, setSizeSearchDraft] = useState('');
+  const [stoneTypeSearchDraft, setStoneTypeSearchDraft] = useState('');
+  const [centerClaritySearchDraft, setCenterClaritySearchDraft] = useState('');
+  const [attributeOptionSearchDrafts, setAttributeOptionSearchDrafts] = useState<Record<string, string>>({});
 
   // Fetch categories
   const { data: categories, isLoading: categoriesLoading } = useV2CategoriesQuery();
 
   const KNOWN_URL_PARAMS = new Set([
-    'view', 'category', 'subcategory', 'subsubcategory', 'search', 'brand', 'sort',
+    'view', 'category', 'subcategory', 'subsubcategory', 'search', 'brand', 'vendor', 'sort',
     'minPrice', 'maxPrice', 'minQuantity', 'metalColor', 'metalType', 'size', 'stonetype', 'centerclarity',
+    ...RANGE_ATTRIBUTE_FILTER_KEYS.flatMap((key) => [`${key}Min`, `${key}Max`]),
   ]);
   // Restore state from URL (e.g. when returning from product detail via Back)
   useEffect(() => {
+    if (!selectedCategory) return;
+    lastKnownCategoryIdRef.current = selectedCategory;
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    const currentQueryString = searchParams.toString();
+    if (currentQueryString && currentQueryString === lastInternalQuerySyncRef.current) {
+      return;
+    }
+    shouldHydrateCommittedFiltersRef.current = true;
     const view = searchParams.get('view');
     const categoryId = searchParams.get('category');
     const subcategoryId = searchParams.get('subcategory');
@@ -84,7 +155,9 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
         setDebouncedSearchText(sp);
       }
       const brand = searchParams.get('brand');
-      if (brand != null) setSelectedBrand(brand);
+      if (brand != null) setSelectedBrand(brand.split(',').map((v) => v.trim()).filter(Boolean));
+      const vendor = searchParams.get('vendor');
+      if (vendor != null) setSelectedVendor(vendor.split(',').map((v) => v.trim()).filter(Boolean));
       const sort = searchParams.get('sort');
       if (sort != null) setSortBy(sort);
       const minP = searchParams.get('minPrice');
@@ -94,15 +167,15 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       const minQ = searchParams.get('minQuantity');
       if (minQ != null) setMinQuantity(minQ);
       const mc = searchParams.get('metalColor');
-      if (mc != null) setMetalColor(mc);
+      if (mc != null) setMetalColor(mc.split(',').map((v) => v.trim()).filter(Boolean));
       const mt = searchParams.get('metalType');
-      if (mt != null) setMetalType(mt);
+      if (mt != null) setMetalType(mt.split(',').map((v) => v.trim()).filter(Boolean));
       const sz = searchParams.get('size');
-      if (sz != null) setSize(sz);
+      if (sz != null) setSize(sz.split(',').map((v) => v.trim()).filter(Boolean));
       const st = searchParams.get('stonetype');
-      if (st != null) setStonetype(st);
+      if (st != null) setStonetype(st.split(',').map((v) => v.trim()).filter(Boolean));
       const cc = searchParams.get('centerclarity');
-      if (cc != null) setCenterclarity(cc);
+      if (cc != null) setCenterclarity(cc.split(',').map((v) => v.trim()).filter(Boolean));
       const attrFromUrl: Record<string, string[]> = {};
       searchParams.forEach((value, key) => {
         if (KNOWN_URL_PARAMS.has(key)) return;
@@ -110,8 +183,36 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
         if (vals.length) attrFromUrl[key] = vals;
       });
       if (Object.keys(attrFromUrl).length) setAttributeFilters(attrFromUrl);
+      const rangeFromUrl: Record<string, { min: number; max: number }> = {};
+      RANGE_ATTRIBUTE_FILTER_KEYS.forEach((attrKey) => {
+        const minRaw = searchParams.get(`${attrKey}Min`);
+        const maxRaw = searchParams.get(`${attrKey}Max`);
+        if (minRaw == null || maxRaw == null) return;
+        const minVal = Number(minRaw);
+        const maxVal = Number(maxRaw);
+        if (!Number.isFinite(minVal) || !Number.isFinite(maxVal)) return;
+        rangeFromUrl[attrKey] = {
+          min: Math.min(minVal, maxVal),
+          max: Math.max(minVal, maxVal),
+        };
+      });
+      setAttributeRangeFilters(rangeFromUrl);
     }
   }, [searchParams]);
+
+  // Vendor filter is Super Admin only: strip selections + API param for everyone else
+  useEffect(() => {
+    if (userLoading) return;
+    if (isSuperAdmin) return;
+    setSelectedVendor([]);
+    setVendorSearchDraft('');
+    setCommittedFilterQuery((prev) => {
+      if (prev?.vendor == null || String(prev.vendor).trim() === '') return prev;
+      const next = { ...prev };
+      delete next.vendor;
+      return next;
+    });
+  }, [userLoading, isSuperAdmin]);
 
   // Set category/subcategory data when IDs restored from URL
   useEffect(() => {
@@ -142,12 +243,12 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
   
   // Fetch subcategories when category is selected
   const { data: subcategories, isLoading: subcategoriesLoading } = useV2SubcategoriesByCategoryQuery(
-    selectedCategoryData?._id || null
+    selectedCategory || null
   );
 
   // Fetch sub-subcategories when subcategory is selected
   const { data: subsubcategories, isLoading: subsubcategoriesLoading } = useV2SubSubcategoriesBySubCategoryQuery(
-    selectedSubcategoryData?._id || null
+    selectedSubcategory || null
   );
 
   // Set subcategory data when ID restored from URL (after subcategories loaded)
@@ -183,60 +284,84 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
   }, [searchText]);
 
   // Build filter query object using debounced search text
-  const filterQuery = useMemo(() => {
+  const pendingFilterQuery = useMemo(() => {
     const query: any = {};
     if (debouncedSearchText.trim()) query.search = debouncedSearchText.trim();
-    if (selectedBrand) query.brand = selectedBrand;
-    // Use ObjectId for category filtering if available
-    if (selectedSubsubcategory) {
-      query.subsubcategory = selectedSubsubcategory;
-    } else if (selectedSubcategory) {
-      query.subcategory = selectedSubcategory;
-    } else if (selectedCategory) {
-      query.category = selectedCategory;
-    }
+    if (selectedBrand.length) query.brand = selectedBrand.join(',');
+    if (isSuperAdmin && selectedVendor.length) query.vendor = selectedVendor.join(',');
+    // Keep full hierarchy in URL/state so back-navigation can always restore parent context.
+    if (selectedCategory) query.category = selectedCategory;
+    if (selectedSubcategory) query.subcategory = selectedSubcategory;
+    if (selectedSubsubcategory) query.subsubcategory = selectedSubsubcategory;
     if (minPrice) query.minPrice = minPrice;
     if (maxPrice) query.maxPrice = maxPrice;
-    if (sortBy && sortBy !== 'featured') query.sort = sortBy;
+    /** Always send sort so facet scope + API stay in sync (featured = All Inventory, same as backend default). */
+    if (sortBy) query.sort = sortBy;
     if (minQuantity) query.minQuantity = minQuantity;
-    if (metalColor) query.metalColor = metalColor;
-    if (metalType) query.metalType = metalType;
-    if (size) query.size = size;
-    if (stonetype) query.stonetype = stonetype;
-    if (centerclarity) query.centerclarity = centerclarity;
+    if (metalColor.length) query.metalColor = metalColor.join(',');
+    if (metalType.length) query.metalType = metalType.join(',');
+    if (size.length) query.size = size.join(',');
+    if (stonetype.length) query.stonetype = stonetype.join(',');
+    if (centerclarity.length) query.centerclarity = centerclarity.join(',');
     Object.entries(attributeFilters).forEach(([key, values]) => {
+      if (key === 'vendor') return;
       if (values.length) query[key] = values.length === 1 ? values[0] : values.join(',');
     });
     return query;
-  }, [debouncedSearchText, selectedBrand, selectedCategory, selectedSubcategory, selectedSubsubcategory, minPrice, maxPrice, sortBy, minQuantity, metalColor, metalType, size, stonetype, centerclarity, attributeFilters]);
+  }, [
+    debouncedSearchText,
+    isSuperAdmin,
+    selectedBrand,
+    selectedCategory,
+    selectedSubcategory,
+    selectedSubsubcategory,
+    selectedVendor,
+    minPrice,
+    maxPrice,
+    sortBy,
+    minQuantity,
+    metalColor,
+    metalType,
+    size,
+    stonetype,
+    centerclarity,
+    attributeFilters,
+  ]);
+
+  useEffect(() => {
+    if (viewMode !== 'products') return;
+    if (!shouldHydrateCommittedFiltersRef.current) return;
+    setCommittedFilterQuery(pendingFilterQuery);
+    shouldHydrateCommittedFiltersRef.current = false;
+  }, [viewMode, pendingFilterQuery]);
+
+  // Top bar filters (search/sort) should apply immediately.
+  // Drawer filters still wait for "View results" while the drawer is open.
+  useEffect(() => {
+    if (viewMode !== 'products') return;
+    if (showFilters) return;
+    if (shouldHydrateCommittedFiltersRef.current) return;
+    setCommittedFilterQuery((prev) => {
+      if (areQueriesEqual(prev, pendingFilterQuery)) return prev;
+      return pendingFilterQuery;
+    });
+  }, [viewMode, showFilters, pendingFilterQuery]);
 
   // Sync products view state to URL so Back from product detail can restore
   const listingQueryString = useMemo(() => {
     if (viewMode !== 'products') return '';
     const params = new URLSearchParams();
     params.set('view', 'products');
-    if (selectedCategory) params.set('category', selectedCategory);
-    if (selectedSubcategory) params.set('subcategory', selectedSubcategory);
-    if (selectedSubsubcategory) params.set('subsubcategory', selectedSubsubcategory);
-    if (debouncedSearchText.trim()) params.set('search', debouncedSearchText.trim());
-    if (selectedBrand) params.set('brand', selectedBrand);
-    if (sortBy && sortBy !== 'featured') params.set('sort', sortBy);
-    if (minPrice) params.set('minPrice', minPrice);
-    if (maxPrice) params.set('maxPrice', maxPrice);
-    if (minQuantity) params.set('minQuantity', minQuantity);
-    if (metalColor) params.set('metalColor', metalColor);
-    if (metalType) params.set('metalType', metalType);
-    if (size) params.set('size', size);
-    if (stonetype) params.set('stonetype', stonetype);
-    if (centerclarity) params.set('centerclarity', centerclarity);
-    Object.entries(attributeFilters).forEach(([key, values]) => {
-      if (values.length) params.set(key, values.join(','));
+    Object.entries(committedFilterQuery).forEach(([key, value]) => {
+      if (value == null || String(value).trim() === '') return;
+      params.set(key, String(value));
     });
     return params.toString();
-  }, [viewMode, selectedCategory, selectedSubcategory, selectedSubsubcategory, debouncedSearchText, selectedBrand, sortBy, minPrice, maxPrice, minQuantity, metalColor, metalType, size, stonetype, centerclarity, attributeFilters]);
+  }, [viewMode, committedFilterQuery]);
 
   useEffect(() => {
     if (viewMode !== 'products' || !listingQueryString) return;
+    lastInternalQuerySyncRef.current = listingQueryString;
     router.replace(`${pathname}?${listingQueryString}`, { scroll: false });
   }, [viewMode, listingQueryString, pathname, router]);
 
@@ -253,18 +378,45 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     error,
   } = useProductsQuery({
     limit: LIMITS.PRODUCTS_LIMITS,
-    newQuery: filterQuery,
+    newQuery: committedFilterQuery,
   } as any);
 
-  const serverFilters = useMemo(() => {
-    return data?.pages?.find((p: any) => p?.filters)?.filters || null;
+  const serverFilters = useMemo<ListingFilters | null>(() => {
+    return (data?.pages?.[0]?.filters as ListingFilters) || null;
   }, [data]);
+
+  const facetSortKey = useMemo(
+    () =>
+      String(committedFilterQuery?.sort ?? sortBy ?? 'isMain')
+        .trim()
+        .toLowerCase() || 'isMain',
+    [committedFilterQuery, sortBy]
+  );
+
+  const facetScopeKey = useMemo(
+    () => `${selectedCategory || ''}|${selectedSubcategory || ''}|${selectedSubsubcategory || ''}|${facetSortKey}`,
+    [selectedCategory, selectedSubcategory, selectedSubsubcategory, facetSortKey]
+  );
+
+  useEffect(() => {
+    setCategoryScopedFilters(null);
+  }, [facetScopeKey]);
+
+  useEffect(() => {
+    if (!serverFilters) return;
+    // Wait for the active query to settle before capturing facets.
+    // This avoids locking stale filters from previous sort scope.
+    if (isLoading) return;
+    setCategoryScopedFilters((prev) => prev || serverFilters);
+  }, [serverFilters, isLoading]);
+
+  const effectiveServerFilters: ListingFilters | null = categoryScopedFilters || serverFilters;
 
   // Extract unique brands and category names from products (for filter dropdown)
   const { brands, productCategories } = useMemo(() => {
-    if (serverFilters) {
+    if (effectiveServerFilters) {
       return {
-        brands: (serverFilters.brands || []).slice(),
+        brands: (effectiveServerFilters.brands || []).slice(),
         productCategories: [],
       };
     }
@@ -286,13 +438,35 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       brands: Array.from(brandSet).sort(),
       productCategories: Array.from(categorySet).sort(),
     };
-  }, [data, serverFilters]);
+  }, [data, effectiveServerFilters]);
+
+  const getSearchedOptions = useCallback(
+    (allOptions: string[], searchTerm: string, selectedOptions: string[]) => {
+      if (!allOptions.length) return [];
+      const q = searchTerm.trim().toLowerCase();
+      const selectedSet = new Set(selectedOptions);
+      const isLarge = allOptions.length > BRAND_LARGE_LIST_THRESHOLD;
+      if (isLarge && q.length < BRAND_SEARCH_MIN_CHARS) {
+        return allOptions.filter((option) => selectedSet.has(option));
+      }
+      if (!q) return allOptions.slice(0, BRAND_RESULT_CAP);
+      return allOptions
+        .filter((option) => String(option).toLowerCase().includes(q))
+        .slice(0, BRAND_RESULT_CAP);
+    },
+    []
+  );
+
+  const filteredBrands = useMemo(
+    () => getSearchedOptions(brands, brandSearchDraft, selectedBrand),
+    [brands, brandSearchDraft, selectedBrand, getSearchedOptions]
+  );
 
   // Dynamic attribute filters: derive from current products' defaultSku.attributes (dropdown/checkbox options)
   const SKIP_ATTRIBUTE_KEYS = new Set(['featureimageslink', 'galleryimagelink', 'descriptionname', 'stonetype', 'centerclarity']);
   const availableAttributes = useMemo(() => {
-    if (serverFilters) {
-      return serverFilters.availableAttributes || [];
+    if (effectiveServerFilters) {
+      return effectiveServerFilters.availableAttributes || [];
     }
     const map = new Map<string, Set<string>>();
     data?.pages?.forEach((page: any) => {
@@ -312,14 +486,108 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       _id: id,
       values: Array.from(set).sort((a, b) => String(a).localeCompare(String(b))),
     }));
-  }, [data, serverFilters]);
+  }, [data, effectiveServerFilters]);
+
+  const vendorAttribute = useMemo(
+    () => availableAttributes.find((a) => String(a?._id || '').toLowerCase() === 'vendor') || null,
+    [availableAttributes]
+  );
+  const vendorOptions = useMemo(() => vendorAttribute?.values || [], [vendorAttribute]);
+  const filteredVendors = useMemo(
+    () => getSearchedOptions(vendorOptions, vendorSearchDraft, selectedVendor),
+    [vendorOptions, vendorSearchDraft, selectedVendor, getSearchedOptions]
+  );
+  const nonVendorAttributes = useMemo(
+    () => availableAttributes.filter((a) => String(a?._id || '').toLowerCase() !== 'vendor'),
+    [availableAttributes]
+  );
+
+  const rangeAttributeMeta = useMemo(() => {
+    const meta: Record<string, RangeAttributeMeta> = {};
+    availableAttributes.forEach((attr) => {
+      if (!RANGE_ATTRIBUTE_FILTER_KEY_SET.has(attr?._id)) return;
+      const numericValues = (attr?.values || [])
+        .map((raw) => ({ raw, num: Number(raw) }))
+        .filter((entry) => Number.isFinite(entry.num))
+        .sort((a, b) => a.num - b.num);
+      if (numericValues.length === 0) return;
+      meta[attr._id] = {
+        values: numericValues,
+        min: numericValues[0].num,
+        max: numericValues[numericValues.length - 1].num,
+      };
+    });
+    return meta;
+  }, [availableAttributes]);
+
+  useEffect(() => {
+    setAttributeRangeFilters((prev) => {
+      const next: Record<string, { min: number; max: number }> = {};
+      Object.entries(prev).forEach(([key, selected]) => {
+        const meta = rangeAttributeMeta[key];
+        if (!meta) return;
+        const clampedMin = Math.max(meta.min, Math.min(selected.min, selected.max));
+        const clampedMax = Math.min(meta.max, Math.max(selected.min, selected.max));
+        next[key] = { min: clampedMin, max: clampedMax };
+      });
+      return next;
+    });
+  }, [rangeAttributeMeta]);
+
+  const updateAttributeRangeFilter = useCallback((key: string, min: number, max: number) => {
+    const meta = rangeAttributeMeta[key];
+    if (!meta) return;
+    const nextMin = Math.max(meta.min, Math.min(min, max));
+    const nextMax = Math.min(meta.max, Math.max(min, max));
+    setAttributeRangeFilters((prev) => {
+      const next = { ...prev };
+      next[key] = { min: nextMin, max: nextMax };
+      return next;
+    });
+  }, [rangeAttributeMeta]);
+
+  useEffect(() => {
+    const desiredRangeSelections: Record<string, string[]> = {};
+    Object.entries(attributeRangeFilters).forEach(([key, range]) => {
+      const meta = rangeAttributeMeta[key];
+      if (!meta) return;
+      const selectedValues = meta.values
+        .filter((entry) => entry.num >= range.min && entry.num <= range.max)
+        .map((entry) => entry.raw);
+      if (!selectedValues.length) return;
+      desiredRangeSelections[key] = selectedValues;
+    });
+
+    setAttributeFilters((prev) => {
+      const next: Record<string, string[]> = {};
+      Object.entries(prev).forEach(([key, values]) => {
+        if (RANGE_ATTRIBUTE_FILTER_KEY_SET.has(key)) return;
+        next[key] = values;
+      });
+      Object.entries(desiredRangeSelections).forEach(([key, values]) => {
+        next[key] = values;
+      });
+
+      const prevKeys = Object.keys(prev).sort();
+      const nextKeys = Object.keys(next).sort();
+      if (prevKeys.length === nextKeys.length && prevKeys.every((key, idx) => key === nextKeys[idx])) {
+        const unchanged = prevKeys.every((key) => {
+          const prevVals = prev[key] || [];
+          const nextVals = next[key] || [];
+          return prevVals.length === nextVals.length && prevVals.every((value, idx) => value === nextVals[idx]);
+        });
+        if (unchanged) return prev;
+      }
+      return next;
+    });
+  }, [attributeRangeFilters, rangeAttributeMeta]);
 
   // Dynamic Metal options from defaultSku (show Metal section only if any exist)
   const { metalColors, metalTypes, sizes, hasMetal } = useMemo(() => {
-    if (serverFilters) {
-      const colors = serverFilters.metalColors || [];
-      const types = serverFilters.metalTypes || [];
-      const sz = serverFilters.sizes || [];
+    if (effectiveServerFilters) {
+      const colors = effectiveServerFilters.metalColors || [];
+      const types = effectiveServerFilters.metalTypes || [];
+      const sz = effectiveServerFilters.sizes || [];
       return {
         metalColors: colors,
         metalTypes: types,
@@ -345,13 +613,13 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       sizes: Array.from(sz).sort((a, b) => a.localeCompare(b)),
       hasMetal: colors.size > 0 || types.size > 0 || sz.size > 0,
     };
-  }, [data, serverFilters]);
+  }, [data, effectiveServerFilters]);
 
   // Dynamic Stone & Clarity from defaultSku.attributes (show section only if any exist)
   const { stoneTypes, centerClarities, hasStoneClarity } = useMemo(() => {
-    if (serverFilters) {
-      const st = serverFilters.stoneTypes || [];
-      const cc = serverFilters.centerClarities || [];
+    if (effectiveServerFilters) {
+      const st = effectiveServerFilters.stoneTypes || [];
+      const cc = effectiveServerFilters.centerClarities || [];
       return {
         stoneTypes: st,
         centerClarities: cc,
@@ -373,12 +641,12 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
       centerClarities: Array.from(cc).sort((a, b) => a.localeCompare(b)),
       hasStoneClarity: st.size > 0 || cc.size > 0,
     };
-  }, [data, serverFilters]);
+  }, [data, effectiveServerFilters]);
 
   const { sliderMinBound, sliderMaxBound } = useMemo(() => {
-    if (serverFilters?.priceRange) {
-      const minBound = Math.max(0, Math.floor(Number(serverFilters.priceRange.min || 0)));
-      const maxRaw = Math.ceil(Number(serverFilters.priceRange.max || 0));
+    if (effectiveServerFilters?.priceRange) {
+      const minBound = Math.max(0, Math.floor(Number(effectiveServerFilters.priceRange.min || 0)));
+      const maxRaw = Math.ceil(Number(effectiveServerFilters.priceRange.max || 0));
       const maxBound = maxRaw > 0 ? maxRaw : 1000;
       return { sliderMinBound: minBound, sliderMaxBound: Math.max(minBound, maxBound) };
     }
@@ -399,7 +667,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     const minBound = Number.isFinite(minCandidate) ? Math.floor(minCandidate) : 0;
     const maxBound = Number.isFinite(maxCandidate) && maxCandidate > 0 ? Math.ceil(maxCandidate) : 1000;
     return { sliderMinBound: Math.max(0, minBound), sliderMaxBound: Math.max(minBound, maxBound) };
-  }, [data, serverFilters]);
+  }, [data, effectiveServerFilters]);
 
   const selectedMinPrice = minPrice !== '' ? Number(minPrice) : sliderMinBound;
   const selectedMaxPrice = maxPrice !== '' ? Number(maxPrice) : sliderMaxBound;
@@ -453,53 +721,130 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     setViewMode('products');
   }, []);
 
-  // Handle back navigation
+  // Handle back navigation — keep URL aligned with browse view so URL-driven effects do not override state
   const handleBack = useCallback(() => {
+    const pushBrowseUrl = (search: string) => {
+      lastInternalQuerySyncRef.current = search;
+      router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false });
+    };
+
     if (viewMode === 'subsubcategories') {
       setViewMode('subcategories');
       setSelectedSubsubcategory('');
+      const params = new URLSearchParams();
+      if (selectedCategory) params.set('category', selectedCategory);
+      if (selectedSubcategory) params.set('subcategory', selectedSubcategory);
+      pushBrowseUrl(params.toString());
     } else if (viewMode === 'subcategories') {
       setViewMode('categories');
       setSelectedCategory('');
       setSelectedCategoryData(null);
       setSelectedSubcategory('');
       setSelectedSubcategoryData(null);
+      pushBrowseUrl('');
     } else if (viewMode === 'products') {
       if (selectedSubsubcategory) {
         setViewMode('subsubcategories');
         setSelectedSubsubcategory('');
+        const params = new URLSearchParams();
+        if (selectedCategory) params.set('category', selectedCategory);
+        if (selectedSubcategory) params.set('subcategory', selectedSubcategory);
+        pushBrowseUrl(params.toString());
       } else if (selectedSubcategory) {
+        const categoryForBack =
+          selectedCategory ||
+          selectedCategoryData?._id ||
+          lastKnownCategoryIdRef.current ||
+          searchParams.get('category') ||
+          '';
+
         setViewMode('subcategories');
+        if (categoryForBack) {
+          setSelectedCategory(categoryForBack);
+          const categoryObj = categories?.find((c) => c._id === categoryForBack) || null;
+          if (categoryObj) setSelectedCategoryData(categoryObj);
+        }
         setSelectedSubcategory('');
         setSelectedSubcategoryData(null);
+        const params = new URLSearchParams();
+        if (categoryForBack) params.set('category', categoryForBack);
+        pushBrowseUrl(params.toString());
       } else {
         setViewMode('categories');
         setSelectedCategory('');
         setSelectedCategoryData(null);
+        pushBrowseUrl('');
       }
     }
-  }, [viewMode, selectedSubcategory, selectedSubsubcategory]);
+  }, [
+    viewMode,
+    selectedCategory,
+    selectedCategoryData,
+    selectedSubcategory,
+    selectedSubsubcategory,
+    pathname,
+    router,
+    searchParams,
+    categories,
+  ]);
 
   const clearFilters = useCallback(() => {
     setSearchText('');
     setDebouncedSearchText('');
-    setSelectedBrand('');
+    setSelectedBrand([]);
+    setSelectedVendor([]);
+    setBrandSearchDraft('');
+    setVendorSearchDraft('');
+    setMetalColorSearchDraft('');
+    setMetalTypeSearchDraft('');
+    setSizeSearchDraft('');
+    setStoneTypeSearchDraft('');
+    setCenterClaritySearchDraft('');
+    setAttributeOptionSearchDrafts({});
     setMinPrice('');
     setMaxPrice('');
     setSortBy('isMain');
     setMinQuantity('');
-    setMetalColor('');
-    setMetalType('');
-    setSize('');
-    setStonetype('');
-    setCenterclarity('');
+    setMetalColor([]);
+    setMetalType([]);
+    setSize([]);
+    setStonetype([]);
+    setCenterclarity([]);
     setAttributeFilters({});
+    setAttributeRangeFilters({});
+    setCommittedFilterQuery({});
+    shouldHydrateCommittedFiltersRef.current = false;
     setViewMode('products');
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
       searchTimeoutRef.current = null;
     }
   }, []);
+
+  const applyFilters = useCallback(() => {
+    setCommittedFilterQuery(pendingFilterQuery);
+    shouldHydrateCommittedFiltersRef.current = false;
+    setShowFilters(false);
+  }, [pendingFilterQuery]);
+
+  const toggleMultiSelectValue = useCallback(
+    (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+      setter((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]));
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (showFilters) return;
+    setBrandSearchDraft('');
+    setVendorSearchDraft('');
+    setMetalColorSearchDraft('');
+    setMetalTypeSearchDraft('');
+    setSizeSearchDraft('');
+    setStoneTypeSearchDraft('');
+    setCenterClaritySearchDraft('');
+    setAttributeOptionSearchDrafts({});
+  }, [showFilters]);
 
   useEffect(() => {
     if (!showFilters) return;
@@ -515,8 +860,21 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     };
   }, [showFilters]);
 
-  const hasActiveFilters = debouncedSearchText || selectedBrand || minPrice || maxPrice || minQuantity || metalColor || metalType || size || stonetype || centerclarity || Object.values(attributeFilters).some((arr) => arr.length > 0) ||
-  (sortBy && sortBy !== 'isMain');;
+  const hasActiveFilters =
+    debouncedSearchText ||
+    selectedBrand.length > 0 ||
+    (isSuperAdmin && selectedVendor.length > 0) ||
+    minPrice ||
+    maxPrice ||
+    minQuantity ||
+    metalColor.length > 0 ||
+    metalType.length > 0 ||
+    size.length > 0 ||
+    stonetype.length > 0 ||
+    centerclarity.length > 0 ||
+    Object.values(attributeFilters).some((arr) => arr.length > 0) ||
+    Object.keys(attributeRangeFilters).length > 0 ||
+    (sortBy && sortBy !== 'isMain');
 
   // Fetch cart to show item count
   const { data: cart } = useQuery({
@@ -797,7 +1155,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
         )}
 
         {/* Subcategory Navigation */}
-        {viewMode === 'subcategories' && selectedCategoryData && (
+        {viewMode === 'subcategories' && selectedCategory && (
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <button
@@ -861,7 +1219,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
         )}
 
         {/* Sub-Subcategory Navigation */}
-        {viewMode === 'subsubcategories' && selectedSubcategoryData && (
+        {viewMode === 'subsubcategories' && selectedSubcategory && (
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <button
@@ -994,20 +1352,143 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                   {
                     key: 'brand',
                     label: 'Brand',
-                    hasActive: !!selectedBrand,
+                    hasActive: selectedBrand.length > 0,
                     content: (
-                      <select
-                        value={selectedBrand}
-                        onChange={(e) => setSelectedBrand(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30 transition-colors"
-                      >
-                        <option value="">All Brands</option>
-                        {brands.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
+                      <div className="space-y-3">
+                        {selectedBrand.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedBrand.map((b) => (
+                              <span
+                                key={b}
+                                className="inline-flex items-center gap-1 max-w-full pl-2 pr-1 py-0.5 rounded-full bg-[#1a1a1a]/8 text-xs text-gray-800"
+                              >
+                                <span className="truncate max-w-[200px]" title={b}>
+                                  {b}
+                                </span>
+                                <button
+                                  type="button"
+                                  aria-label={`Remove ${b}`}
+                                  className="p-0.5 rounded-full hover:bg-black/10 shrink-0"
+                                  onClick={() =>
+                                    setSelectedBrand((prev) => prev.filter((x) => x !== b))
+                                  }
+                                >
+                                  <X size={12} strokeWidth={2.5} />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="relative">
+                          <Search
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                            size={16}
+                          />
+                          <input
+                            type="text"
+                            value={brandSearchDraft}
+                            onChange={(e) => setBrandSearchDraft(e.target.value)}
+                            placeholder="Search brands…"
+                            className="w-full pl-9 pr-9 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                          />
+                          {brandSearchDraft ? (
+                            <button
+                              type="button"
+                              aria-label="Clear brand search"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700"
+                              onClick={() => setBrandSearchDraft('')}
+                            >
+                              <X size={14} />
+                            </button>
+                          ) : null}
+                        </div>
+                        {brands.length > BRAND_LARGE_LIST_THRESHOLD &&
+                          brandSearchDraft.trim().length < BRAND_SEARCH_MIN_CHARS && (
+                            <p className="text-[11px] text-gray-500 leading-snug">
+                              {brands.length.toLocaleString()} brands — type at least{' '}
+                              {BRAND_SEARCH_MIN_CHARS} characters to search, or manage selected
+                              brands below.
+                            </p>
+                          )}
+                        <div className="max-h-52 overflow-y-auto pr-1 space-y-1 border border-[#eee] rounded-lg p-1 bg-[#fafafa]">
+                          {filteredBrands.map((brand) => (
+                                  <label
+                                    key={brand}
+                                    className={cn(
+                                      'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                      selectedBrand.includes(brand)
+                                        ? 'bg-[#1a1a1a]/5'
+                                        : 'hover:bg-white'
+                                    )}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedBrand.includes(brand)}
+                                      onChange={() => toggleMultiSelectValue(setSelectedBrand, brand)}
+                                      className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30 shrink-0"
+                                    />
+                                    <span className="text-gray-800 truncate min-w-0">{brand}</span>
+                                  </label>
+                                ))}
+                          {filteredBrands.length === 0 && (
+                                  <p className="text-xs text-gray-500 px-2 py-3 text-center">
+                                    {brands.length === 0
+                                      ? 'No brands in this listing scope yet.'
+                                      : brands.length > BRAND_LARGE_LIST_THRESHOLD &&
+                                          brandSearchDraft.trim().length < BRAND_SEARCH_MIN_CHARS
+                                        ? 'Type to search brands, or select from chips above.'
+                                        : 'No brands match your search.'}
+                                  </p>
+                                )}
+                        </div>
+                      </div>
                     ),
                   },
+                  ...(isSuperAdmin
+                    ? [
+                        {
+                          key: 'vendor',
+                          label: 'Vendor',
+                          hasActive: selectedVendor.length > 0,
+                          content: (
+                            <div className="space-y-3">
+                              <div className="relative">
+                                <Search
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                  size={16}
+                                />
+                                <input
+                                  type="text"
+                                  value={vendorSearchDraft}
+                                  onChange={(e) => setVendorSearchDraft(e.target.value)}
+                                  placeholder="Search vendors…"
+                                  className="w-full pl-9 pr-9 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                                />
+                              </div>
+                              <div className="max-h-52 overflow-y-auto pr-1 space-y-1 border border-[#eee] rounded-lg p-1 bg-[#fafafa]">
+                                {filteredVendors.map((v) => (
+                                  <label
+                                    key={v}
+                                    className={cn(
+                                      'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                      selectedVendor.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-white'
+                                    )}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedVendor.includes(v)}
+                                      onChange={() => toggleMultiSelectValue(setSelectedVendor, v)}
+                                      className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30 shrink-0"
+                                    />
+                                    <span className="text-gray-800 truncate min-w-0">{v}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          ),
+                        },
+                      ]
+                    : []),
                   {
                     key: 'price',
                     label: 'Price Range',
@@ -1036,7 +1517,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        {/* <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs text-gray-500 mb-1">Min (USD)</label>
                             <input
@@ -1071,7 +1552,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                               className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
                             />
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     ),
                   },
@@ -1096,52 +1577,100 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                         {
                           key: 'metal',
                           label: 'Metal',
-                          hasActive: !!(metalColor || metalType || size),
+                          hasActive: metalColor.length > 0 || metalType.length > 0 || size.length > 0,
                           content: (
                             <div className="space-y-3">
                               {metalColors.length > 0 && (
                                 <div>
                                   <label className="block text-xs text-gray-500 mb-1">Color</label>
-                                  <select
-                                    value={metalColor}
-                                    onChange={(e) => setMetalColor(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  >
-                                    <option value="">All</option>
-                                    {metalColors?.map((c) => (
-                                      <option key={c} value={c}>{c}</option>
+                                  <input
+                                    type="text"
+                                    value={metalColorSearchDraft}
+                                    onChange={(e) => setMetalColorSearchDraft(e.target.value)}
+                                    placeholder="Search color..."
+                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                                  />
+                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
+                                    {getSearchedOptions(metalColors, metalColorSearchDraft, metalColor).map((c) => (
+                                      <label
+                                        key={c}
+                                        className={cn(
+                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                          metalColor.includes(c) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
+                                        )}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={metalColor.includes(c)}
+                                          onChange={() => toggleMultiSelectValue(setMetalColor, c)}
+                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                                        />
+                                        <span className="text-gray-800 truncate">{c}</span>
+                                      </label>
                                     ))}
-                                  </select>
+                                  </div>
                                 </div>
                               )}
                               {metalTypes?.length > 0 && (
                                 <div>
                                   <label className="block text-xs text-gray-500 mb-1">Type</label>
-                                  <select
-                                    value={metalType}
-                                    onChange={(e) => setMetalType(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  >
-                                    <option value="">All</option>
-                                    {metalTypes?.map((t) => (
-                                      <option key={t} value={t}>{t || "-"}</option>
+                                  <input
+                                    type="text"
+                                    value={metalTypeSearchDraft}
+                                    onChange={(e) => setMetalTypeSearchDraft(e.target.value)}
+                                    placeholder="Search type..."
+                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                                  />
+                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
+                                    {getSearchedOptions(metalTypes, metalTypeSearchDraft, metalType).map((t) => (
+                                      <label
+                                        key={t}
+                                        className={cn(
+                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                          metalType.includes(t) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
+                                        )}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={metalType.includes(t)}
+                                          onChange={() => toggleMultiSelectValue(setMetalType, t)}
+                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                                        />
+                                        <span className="text-gray-800 truncate">{t || '-'}</span>
+                                      </label>
                                     ))}
-                                  </select>
+                                  </div>
                                 </div>
                               )}
                               {sizes?.length > 0 && (
                                 <div>
                                   <label className="block text-xs text-gray-500 mb-1">Size</label>
-                                  <select
-                                    value={size}
-                                    onChange={(e) => setSize(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  >
-                                    <option value="">All</option>
-                                    {sizes?.map((s) => (
-                                      <option key={s} value={s}>{s || "-"}</option>
+                                  <input
+                                    type="text"
+                                    value={sizeSearchDraft}
+                                    onChange={(e) => setSizeSearchDraft(e.target.value)}
+                                    placeholder="Search size..."
+                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                                  />
+                                  <div className="max-h-24 overflow-y-auto pr-1 space-y-1.5">
+                                    {getSearchedOptions(sizes, sizeSearchDraft, size).map((s) => (
+                                      <label
+                                        key={s}
+                                        className={cn(
+                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                          size.includes(s) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
+                                        )}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={size.includes(s)}
+                                          onChange={() => toggleMultiSelectValue(setSize, s)}
+                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                                        />
+                                        <span className="text-gray-800 truncate">{s || '-'}</span>
+                                      </label>
                                     ))}
-                                  </select>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -1154,37 +1683,69 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                         {
                           key: 'stone',
                           label: 'Stone & Clarity',
-                          hasActive: !!(stonetype || centerclarity),
+                          hasActive: stonetype.length > 0 || centerclarity.length > 0,
                           content: (
                             <div className="space-y-3">
                               {stoneTypes.length > 0 && (
                                 <div>
                                   <label className="block text-xs text-gray-500 mb-1">Stone Type</label>
-                                  <select
-                                    value={stonetype}
-                                    onChange={(e) => setStonetype(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  >
-                                    <option value="">All</option>
-                                    {stoneTypes.map((v) => (
-                                      <option key={v} value={v}>{v || "-"}</option>
+                                  <input
+                                    type="text"
+                                    value={stoneTypeSearchDraft}
+                                    onChange={(e) => setStoneTypeSearchDraft(e.target.value)}
+                                    placeholder="Search stone..."
+                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                                  />
+                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
+                                    {getSearchedOptions(stoneTypes, stoneTypeSearchDraft, stonetype).map((v) => (
+                                      <label
+                                        key={v}
+                                        className={cn(
+                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                          stonetype.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
+                                        )}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={stonetype.includes(v)}
+                                          onChange={() => toggleMultiSelectValue(setStonetype, v)}
+                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                                        />
+                                        <span className="text-gray-800 truncate">{v || '-'}</span>
+                                      </label>
                                     ))}
-                                  </select>
+                                  </div>
                                 </div>
                               )}
                               {centerClarities.length > 0 && (
                                 <div>
                                   <label className="block text-xs text-gray-500 mb-1">Center Clarity</label>
-                                  <select
-                                    value={centerclarity}
-                                    onChange={(e) => setCenterclarity(e.target.value)}
-                                    className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  >
-                                    <option value="">All</option>
-                                    {centerClarities.map((v) => (
-                                      <option key={v} value={v}>{v || "-"}</option>
+                                  <input
+                                    type="text"
+                                    value={centerClaritySearchDraft}
+                                    onChange={(e) => setCenterClaritySearchDraft(e.target.value)}
+                                    placeholder="Search clarity..."
+                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                                  />
+                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
+                                    {getSearchedOptions(centerClarities, centerClaritySearchDraft, centerclarity).map((v) => (
+                                      <label
+                                        key={v}
+                                        className={cn(
+                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                          centerclarity.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
+                                        )}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={centerclarity.includes(v)}
+                                          onChange={() => toggleMultiSelectValue(setCenterclarity, v)}
+                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                                        />
+                                        <span className="text-gray-800 truncate">{v || '-'}</span>
+                                      </label>
                                     ))}
-                                  </select>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -1192,16 +1753,114 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                         },
                       ]
                     : []),
-                    ...availableAttributes.map((attr) => {
+                    ...nonVendorAttributes.map((attr) => {
                     const selected = attributeFilters[attr?._id] ?? [];
                     const label = attr._id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                    const rangeMeta = rangeAttributeMeta[attr?._id];
+                    if (rangeMeta) {
+                      const selectedRange = attributeRangeFilters[attr._id];
+                      const selectedMin = selectedRange?.min ?? rangeMeta.min;
+                      const selectedMax = selectedRange?.max ?? rangeMeta.max;
+                      const safeMin = Math.max(rangeMeta.min, Math.min(selectedMin, selectedMax));
+                      const safeMax = Math.min(rangeMeta.max, Math.max(selectedMin, selectedMax));
+                      const isSingleValueRange = rangeMeta.min === rangeMeta.max;
+                      return {
+                        key: `attr-${attr?._id}`,
+                        label,
+                        hasActive: !!selectedRange,
+                        content: (
+                          <div className="space-y-4">
+                            {!isSingleValueRange ? (
+                              <div className="px-1 pt-2">
+                                <Slider
+                                  range
+                                  min={rangeMeta.min}
+                                  max={rangeMeta.max}
+                                  value={[safeMin, safeMax]}
+                                  onChange={(values) => {
+                                    if (!Array.isArray(values) || values.length !== 2) return;
+                                    updateAttributeRangeFilter(attr._id, Number(values[0]), Number(values[1]));
+                                  }}
+                                  allowCross={false}
+                                  step={0.01}
+                                  trackStyle={[{ backgroundColor: '#2563eb', height: 6 }]}
+                                  railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
+                                  handleStyle={[
+                                    { borderColor: '#2563eb', width: 16, height: 16, marginTop: -5, backgroundColor: '#fff', opacity: 1 },
+                                    { borderColor: '#2563eb', width: 16, height: 16, marginTop: -5, backgroundColor: '#fff', opacity: 1 },
+                                  ]}
+                                />
+                                <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+                                  <span>{safeMin}</span>
+                                  <span>{safeMax}</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-gray-500">Only one value available: {rangeMeta.min}</p>
+                            )}
+
+                            {/* <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Min</label>
+                                <input
+                                  type="number"
+                                  value={safeMin}
+                                  onChange={(e) => {
+                                    const next = Number(e.target.value);
+                                    if (!Number.isFinite(next)) return;
+                                    updateAttributeRangeFilter(attr._id, next, safeMax);
+                                  }}
+                                  min={rangeMeta.min}
+                                  max={safeMax}
+                                  step={0.01}
+                                  className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Max</label>
+                                <input
+                                  type="number"
+                                  value={safeMax}
+                                  onChange={(e) => {
+                                    const next = Number(e.target.value);
+                                    if (!Number.isFinite(next)) return;
+                                    updateAttributeRangeFilter(attr._id, safeMin, next);
+                                  }}
+                                  min={safeMin}
+                                  max={rangeMeta.max}
+                                  step={0.01}
+                                  className="w-full px-3 py-2.5 text-sm border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10 focus:border-[#1a1a1a]/30"
+                                />
+                              </div>
+                            </div> */}
+                          </div>
+                        ),
+                      };
+                    }
                     return {
                       key: `attr-${attr?._id}`,
                       label,
                       hasActive: selected?.length > 0,
                       content: (
-                        <div className="max-h-44 overflow-y-auto pr-1 space-y-1.5">
-                          {attr.values.slice(0, 50).map((val) => (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={attributeOptionSearchDrafts[attr._id] || ''}
+                            onChange={(e) =>
+                              setAttributeOptionSearchDrafts((prev) => ({
+                                ...prev,
+                                [attr._id]: e.target.value,
+                              }))
+                            }
+                            placeholder={`Search ${label}...`}
+                            className="w-full px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                          />
+                          <div className="max-h-44 overflow-y-auto pr-1 space-y-1.5">
+                          {getSearchedOptions(
+                            attr.values,
+                            attributeOptionSearchDrafts[attr._id] || '',
+                            selected
+                          ).map((val) => (
                             <label
                               key={val}
                               className={cn(
@@ -1227,9 +1886,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                               <span className="text-gray-800 truncate">{val}</span>
                             </label>
                           ))}
-                          {attr?.values?.length > 50 && (
-                            <p className="text-xs text-gray-400 pt-1 px-2.5">+{attr?.values?.length - 50} more</p>
-                          )}
+                          </div>
                         </div>
                       ),
                     };
@@ -1276,7 +1933,7 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
               <div className="flex-shrink-0 px-5 py-4 border-t border-[#e8e8e8] bg-[#fafafa]">
                 <button
                   type="button"
-                  onClick={() => setShowFilters(false)}
+                  onClick={applyFilters}
                   className="w-full py-3 text-sm font-medium text-white bg-[#1a1a1a] rounded-xl hover:bg-[#2d2d2d] transition-colors"
                 >
                   View results
@@ -1349,6 +2006,3 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
     </>
   );
 }
-
-
-

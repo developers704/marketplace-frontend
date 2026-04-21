@@ -39,15 +39,15 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
     },
     {
       id: 3,
-      title: 'My Order',
+      title: 'Other Orders',
     },
     {
       id: 8,
-      title: 'B2B MY Orders',
+      title: 'Inventory Orders',
     },
     {
       id: 9,
-      title: 'B2B MY (SPO) Orders',
+      title: 'SPO Orders',
     },
     {
       id: 4,
@@ -61,7 +61,7 @@ const ProfileDetailContent = ({ lang }: { lang: string }) => {
 
   // Add Approvals tabs only for DM and CM
   const options = isApprover
-    ? [...baseOptions, { id: 6, title: 'Approvals' }, { id: 7, title: 'B2B Approvals (v2)' }]
+    ? [...baseOptions, { id: 6, title: 'Other Approvals' }, { id: 7, title: 'Inventory Approvals' }]
     : baseOptions;
 
   const handleOptionClick = (title: string) => {
@@ -126,19 +126,20 @@ useEffect(() => {
           <div id="content" className="flex-[4] py-6 px-8">
             {selectedOption === 'Personal Info' ? (
               <PersonalInfo />
-            ) : selectedOption === 'My Order' ? (
+            ) : selectedOption === 'Other Orders' ? (
               <MyOrder />
             ) : selectedOption === 'Store Wallet' ? (
               <MyWallet warehouse={warehouse} />
             ) : selectedOption === 'My Course' ? (
               <MyCourses />
-            ) : selectedOption === 'Approvals' ? (
+  
+            ) : selectedOption === 'Other Approvals' ? (
               <Approvals lang={lang} />
-            ) : selectedOption === 'B2B Approvals (v2)' ? (
+            ) : selectedOption === 'Inventory Approvals' ? (
               <B2BApprovalsV2 lang={lang} />
-            ) : selectedOption === 'B2B MY Orders' ? (
+            ) : selectedOption === 'Inventory Orders' ? (
               <B2BMyOrders />
-            ) : selectedOption === 'B2B MY (SPO) Orders' ? (
+            ) : selectedOption === 'SPO Orders' ? (
               <B2BMySpoOrders />
             ) : (
               ''

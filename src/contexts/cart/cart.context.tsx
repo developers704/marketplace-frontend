@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useReducer, useEffect, useState, useContext  } from 'react';
 import { useUI } from '../ui.context';
 import { getAllCartItems } from '@/framework/basic-rest/cart/use-cart';
 import { getToken } from '@/framework/basic-rest/utils/get-token';
@@ -218,4 +218,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </CartContext.Provider>
   );
+};
+
+export const useCart = () => {
+  const context = React.useContext(CartContext);
+
+  if (!context) {
+    throw new Error('useCart must be used within CartProvider');
+  }
+
+  return context;
 };

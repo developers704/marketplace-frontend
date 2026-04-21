@@ -48,6 +48,7 @@ const VendorProductSingleDetails: React.FC<{
   });
 
   const skus = data?.skus ?? [];
+  // console.log("skus",skus)
   const defaultSku = data?.defaultSku ?? null;
 
   const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null);
@@ -68,13 +69,21 @@ const VendorProductSingleDetails: React.FC<{
   const [isInventoryExpanded, setIsInventoryExpanded] = useState(false);
 
   useEffect(() => {
-    if (defaultSku?._id) {
-      setSelectedSkuId(defaultSku?._id);
-      setSelectedColor(defaultSku?.metalColor || '');
-      setSelectedSize(defaultSku?.size || '');
-      setSelectedMetalType(defaultSku?.metalType || '');
+    if (!skus.length) return;
+    let bestSku = skus.find((s:any) => (s.totalQuantity ?? 0) > 0)
+    if (!bestSku && defaultSku?._id){
+      bestSku = defaultSku;
     }
-  }, [defaultSku?._id]);
+    if(!bestSku){
+      bestSku = skus[0]
+    }
+    if (bestSku?._id) {
+      setSelectedSkuId(String(bestSku?._id));
+      setSelectedColor(String(defaultSku?.metalColor || ''));
+      setSelectedSize(String(defaultSku?.size || ''));
+      setSelectedMetalType(String(defaultSku?.metalType || ''));
+    }
+  }, [skus, defaultSku]);
 
   // Reset inventory expanded state and warehouse when SKU changes
   useEffect(() => {
@@ -229,7 +238,8 @@ const VendorProductSingleDetails: React.FC<{
     s?.attributes?.modelno ||
     product?.vendorModel || s?.sku  
     "";
-    return `${parts.join(' / ') || ''} ${model} `;
+    const sku = s?.sku || ""
+    return `${parts.join(' / ') || ''} ${model} / ${sku}`;
     // ${s?.attributes?.modelno ? s?.attributes?.modelno : s?.vendorModel ? s?.vendorModel : ""}
   };
   const descriptionName =

@@ -54,7 +54,7 @@ const B2BMySpoOrders = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-          B2B MY (SPO) Orders
+          SPO Orders
         </h1>
         <p className="mt-1 text-slate-600">
           Your special orders. Status updates from admin will appear here.

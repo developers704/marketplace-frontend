@@ -3,7 +3,7 @@
 module.exports = {
   reactStrictMode: false,
   swcMinify: true,
-  output: 'standalone',
+  // output: 'standalone',
 
   // experimental: {
   //   // Required:
@@ -14,6 +14,11 @@ module.exports = {
        {
       protocol: 'http',
       hostname: '192.168.18.67', // <-- aapka PC ka IP
+      port: '5000',
+    },
+       {
+      protocol: 'http',
+      hostname: '82.29.190.198', // <-- aapka PC ka IP
       port: '5000',
     },
       {
@@ -43,6 +48,7 @@ module.exports = {
         protocol: 'https',
         hostname: 'backend.vallianimarketplace.com',
       },
+      
       {
         protocol: 'https',
         hostname: 'example.com',
