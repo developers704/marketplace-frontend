@@ -4,6 +4,7 @@ export type SpecialOrderPayload = {
   receiptNumber?: string;
   customerNumber?: string;
   typeOfRequest: string;
+  eta?: string;
   referenceSkuNumber?: string;
   metalQuality: string;
   diamondType: string;
@@ -12,6 +13,18 @@ export type SpecialOrderPayload = {
   diamondDetails?: string;
   customization?: string;
   notes?: string;
+};
+
+export type SpoChatMessage = {
+  _id: string;
+  text: string;
+  role: 'user' | 'admin';
+  senderId?: string;
+  senderName?: string;
+  replyToMessageId?: string | null;
+  replyToText?: string;
+  replyToSenderName?: string;
+  createdAt: string;
 };
 
 export type SpecialOrder = {
@@ -36,6 +49,7 @@ export type SpecialOrder = {
   eta: string | null;
   createdAt: string;
   updatedAt: string;
+  chatMessages?: SpoChatMessage[];
 };
 
 function getToken(): string {
@@ -55,6 +69,7 @@ export async function createSpecialOrder(
   form.append('receiptNumber', payload.receiptNumber || '');
   form.append('customerNumber', payload.customerNumber || '');
   form.append('typeOfRequest', payload.typeOfRequest);
+  form.append('eta', payload.eta || '');
   form.append('referenceSkuNumber', payload.referenceSkuNumber || '');
   form.append('metalQuality', payload.metalQuality);
   form.append('diamondType', payload.diamondType);
@@ -95,4 +110,78 @@ export async function getMySpecialOrders(): Promise<SpecialOrder[]> {
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || 'Failed to fetch orders');
   return json.data || [];
+}
+
+export async function getSpecialOrderById(id: string): Promise<SpecialOrder> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE_API}/api/special-orders/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || 'Failed to fetch order');
+  return json.data;
+}
+
+export async function getSpoChatMessages(orderId: string): Promise<SpoChatMessage[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE_API}/api/special-orders/${orderId}/chat-messages`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || 'Failed to load chat');
+  return json.data || [];
+}
+
+export async function postSpoChatMessage(
+  orderId: string,
+  text: string,
+  replyToMessageId?: string
+): Promise<SpoChatMessage> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE_API}/api/special-orders/${orderId}/chat-messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text,
+      replyToMessageId: replyToMessageId || null,
+    }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || 'Failed to send message');
+  return json.data;
+}
+
+export async function finalizeSpecialOrder(orderId: string): Promise<SpecialOrder> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const res = await fetch(`${BASE_API}/api/special-orders/${orderId}/finalize`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || 'Could not finalize order');
+  return json.data;
+}
+
+/** User-facing status label (CLOSED shown as Delivered). */
+export function spoStatusLabel(status: string): string {
+  const map: Record<string, string> = {
+    SUBMITTED: 'Submitted',
+    RECEIVED_BY_SPO_TEAM: 'Received by SPO team',
+    WIP: 'WIP',
+    COMPLETED: 'Completed',
+    CLOSED: 'Delivered',
+    FINALIZED: 'Finalized',
+  };
+  return map[status] || status.replace(/_/g, ' ');
 }

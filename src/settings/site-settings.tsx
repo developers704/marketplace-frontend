@@ -292,6 +292,11 @@ export const siteSettings = {
         path: '/packaging',
         label: 'Packaging / GWS',
       },
+      {
+        id: 8,
+        path: '/pnl-reports',
+        label: 'PNL Reports',
+      },
     ],
   },
 };

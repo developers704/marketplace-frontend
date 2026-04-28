@@ -140,7 +140,7 @@ useEffect(() => {
             ) : selectedOption === 'Inventory Orders' ? (
               <B2BMyOrders />
             ) : selectedOption === 'SPO Orders' ? (
-              <B2BMySpoOrders />
+              <B2BMySpoOrders lang={lang} />
             ) : (
               ''
             )}

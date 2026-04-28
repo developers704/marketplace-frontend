@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Container from '@/components/ui/container';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { getSelectedWarehouse } from '@/lib/selected-warehouse';
 import { createSpecialOrder } from '@/framework/basic-rest/spo/spo';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
 import { Upload, Store, FileText, Palette } from 'lucide-react';
 import DrawingCanvas, { type DrawingCanvasRef } from '@/components/common/drawing-canvas';
+import SpoOrdersSidebar from './spo-orders-sidebar';
+import dayjs from 'dayjs';
 
 const GOLD_ACCENT = '#C6A87D';
 
@@ -53,16 +54,23 @@ const DIAMOND_CLARITY_OPTIONS = [
 ];
 
 const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
-  const router = useRouter();
   const [store, setStore] = useState<{ _id: string; name: string } | null>(null);
+  const [sidebarRefresh, setSidebarRefresh] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const drawingCanvasRef = React.useRef<DrawingCanvasRef>(null);
+  const canvasBoxRef = useRef<HTMLDivElement | null>(null);
+  const [canvaSize , setCanvaSize] = useState({
+
+    width:580,
+    height:380,
+  })
 
   const [form, setForm] = useState({
     receiptNumber: '',
     customerNumber: '',
     typeOfRequest: '',
+    eta: '',
     referenceSkuNumber: '',
     metalQuality: '',
     diamondType: '',
@@ -83,6 +91,35 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
       setStore(null);
     }
   }, []);
+
+useEffect(() => {
+  const el = canvasBoxRef.current;
+  if (!el) return;
+
+  const resizeCanvas = () => {
+    const parentWidth = Math.floor(el.clientWidth);
+    if (!parentWidth) return;
+
+    const nextWidth = parentWidth;
+    const nextHeight = Math.min(
+      420,
+      Math.max(260, Math.floor(parentWidth * 0.56)),
+    );
+
+    setCanvaSize((prev) =>
+      prev.width === nextWidth && prev.height === nextHeight
+        ? prev
+        : { width: nextWidth, height: nextHeight },
+    );
+  };
+
+  resizeCanvas();
+
+  const observer = new ResizeObserver(resizeCanvas);
+  observer.observe(el);
+
+  return () => observer.disconnect();
+}, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -119,6 +156,7 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
           receiptNumber: form.receiptNumber,
           customerNumber: form.customerNumber,
           typeOfRequest: form.typeOfRequest,
+          eta: form?.eta || '',
           referenceSkuNumber: form.referenceSkuNumber,
           metalQuality: form.metalQuality,
           diamondType: form.diamondType,
@@ -132,10 +170,12 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
         canvasFile || undefined
       );
       toast.success(`Special order submitted! Ticket: ${res.ticketNumber}`);
+      setSidebarRefresh((n) => n + 1);
       setForm({
         receiptNumber: '',
         customerNumber: '',
         typeOfRequest: '',
+        eta: '',
         referenceSkuNumber: '',
         metalQuality: '',
         diamondType: '',
@@ -160,7 +200,7 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
 
       <section className="my-6 md:my-10 lg:my-12 w-full">
         {/* Hero header */}
-        <div className='flex items-center justify-center'>
+        {/* <div className='flex items-center justify-center'>
 
         <div
           className="rounded-2xl md:rounded-3xl px-6 py-8 md:px-10 md:py-4 mb-8 md:mb-10 "
@@ -176,10 +216,16 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
             Submit your custom jewelry or watch requests. Fill in the details below and our team will process your order.
           </p>
         </div>
-          </div>
+          </div> */}
 
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+          <aside className="w-full shrink-0 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm lg:sticky lg:top-24 lg:w-80 xl:w-96 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+            <SpoOrdersSidebar lang={lang} refreshTrigger={sidebarRefresh} />
+          </aside>
+
+          <div className="min-w-0 flex-1">
         {/* Form card */}
-        <div className="max-w-3xl mx-auto">
+        <div className="mx-auto max-w-3xl lg:mx-0 lg:max-w-none">
           <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
             <div
               className="rounded-xl md:rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80 bg-white space-y-6 md:space-y-8"
@@ -241,7 +287,9 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
               </div>
 
               {/* TYPE OF REQUEST - Required */}
-              <div>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6'>
+                <div>
+
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   TYPE OF REQUEST <span className="text-red-500">*</span>
                 </label>
@@ -251,12 +299,41 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                   onChange={handleChange}
                   required
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 transition-all focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue bg-white"
-                >
+                  >
                   <option value="">Select...</option>
                   {TYPE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
+                </div>
+                
+                <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  ETA (Expected Delivery Date)
+                </label>
+
+                <input
+                  type="date"
+                  name="eta"
+                  value={form.eta || ''}
+                  min={dayjs().format('YYYY-MM-DD')} // no past dates
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      eta: dayjs(e.target.value).format('YYYY-MM-DD'),
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+
+                {/* Preview formatted */}
+                {form.eta && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    Selected: {dayjs(form.eta).format('DD MMM YYYY')}
+                  </p>
+                )}
+              </div>
+               
               </div>
 
               <div>
@@ -359,12 +436,12 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   <Palette className="inline h-4 w-4 mr-1.5" style={{ color: GOLD_ACCENT }} /> Draw Your Design
                 </label>
-                <div className="w-full overflow-x-auto  border-slate-200 bg-white ">
-                  <div >
+                <div className="w-full overflow-hidden rounded-xl border  border-slate-200 bg-white ">
+                  <div ref={canvasBoxRef} className='w-full min-w-0'>
                     <DrawingCanvas
                       ref={drawingCanvasRef}
-                      width={680}
-                      height={380}
+                      width={canvaSize.width}
+                      height={canvaSize.height}
                     />
                   </div>
                 </div>
@@ -439,9 +516,12 @@ const SpecialOrderPageContent = ({ lang }: { lang: string }) => {
             </div>
           </form>
         </div>
+        </div>
+        </div>
       </section>
     </Container>
   );
 };
 
 export default SpecialOrderPageContent;
+

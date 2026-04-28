@@ -94,16 +94,22 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
 
     const getCoords = useCallback((e: React.MouseEvent | React.TouchEvent) => {
       const canvas = canvasRef.current;
-      if (!canvas) return { x: 0, y: 0 };
+      if (!canvas) return null;
+
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
+
       if ('touches' in e) {
+        const touch = e.touches[0] || e.changedTouches?.[0];
+        if (!touch) return null;
+
         return {
-          x: (e.touches[0].clientX - rect.left) * scaleX,
-          y: (e.touches[0].clientY - rect.top) * scaleY,
+          x: (touch.clientX - rect.left) * scaleX,
+          y: (touch.clientY - rect.top) * scaleY,
         };
       }
+
       return {
         x: (e.clientX - rect.left) * scaleX,
         y: (e.clientY - rect.top) * scaleY,
@@ -208,7 +214,9 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
         const isCanvasClick = target === canvasRef.current;
         if (!isCanvasClick) return;
 
-        const { x, y } = getCoords(e);
+        const coords = getCoords(e);
+        if (!coords) return;
+        const { x, y } = coords;
         setStartPos({ x, y });
         setIsDrawing(true);
 
@@ -243,7 +251,10 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
       (e: React.MouseEvent | React.TouchEvent) => {
         e.preventDefault();
         if (!isDrawing || !startPos) return;
-        const { x, y } = getCoords(e);
+        
+        const coords = getCoords(e);
+        if (!coords) return;
+        const { x, y } = coords;
 
         if (['pencil', 'pen', 'marker', 'eraser'].includes(tool)) {
           drawFreehand(startPos, { x, y });
@@ -272,7 +283,14 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
           setStartPos(null);
           return;
         }
-        const { x, y } = getCoords(e);
+        const coords = getCoords(e);
+      if (!coords) {
+        setIsDrawing(false);
+        setStartPos(null);
+        return;
+      }
+
+      const { x, y } = coords;
 
         if (tool === 'line' || ['rect', 'circle'].includes(tool)) {
           const ctx = getCtx();
@@ -432,28 +450,31 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
           </div>
         </div>
 
-        <div className="p-2 overflow-auto">
-          <div
-            ref={containerRef}
-            className="relative inline-block"
-            style={{ width, height, minWidth: width, minHeight: height }}
-          >
-            <canvas
-              ref={canvasRef}
-              width={width}
-              height={height}
-              className="border border-slate-200 rounded-lg cursor-crosshair touch-none block"
-              style={{ maxHeight: 400 }}
-              onMouseDown={startDraw}
-              onMouseMove={moveDraw}
-              onMouseUp={endDraw}
-              onMouseLeave={endDraw}
-              onTouchStart={startDraw}
-              onTouchMove={moveDraw}
-              onTouchEnd={endDraw}
-            />
-          </div>
+        <div className="p-2 overflow-hidden">
+        <div
+          ref={containerRef}
+          className="relative w-full"
+        >
+          <canvas
+            ref={canvasRef}
+            width={width}
+            height={height}
+            className="block w-full rounded-lg border border-slate-200 cursor-crosshair touch-none"
+            style={{
+              height: `${height}px`,
+              maxHeight: '70vh',
+            }}
+            onMouseDown={startDraw}
+            onMouseMove={moveDraw}
+            onMouseUp={endDraw}
+            onMouseLeave={endDraw}
+            onTouchStart={startDraw}
+            onTouchMove={moveDraw}
+            onTouchEnd={endDraw}
+            onTouchCancel={endDraw}
+          />
         </div>
+      </div>
 
         <p className="text-xs text-slate-500 px-3 pb-2">
           {tool === 'line' && 'Click and drag to draw a line'}

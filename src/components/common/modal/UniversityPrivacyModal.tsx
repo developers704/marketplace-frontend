@@ -242,12 +242,24 @@ useEffect(() => {
               onEnd={handleEnd}
             />
           </div>
+           <div className="flex items-center justify-between mt-2">
+
           <button
             onClick={clearSignature}
-            className="mt-2 text-blue-600 underline text-sm"
-          >
+            className="mt-2 text-blue-600 hover:text-black underline text-sm"
+            >
             Clear Signature
           </button>
+           <a
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=hr@vallianijewelers.com"
+            target="_blank"
+            className="text-sm text-blue-600 font-bold hover:text-black"
+          >
+            Contact HR: hr@vallianijewelers.com
+          </a>
+            {/* <a href="mailto:hr@vallianijewelers.com"  className="text-sm text-blue-600 underline font-medium">Contact HR: hr@vallianijewelers.com</a> */}
+            </div>
+          
         </div>
 
         <div className="flex justify-end gap-3">

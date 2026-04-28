@@ -52,6 +52,7 @@ const HeaderMenu: React.FC<MenuProps> = ({
     //   label: 'GWP',
     // },
     { id: 9, path: `/${lang}/special-order`, label: 'Special Order' },
+    { id: 10, path: `/${lang}/special-order/sheets`, label: 'PNL Report' },
   ];
 
   const isHome = `/${lang}` === activePath;
@@ -59,6 +60,23 @@ const HeaderMenu: React.FC<MenuProps> = ({
   useEffect(() => {
     setActivePath(path);
   }, [path]);
+
+  const specialOrderPath = `/${lang}/special-order`;
+  const sheetsMenuPath = `/${lang}/special-order/sheets`;
+
+  const isMenuItemActive = (itemPath: string) => {
+    if (itemPath === sheetsMenuPath) {
+      return activePath === sheetsMenuPath || activePath.startsWith(`${sheetsMenuPath}/`);
+    }
+    if (itemPath === specialOrderPath) {
+      if (activePath === specialOrderPath) return true;
+      return (
+        activePath.startsWith(`${specialOrderPath}/`) &&
+        !activePath.startsWith(sheetsMenuPath)
+      );
+    }
+    return activePath === itemPath;
+  };
 
   const normalizeKey = (label: string) => {
     const mapping: Record<string, string> = {
@@ -86,7 +104,7 @@ const HeaderMenu: React.FC<MenuProps> = ({
   )}
     >
       {items.map((item: { id: number; path: string; label: string; subMenu?: any }) => {
-        const isActive = item.path === activePath;
+        const isActive = isMenuItemActive(item.path);
         const isHomeCondition = `/${lang}` === '' && isHome;
         const active = isActive || isHomeCondition;
 

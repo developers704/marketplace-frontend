@@ -59,7 +59,7 @@ export async function getB2BRequests(params?: { status?: string }): Promise<B2BP
   const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
   if (!token) throw new Error('Not authenticated');
 
-  const url = new URL(`${BASE_API}/api/v2/b2b/requests`);
+  const url = new URL(`${BASE_API}/api/v2/b2b/requests?view=my-orders`);
   if (params?.status) {
     url.searchParams.set('status', params.status);
   }

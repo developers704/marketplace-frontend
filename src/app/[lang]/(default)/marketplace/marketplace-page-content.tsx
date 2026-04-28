@@ -1572,187 +1572,205 @@ export default function MarketplacePageContent({ lang }: { lang: string }) {
                       />
                     ),
                   },
-                  ...(hasMetal
-                    ? [
-                        {
-                          key: 'metal',
-                          label: 'Metal',
-                          hasActive: metalColor.length > 0 || metalType.length > 0 || size.length > 0,
-                          content: (
-                            <div className="space-y-3">
-                              {metalColors.length > 0 && (
-                                <div>
-                                  <label className="block text-xs text-gray-500 mb-1">Color</label>
-                                  <input
-                                    type="text"
-                                    value={metalColorSearchDraft}
-                                    onChange={(e) => setMetalColorSearchDraft(e.target.value)}
-                                    placeholder="Search color..."
-                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  />
-                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
-                                    {getSearchedOptions(metalColors, metalColorSearchDraft, metalColor).map((c) => (
-                                      <label
-                                        key={c}
-                                        className={cn(
-                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
-                                          metalColor.includes(c) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
-                                        )}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={metalColor.includes(c)}
-                                          onChange={() => toggleMultiSelectValue(setMetalColor, c)}
-                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
-                                        />
-                                        <span className="text-gray-800 truncate">{c}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                </div>
+             ...(metalColors.length > 0
+              ? [
+                  {
+                    key: 'metalColor',
+                    label: 'Metal Color',
+                    hasActive: metalColor.length > 0,
+                    content: (
+                      <div>
+                        <input
+                          type="text"
+                          value={metalColorSearchDraft}
+                          onChange={(e) => setMetalColorSearchDraft(e.target.value)}
+                          placeholder="Search color..."
+                          className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                        />
+                        <div className="max-h-36 overflow-y-auto pr-1 space-y-1">
+                          {getSearchedOptions(metalColors, metalColorSearchDraft, metalColor).map((c) => (
+                            <label
+                              key={c}
+                              className={cn(
+                                'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                metalColor.includes(c) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
                               )}
-                              {metalTypes?.length > 0 && (
-                                <div>
-                                  <label className="block text-xs text-gray-500 mb-1">Type</label>
-                                  <input
-                                    type="text"
-                                    value={metalTypeSearchDraft}
-                                    onChange={(e) => setMetalTypeSearchDraft(e.target.value)}
-                                    placeholder="Search type..."
-                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  />
-                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
-                                    {getSearchedOptions(metalTypes, metalTypeSearchDraft, metalType).map((t) => (
-                                      <label
-                                        key={t}
-                                        className={cn(
-                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
-                                          metalType.includes(t) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
-                                        )}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={metalType.includes(t)}
-                                          onChange={() => toggleMultiSelectValue(setMetalType, t)}
-                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
-                                        />
-                                        <span className="text-gray-800 truncate">{t || '-'}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                </div>
+                            >
+                              <input
+                                type="checkbox"
+                                checked={metalColor.includes(c)}
+                                onChange={() => toggleMultiSelectValue(setMetalColor, c)}
+                                className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                              />
+                              <span className="text-gray-800 truncate">{c}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
+
+            ...(metalTypes.length > 0
+              ? [
+                  {
+                    key: 'metalType',
+                    label: 'Metal Type',
+                    hasActive: metalType.length > 0,
+                    content: (
+                      <div>
+                        <input
+                          type="text"
+                          value={metalTypeSearchDraft}
+                          onChange={(e) => setMetalTypeSearchDraft(e.target.value)}
+                          placeholder="Search type..."
+                          className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                        />
+                        <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
+                          {getSearchedOptions(metalTypes, metalTypeSearchDraft, metalType).map((t) => (
+                            <label
+                              key={t}
+                              className={cn(
+                                'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                metalType.includes(t) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
                               )}
-                              {sizes?.length > 0 && (
-                                <div>
-                                  <label className="block text-xs text-gray-500 mb-1">Size</label>
-                                  <input
-                                    type="text"
-                                    value={sizeSearchDraft}
-                                    onChange={(e) => setSizeSearchDraft(e.target.value)}
-                                    placeholder="Search size..."
-                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  />
-                                  <div className="max-h-24 overflow-y-auto pr-1 space-y-1.5">
-                                    {getSearchedOptions(sizes, sizeSearchDraft, size).map((s) => (
-                                      <label
-                                        key={s}
-                                        className={cn(
-                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
-                                          size.includes(s) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
-                                        )}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={size.includes(s)}
-                                          onChange={() => toggleMultiSelectValue(setSize, s)}
-                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
-                                        />
-                                        <span className="text-gray-800 truncate">{s || '-'}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                </div>
+                            >
+                              <input
+                                type="checkbox"
+                                checked={metalType.includes(t)}
+                                onChange={() => toggleMultiSelectValue(setMetalType, t)}
+                                className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                              />
+                              <span className="text-gray-800 truncate">{t || '-'}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
+
+            ...(sizes.length > 0
+              ? [
+                  {
+                    key: 'size',
+                    label: 'Size',
+                    hasActive: size.length > 0,
+                    content: (
+                      <div>
+                        <input
+                          type="text"
+                          value={sizeSearchDraft}
+                          onChange={(e) => setSizeSearchDraft(e.target.value)}
+                          placeholder="Search size..."
+                          className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                        />
+                        <div className="max-h-24 overflow-y-auto pr-1 space-y-1.5">
+                          {getSearchedOptions(sizes, sizeSearchDraft, size).map((s) => (
+                            <label
+                              key={s}
+                              className={cn(
+                                'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                size.includes(s) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
                               )}
-                            </div>
-                          ),
-                        },
-                      ]
-                    : []),
-                  ...(hasStoneClarity
-                    ? [
-                        {
-                          key: 'stone',
-                          label: 'Stone & Clarity',
-                          hasActive: stonetype.length > 0 || centerclarity.length > 0,
-                          content: (
-                            <div className="space-y-3">
-                              {stoneTypes.length > 0 && (
-                                <div>
-                                  <label className="block text-xs text-gray-500 mb-1">Stone Type</label>
-                                  <input
-                                    type="text"
-                                    value={stoneTypeSearchDraft}
-                                    onChange={(e) => setStoneTypeSearchDraft(e.target.value)}
-                                    placeholder="Search stone..."
-                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  />
-                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
-                                    {getSearchedOptions(stoneTypes, stoneTypeSearchDraft, stonetype).map((v) => (
-                                      <label
-                                        key={v}
-                                        className={cn(
-                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
-                                          stonetype.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
-                                        )}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={stonetype.includes(v)}
-                                          onChange={() => toggleMultiSelectValue(setStonetype, v)}
-                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
-                                        />
-                                        <span className="text-gray-800 truncate">{v || '-'}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                </div>
+                            >
+                              <input
+                                type="checkbox"
+                                checked={size.includes(s)}
+                                onChange={() => toggleMultiSelectValue(setSize, s)}
+                                className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                              />
+                              <span className="text-gray-800 truncate">{s || '-'}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
+
+            ...(stoneTypes.length > 0
+              ? [
+                  {
+                    key: 'stoneType',
+                    label: 'Stone Type',
+                    hasActive: stonetype.length > 0,
+                    content: (
+                      <div>
+                        <input
+                          type="text"
+                          value={stoneTypeSearchDraft}
+                          onChange={(e) => setStoneTypeSearchDraft(e.target.value)}
+                          placeholder="Search stone..."
+                          className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                        />
+                        <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
+                          {getSearchedOptions(stoneTypes, stoneTypeSearchDraft, stonetype).map((v) => (
+                            <label
+                              key={v}
+                              className={cn(
+                                'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                stonetype.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
                               )}
-                              {centerClarities.length > 0 && (
-                                <div>
-                                  <label className="block text-xs text-gray-500 mb-1">Center Clarity</label>
-                                  <input
-                                    type="text"
-                                    value={centerClaritySearchDraft}
-                                    onChange={(e) => setCenterClaritySearchDraft(e.target.value)}
-                                    placeholder="Search clarity..."
-                                    className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
-                                  />
-                                  <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
-                                    {getSearchedOptions(centerClarities, centerClaritySearchDraft, centerclarity).map((v) => (
-                                      <label
-                                        key={v}
-                                        className={cn(
-                                          'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
-                                          centerclarity.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
-                                        )}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={centerclarity.includes(v)}
-                                          onChange={() => toggleMultiSelectValue(setCenterclarity, v)}
-                                          className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
-                                        />
-                                        <span className="text-gray-800 truncate">{v || '-'}</span>
-                                      </label>
-                                    ))}
-                                  </div>
-                                </div>
+                            >
+                              <input
+                                type="checkbox"
+                                checked={stonetype.includes(v)}
+                                onChange={() => toggleMultiSelectValue(setStonetype, v)}
+                                className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                              />
+                              <span className="text-gray-800 truncate">{v || '-'}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
+
+            ...(centerClarities.length > 0
+              ? [
+                  {
+                    key: 'centerClarity',
+                    label: 'Center Clarity',
+                    hasActive: centerclarity.length > 0,
+                    content: (
+                      <div>
+                        <input
+                          type="text"
+                          value={centerClaritySearchDraft}
+                          onChange={(e) => setCenterClaritySearchDraft(e.target.value)}
+                          placeholder="Search clarity..."
+                          className="w-full mb-2 px-3 py-2 text-xs border border-[#e0e0e0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]/10"
+                        />
+                        <div className="max-h-36 overflow-y-auto pr-1 space-y-1.5">
+                          {getSearchedOptions(centerClarities, centerClaritySearchDraft, centerclarity).map((v) => (
+                            <label
+                              key={v}
+                              className={cn(
+                                'flex items-center gap-3 cursor-pointer rounded-lg px-2.5 py-2 text-sm transition-colors',
+                                centerclarity.includes(v) ? 'bg-[#1a1a1a]/5' : 'hover:bg-[#1a1a1a]/[0.03]'
                               )}
-                            </div>
-                          ),
-                        },
-                      ]
-                    : []),
+                            >
+                              <input
+                                type="checkbox"
+                                checked={centerclarity.includes(v)}
+                                onChange={() => toggleMultiSelectValue(setCenterclarity, v)}
+                                className="rounded border-[#d0d0d0] text-[#1a1a1a] focus:ring-[#1a1a1a]/30"
+                              />
+                              <span className="text-gray-800 truncate">{v || '-'}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
                     ...nonVendorAttributes.map((attr) => {
                     const selected = attributeFilters[attr?._id] ?? [];
                     const label = attr._id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());

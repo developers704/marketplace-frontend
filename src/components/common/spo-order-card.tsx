@@ -8,7 +8,6 @@ import {
   ChevronUp,
   Wrench,
   Inbox,
-  XCircle,
   CheckCircle2,
 } from 'lucide-react';
 import type { SpecialOrder } from '@/framework/basic-rest/spo/spo';
@@ -57,10 +56,16 @@ const STATUS_CONFIG: Record<
     icon: CheckCircle2,
   },
   CLOSED: {
-    label: 'Closed',
+    label: 'Delivered',
+    bg: 'bg-violet-50/80 border-violet-200',
+    text: 'text-violet-800',
+    icon: Package,
+  },
+  FINALIZED: {
+    label: 'Finalized',
     bg: 'bg-slate-100 border-slate-300',
     text: 'text-slate-700',
-    icon: XCircle,
+    icon: CheckCircle2,
   },
 };
 
@@ -81,6 +86,8 @@ const SpoOrderCard = ({ data }: SpoOrderCardProps) => {
           data.status === 'COMPLETED'
             ? 'bg-gradient-to-r from-emerald-400 to-emerald-600'
             : data.status === 'CLOSED'
+            ? 'bg-gradient-to-r from-violet-400 to-violet-600'
+            : data.status === 'FINALIZED'
             ? 'bg-slate-400'
             : data.status === 'WIP'
             ? 'bg-gradient-to-r from-amber-400 to-amber-600'
