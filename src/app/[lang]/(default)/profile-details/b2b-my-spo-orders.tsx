@@ -8,11 +8,11 @@ import { Package } from 'lucide-react';
 const FILTERS = [
   { id: 1, title: 'All', value: 'all' },
   { id: 2, title: 'Submitted', value: 'SUBMITTED' },
-  { id: 3, title: 'Received', value: 'RECEIVED_BY_SPO_TEAM' },
+  { id: 3, title: 'Received BY SPO TEAM', value: 'RECEIVED_BY_SPO_TEAM' },
   { id: 4, title: 'WIP', value: 'WIP' },
-  { id: 5, title: 'Completed', value: 'COMPLETED' },
+  // { id: 5, title: 'Completed', value: 'COMPLETED' },
   { id: 6, title: 'Delivered', value: 'CLOSED' },
-  { id: 7, title: 'Finalized', value: 'FINALIZED' },
+  { id: 7, title: 'Received', value: 'FINALIZED' },
 ];
 
 const ALLOWED_STATUSES = new Set([
