@@ -16,6 +16,7 @@ export type VendorSkuLite = {
   size?: string;
   totalQuantity?: number;
   attributes?: SkuAttributes;
+  tagPrice?: number
 };
 
 type CategoryInfo = string | { _id: string; name: string; image?: string; description?: string };

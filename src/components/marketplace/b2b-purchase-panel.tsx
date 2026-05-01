@@ -2,6 +2,7 @@
 
 import { useContext, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Counter from '@components/ui/counter';
@@ -10,6 +11,7 @@ import cn from 'classnames';
 import { PermissionsContext } from '@/contexts/permissionsContext';
 import { useUserDataQuery } from '@/framework/basic-rest/user-data/use-user-data';
 import { addToB2BCart } from '@/framework/basic-rest/catalogV2/b2b-cart';
+import { createStoreTransferRequest } from '@/framework/basic-rest/b2bStoreTransfer/b2bStoreTransfer';
 
 export default function B2BPurchasePanel({
   lang,
@@ -19,6 +21,7 @@ export default function B2BPurchasePanel({
   hasMainWarehouse,
   warehouseId,
   className,
+  cpPrice
 }: {
   lang: string;
   vendorProductId: string;
@@ -27,10 +30,11 @@ export default function B2BPurchasePanel({
   hasMainWarehouse: boolean;
   warehouseId:string
   className?: string;
+  cpPrice?: string
 }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { permissions } = useContext(PermissionsContext);
-  console.log("permissons", permissions)
   const { data: userData } = useUserDataQuery();
   const canAddToCart = hasMainWarehouse === true;
 
@@ -77,17 +81,41 @@ export default function B2BPurchasePanel({
 
   const canSubmit =
     isStoreManager &&
-    //  hasMainWarehouse &&  
     !!vendorProductId &&
     !!skuId &&
     Number.isFinite(availableQty) &&
     availableQty > 0 &&
     qty > 0 &&
-    qty <= availableQty;
+    qty <= availableQty &&
+    (showAddToCartButton ? !!warehouseId : showRequestButton ? !!selectedWarehouseId : true);
 
   // Removed purchaseId and localStatus - no longer needed for cart-based flow
 
   // Add to cart mutation (replaces direct purchase)
+  const storeTransferMutation = useMutation({
+    mutationFn: async () => {
+      if (!skuId) throw new Error('Select a SKU first');
+      if (!selectedWarehouseId) {
+        throw new Error('Select your store warehouse (use the warehouse selector in the header)');
+      }
+      if (!warehouseId) throw new Error('Source warehouse is missing for this product');
+      return createStoreTransferRequest({
+        vendorProductId,
+        skuId,
+        quantity: qty,
+        sourceWarehouseId: warehouseId,
+        destWarehouseId: selectedWarehouseId,
+      });
+    },
+    onSuccess: (data) => {
+      toast.success('Request sent to admin. You can track status and chat in the next screen.');
+      router.push(`/${lang}/store-transfer/${data._id}`);
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : 'Request failed');
+    },
+  });
+
   const addToCartMutation = useMutation({
     mutationFn: async () => {
       if (!skuId) throw new Error('Select a SKU first');
@@ -142,6 +170,7 @@ export default function B2BPurchasePanel({
           />
           <div className="text-xs text-gray-500">Available: {availableQty || 0}</div>
         </div>
+
         {/* <div className="flex text-sm items-center gap-3 md:ml-auto">
       
           <Button
@@ -160,9 +189,12 @@ export default function B2BPurchasePanel({
             {canAddToCart ? "Add to Cart" : "Request to Admin"}
           </Button>
         </div> */}
-       <div className="flex text-sm items-center gap-3 md:ml-auto">
+
+       <div className="flex flex-col text-sm items-center gap-3 md:ml-auto">
 
       {showAddToCartButton && (
+        <>
+        
         <Button
           disabled={!canSubmit}
           loading={addToCartMutation?.isPending}
@@ -181,21 +213,24 @@ export default function B2BPurchasePanel({
               'active:bg-slate-600 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.25)]'
             )}
         >
-            Add to Cart
+            Add to Cart 
         </Button>
+        {/* <span>{cpPrice}</span> */}
+        </>
       )}
 
       {showRequestButton && (
         <Button
-          disabled={!canSubmit}
-          onClick={() => toast.info("Request sent to admin comming soon")}
-            className={cn(
-              'relative flex-shrink min-w-0 text-center font-semibold text-white whitespace-nowrap',
-              'text-[clamp(11px,0.85vw,14px)]',
-              'transition-all duration-100 ease-out',
-              'transform hover:-translate-y-0.5 hover:scale-[1.02]',
-              'active:translate-y-0 active:scale-[0.97]',
-              'px-[clamp(10px,1vw,18px)] py-[clamp(6px,0.7vw,10px)]',
+        disabled={!canSubmit}
+        loading={storeTransferMutation.isPending}
+        onClick={() => storeTransferMutation.mutate()}
+        className={cn(
+          'relative flex-shrink min-w-0 text-center font-semibold text-white whitespace-nowrap',
+          'text-[clamp(11px,0.85vw,14px)]',
+          'transition-all duration-100 ease-out',
+          'transform hover:-translate-y-0.5 hover:scale-[1.02]',
+          'active:translate-y-0 active:scale-[0.97]',
+          'px-[clamp(10px,1vw,18px)] py-[clamp(6px,0.7vw,10px)]',
               'rounded-tl-xl rounded-br-2xl',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700',
               'bg-black/90 ring-1 ring-black/10',
@@ -206,6 +241,9 @@ export default function B2BPurchasePanel({
             Request to Admin
             </Button>
           )}
+          {showAddToCartButton || showRequestButton ? (
+            <span className='text-md font-bold text-brand-dark' >{cpPrice}</span>
+          ):"-"}
         </div>
           </div>
 
@@ -215,8 +253,14 @@ export default function B2BPurchasePanel({
         </div>
       ) : null}
 
+      {showRequestButton && !selectedWarehouseId ? (
+        <div className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md p-2">
+          Select your <strong>store warehouse</strong> from the site header before sending a request.
+        </div>
+      ) : null}
+
       <div className="mt-3 text-xs text-gray-500">
-        After approval, the stock will appear in your store inventory.{' '}
+        After approval, stock is added to your store&apos;s catalog inventory (SkuInventory).{' '}
         <Link href={`/${lang}/marketplace/store-inventory`} className="text-brand-blue font-semibold underline">
           Open My Store Inventory
         </Link>

@@ -125,7 +125,9 @@ const VendorProductSingleDetails: React.FC<{
 // // 👇 returns should come AFTER hooks
 // if (!skuDetails) return null;
 
-
+  const selectedSkuForTgaPrice = skus.find((s:any) => String(s._id) === String(selectedSkuId)
+);
+  const tagPrice = selectedSkuForTgaPrice?.tagPrice
   const displaySku = (skuDetails?.sku as any) || selectedSkuLite;
   const displayImages: string[] = displaySku?.images?.length ? displaySku?.images : [];
   const displayImage = displayImages?.[0] ? buildImageUrl(BASE_API, displayImages[0]) : productPlaceholder;
@@ -318,39 +320,37 @@ const VendorProductSingleDetails: React.FC<{
               {price99 ? (
                 <div className="text-xs text-gray-500 mt-1">99Price : {price99 || "-"}</div>
               ) : null}
+              {/* {tagPrice ? (
+                <div className="text-xs text-gray-500 mt-1">Tag Price : {tagPrice || "-"}</div>
+              ) : null} */}
             </div>
             <div className="text-right">
               {/* <div className="flex justify-end mb-2">
                 <InventoryStatusBadge quantity={totalSelectedQty} />
               </div> */}
-              <div className="text-lg font-bold text-brand-dark">{price}</div>
-              <div className="text-xs text-gray-500 flex items-center gap-2">Selected SKU stock: {totalSelectedQty}
-              <span className={cn(
-            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md border shadow-sm transition",
+              {/* <div className="text-lg font-bold text-brand-dark">{price}</div> */}
+              
+                 {tagPrice ? (
+                <div className="text-lg font-bold text-brand-dark">${tagPrice || "-"}</div>
+              ) : null}
+              
+              <div className="text-xs text-gray-500 gap-2">Selected SKU stock: {totalSelectedQty}
+                  
+              </div>
+              <div className="text-xs text-gray-500 flex items-center justify-end gap-2">
+                <span>Total stock : {product?.totalInventory || "-" }</span>
+                {/* <InventoryStatusBadge quantity={Number(product?.totalInventory || 0)} /> */}
+
+              </div>
+                <span className={cn(
+            "flex items-center justify-center mt-2  gap-1 px-2.5 py-1 rounded-md text-xs font-semibold backdrop-blur-md border shadow-sm transition",
             totalSelectedQty > 0
-              ? " text-black "
+              ? " text-black"
               : "bg-red-500/90 text-white border-red-400"
           )}>
             {totalSelectedQty ? <FaCheckCircle /> : <FaTimesCircle />}
             {totalSelectedQty > 0 ? "In Stock" : "Out"}
-          </span>      
-              </div>
-              <div className="text-xs text-gray-500 flex items-center justify-end gap-2">
-                <span>Total stock : {product?.totalInventory || "-" }</span>
-                <InventoryStatusBadge quantity={Number(product?.totalInventory || 0)} />
-              </div>
-              {/* <div className="absolute top-3 right-3 z-20">
-          <div className={cn(
-            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md border shadow-sm transition",
-            inStock
-              ? " text-black "
-              : "bg-red-500/90 text-white border-red-400"
-          )}>
-            {inStock ? <FaCheckCircle /> : <FaTimesCircle />}
-            {inStock ? "In Stock" : "Out"}
-          </div>
-
-        </div> */}
+          </span>
             </div>
           </div>
         </div>
@@ -520,7 +520,7 @@ const VendorProductSingleDetails: React.FC<{
             lang={lang}
             vendorProductId={String(product?._id)}
             skuId={selectedSkuId}
-            // availableQty={Number(totalSelectedQty || 0)}
+            cpPrice={price}
             availableQty={selectedWarehouseQty}
             hasMainWarehouse={selectedWarehouseIsMain}
             warehouseId={selectedWarehouseId}

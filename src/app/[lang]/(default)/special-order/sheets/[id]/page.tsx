@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import SheetViewContent from './sheet-view-content';
 
 export const metadata: Metadata = {
-  title: 'PNL Report',
+  title: 'Report',
 };
 
 export default function Page({

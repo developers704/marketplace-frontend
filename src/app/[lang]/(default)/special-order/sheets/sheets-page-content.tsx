@@ -40,7 +40,7 @@ const SheetsPageContent = ({ lang }: Props) => {
       <Breadcrumb lang={lang} />
       <section className="my-6 md:my-10 lg:my-12">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">PNL Reports</h1>
+          <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">Reports</h1>
           <p className="mt-1 text-sm text-slate-600">
             Open reports assigned to your account.
           </p>

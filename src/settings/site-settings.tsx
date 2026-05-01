@@ -294,8 +294,8 @@ export const siteSettings = {
       },
       {
         id: 8,
-        path: '/pnl-reports',
-        label: 'PNL Reports',
+        path: '/reports',
+        label: 'Report',
       },
     ],
   },

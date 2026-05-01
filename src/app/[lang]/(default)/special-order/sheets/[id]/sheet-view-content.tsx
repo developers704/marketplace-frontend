@@ -55,7 +55,7 @@ const SheetViewContent = ({ lang, id }: Props) => {
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
             <p className="text-slate-700">You do not have access to this sheet.</p>
             <Link href={`/${lang}/special-order/sheets`} className="mt-3 inline-block text-sm font-semibold underline">
-              Back to PNL Reports
+              Back to Reports
             </Link>
           </div>
         </section>

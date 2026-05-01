@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import SheetsPageContent from './sheets-page-content';
 
 export const metadata: Metadata = {
-  title: 'PNL Reports',
+  title: 'Reports',
 };
 
 export default function Page({
