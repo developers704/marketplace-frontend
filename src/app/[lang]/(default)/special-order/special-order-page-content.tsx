@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Container from '@/components/ui/container';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { getSelectedWarehouse } from '@/lib/selected-warehouse';
@@ -8,7 +8,7 @@ import { createSpecialOrder } from '@/framework/basic-rest/spo/spo';
 import { toast } from 'react-toastify';
 import { Upload, Store, FileText, Palette } from 'lucide-react';
 import DrawingCanvas, { type DrawingCanvasRef } from '@/components/common/drawing-canvas';
-import SpoOrdersSidebar from './spo-orders-sidebar';
+import SpecialOrderSidebarTabs from './special-order-sidebar-tabs';
 import dayjs from 'dayjs';
 
 const GOLD_ACCENT = '#C6A87D';
@@ -220,7 +220,11 @@ useEffect(() => {
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
           <aside className="w-full shrink-0 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm lg:sticky lg:top-24 lg:w-80 xl:w-96 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-            <SpoOrdersSidebar lang={lang} refreshTrigger={sidebarRefresh} />
+            <Suspense
+              fallback={<div className="h-48 animate-pulse rounded-xl bg-slate-100" aria-hidden />}
+            >
+              <SpecialOrderSidebarTabs lang={lang} spoRefreshTrigger={sidebarRefresh} />
+            </Suspense>
           </aside>
 
           <div className="min-w-0 flex-1">

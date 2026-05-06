@@ -49,10 +49,13 @@ export default function MarketplaceProductCard({
 
   const minAmount = rawMin > 0 ? rawMin : defaultSkuPrice;
   const maxAmount = rawMax > 0 ? rawMax : defaultSkuPrice;
+  const defaultSkuTagPrice = Number(product?.defaultSku?.tagPrice ?? 0);
+
   const currencyCode = product?.defaultSku?.currency ?? 'USD';
 
-  const { price: minPrice } = usePrice({ amount: minAmount, currencyCode });
-  const { price: maxPrice } = usePrice({ amount: maxAmount, currencyCode });
+  // const { price: minPrice } = usePrice({ amount: minAmount, currencyCode });
+  // const { price: maxPrice } = usePrice({ amount: maxAmount, currencyCode });
+  const { price: tagPrice } = usePrice({ amount: defaultSkuTagPrice, currencyCode });
 
   const defaultImage = product?.defaultSku?.images?.[0];
   const imageUrl = buildImageUrl(BASE_API, defaultImage);
@@ -152,8 +155,15 @@ const handleClick = () => {
         </div>
         </div>
         <div className="mt-auto flex items-center justify-between ">
-          <div className="text-sm font-semibold tracking-tight text-neutral-900 group-hover:text-brand transition-colors">
-            {minAmount === maxAmount ? minPrice : `${minPrice} - ${maxPrice}`}
+          <div className="flex flex-col">
+            
+              <span className="text-sm font-semibold tracking-tight text-neutral-900 group-hover:text-brand transition-colors ">
+                {tagPrice}
+              </span>
+           
+            {/* <div className="text-sm font-semibold tracking-tight text-neutral-900 group-hover:text-brand transition-colors">
+              {minAmount === maxAmount ? minPrice : `${minPrice} - ${maxPrice}`}
+            </div> */}
           </div>
           <div className="text-sm text-gray-500">{product?.skuCount ?? 0} SKUs</div>
         </div>

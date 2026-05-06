@@ -8,6 +8,11 @@ import { usePathname } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 import { PermissionsContext } from '@/contexts/permissionsContext';
 import { useUI } from '@/contexts/ui.context';
+import {
+  getSiteNavItems,
+  normalizeNavPermissionKey,
+  isSiteNavItemActive,
+} from '@/layouts/header/site-nav-config';
 
 interface MenuProps {
   lang: string;
@@ -24,36 +29,10 @@ const HeaderMenu: React.FC<MenuProps> = ({
   const { t } = useTranslation(lang, 'menu');
   const path = usePathname();
   const [activePath, setActivePath] = useState(path);
-  const { permissions: userPermission } = useContext(PermissionsContext);
+  const { permissions: userPermission, isAdmin } = useContext(PermissionsContext);
   const { isAuthorized } = useUI();
 
-  const menuItems = [
-    { id: 1, path: `/${lang}/`, label: 'Home' },
-    { id: 2, path: '/valliani-university', label: 'Valliani University' },
-      // {
-    //   id: 3,
-    //   path: '/inventory-orders',
-    //   label: 'Inventory Order',
-    // },
-    { id: 10, path: `/${lang}/marketplace`, label: 'Inventory' },
-        // {
-    //   id: 9,
-    //   path: `/${lang}/Inventory`,
-    //   label: 'Inventory',
-    // },
-    { id: 4, path: `/${lang}/marketing`, label: 'Marketing' },
-    { id: 5, path: `/${lang}/supplies`, label: 'Supplies' },
-    { id: 11, path: `/${lang}/marketplace/store-inventory`, label: 'My inventory' },
-    { id: 6, path: `/${lang}/tool-findings`, label: 'Tool Finding' },
-    { id: 8, path: `/${lang}/GWP`, label: 'GWP' },
-     // {
-    //   id: 7,
-    //   path: '/packaging',
-    //   label: 'GWP',
-    // },
-    { id: 9, path: `/${lang}/special-order`, label: 'Special Order' },
-    { id: 10, path: `/${lang}/special-order/sheets`, label: 'Report' },
-  ];
+  const menuItems = getSiteNavItems(lang);
 
   const isHome = `/${lang}` === activePath;
 
@@ -61,50 +40,37 @@ const HeaderMenu: React.FC<MenuProps> = ({
     setActivePath(path);
   }, [path]);
 
-  const specialOrderPath = `/${lang}/special-order`;
-  const sheetsMenuPath = `/${lang}/special-order/sheets`;
-
-  const isMenuItemActive = (itemPath: string) => {
-    if (itemPath === sheetsMenuPath) {
-      return activePath === sheetsMenuPath || activePath.startsWith(`${sheetsMenuPath}/`);
-    }
-    if (itemPath === specialOrderPath) {
-      if (activePath === specialOrderPath) return true;
-      return (
-        activePath.startsWith(`${specialOrderPath}/`) &&
-        !activePath.startsWith(sheetsMenuPath)
-      );
-    }
-    return activePath === itemPath;
-  };
-
-  const normalizeKey = (label: string) => {
-    const mapping: Record<string, string> = {
-      Inventory: 'Inventory Order',
-    };
-    return mapping[label] || label.trim().replace(/\s*\/\s*/g, '-');
-  };
-
   const filteredMenu = menuItems.filter((item) => {
+    if (isAdmin) return true;
     if (item.label === 'Marketplace') return true;
-    const permissionKey = normalizeKey(item.label);
+    const permissionKey = normalizeNavPermissionKey(item.label);
     if (!userPermission?.hasOwnProperty(permissionKey)) return false;
     return userPermission[permissionKey]?.View === true;
   });
 
   if (!isAuthorized) return <div>Login to continue</div>;
 
-  const items = filteredMenu.length === 0 ? menuItems : filteredMenu;
+  const items = filteredMenu;
+
+  if (items.length === 0) {
+    return (
+      <nav className={cn('flex min-w-0 items-center py-1', className)}>
+        <span className="text-[11px] font-medium text-white/50 px-2">
+          No sections available for your role
+        </span>
+      </nav>
+    );
+  }
 
   return (
     <nav
       className={cn(
-    'headerMenu flex flex-nowrap  items-center justify-start gap-2 py-1 w-full overflow-hidden',
-    className
-  )}
+        'headerMenu flex min-w-0 max-w-full flex-nowrap items-center justify-start gap-2 overflow-x-auto py-1',
+        className,
+      )}
     >
       {items.map((item: { id: number; path: string; label: string; subMenu?: any }) => {
-        const isActive = isMenuItemActive(item.path);
+        const isActive = isSiteNavItemActive(item.path, activePath, lang);
         const isHomeCondition = `/${lang}` === '' && isHome;
         const active = isActive || isHomeCondition;
 

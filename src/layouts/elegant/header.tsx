@@ -19,6 +19,8 @@ import { useModalAction } from '@components/common/modal/modal.context';
 import useOnClickOutside from '@utils/use-click-outside';
 import { FiMenu } from 'react-icons/fi';
 import CategoryDropdownMenu from '@components/category/category-dropdown-menu';
+import MobileSiteNavMenu from '@layouts/header/mobile-site-nav-menu';
+import { useMediaMinLg } from '@/layouts/header/use-media-min-lg';
 import { useTranslation } from 'src/app/i18n/client';
 import WishlistCounter from '@components/common/point-counter';
 import Link from 'next/link';
@@ -38,7 +40,6 @@ import { useWishlist } from '@/contexts/wishlistContext';
 import { getAllCartItems } from '@/framework/basic-rest/cart/use-cart';
 import { FaRegBell } from 'react-icons/fa';
 import NotificationDropdown from '@/components/common/notificationDropdown';
-import { permission } from 'process';
 import GlobalSearch from '@/components/common/globalSearch';
 import { PermissionsContext } from '@/contexts/permissionsContext';
 import { ShoppingCart } from 'lucide-react';
@@ -95,7 +96,11 @@ function Header({ lang }: { lang: string }) {
   });
   const { getCartLength, addAllToCart } = useContext(CartContext);
   const [cartItemsLength, setCartItemsLength] = useState<number | any>(0);
-  const parentRef = useRef<HTMLDivElement>(null);
+  /** Mobile hamburger + dropdown — must not share ref with desktop row or click-outside closes menu before navigate. */
+  const mobileNavWrapRef = useRef<HTMLDivElement>(null);
+  /** Desktop navbar hamburger + category mega menu + search row */
+  const desktopCategoryWrapRef = useRef<HTMLDivElement>(null);
+  const isDesktopLg = useMediaMinLg();
 
   // Fetch B2B cart to show item count
   const { data: b2bCart } = useQuery({
@@ -127,12 +132,14 @@ function Header({ lang }: { lang: string }) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
       if (
-        parentRef.current &&
-        !parentRef.current.contains(event.target as Node)
+        mobileNavWrapRef.current?.contains(target) ||
+        desktopCategoryWrapRef.current?.contains(target)
       ) {
-        closeMenu();
+        return;
       }
+      closeMenu();
     }
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -233,20 +240,21 @@ function Header({ lang }: { lang: string }) {
       id="siteHeader"
       ref={siteHeaderRef}
       className={cn(
-        'header-five sticky-header sticky -top-[1px] z-50 lg:relative w-full h-16 lg:h-auto pt-2',
+        'header-five sticky-header sticky -top-[1px] z-50 lg:relative w-full max-w-full min-w-0 overflow-x-clip h-16 lg:h-auto pt-2',
         displayMobileSearch && 'active-mobile-search',
       )}
     >
-      <div className="z-20 w-full transition-all duration-200 ease-in-out innerSticky relative lg:w-full body-font bg-brand-light">
+      <div className="innerSticky relative z-20 w-full max-w-full min-w-0 overflow-x-clip transition-all duration-200 ease-in-out body-font bg-brand-light lg:w-full">
         <Search
           searchId="mobile-search"
           className="top-bar-search hidden lg:max-w-[600px] absolute z-30 px-4 md:px-6 top-1"
           lang={lang}
         />
         {/* End of Mobile search */}
-        <Container className="flex items-center justify-between h-20 py-7 border-b top-bar lg:h-auto border-border-base ">
-          <div >
-            <div ref={parentRef} className="relative shrink-0 lg:invisible ">
+        {/* overflow-x-clip (not hidden): overflow-x:hidden forces overflow-y:auto in CSS → inner vertical scrollbar. Avoid fixed h-* + large py — content was taller than box. */}
+        <Container className="top-bar flex min-w-0 max-w-full items-center justify-between gap-2 overflow-x-clip border-b border-border-base py-4 md:py-5 lg:py-6">
+          <div>
+            <div ref={mobileNavWrapRef} className="relative shrink-0 lg:invisible ">
               <button
                 className="border border-border-base rounded-md focus:outline-none shrink-0 text-sm lg:text-15px font-medium text-brand-dark px-2.5 md:px-3 lg:px-[18px] py-2 md:py-2.5 lg:py-3 flex items-center transition-all hover:border-border-four"
                 onClick={handleCategoryMenu}
@@ -256,8 +264,13 @@ function Header({ lang }: { lang: string }) {
                   {t('text-all-categories')}
                 </span>
               </button>
-              {categoryMenu && (
-                <CategoryDropdownMenu className="mt-3 md:mt-2.5" />
+              {/* Mobile: same tabs as desktop header (RBAC). Desktop: category mega menu opens from navbar row only. */}
+              {categoryMenu && !isDesktopLg && (
+                <MobileSiteNavMenu
+                  lang={lang}
+                  onClose={() => setCategoryMenu(false)}
+                  className="mt-3 md:mt-2.5"
+                />
               )}
             </div>
           </div>
@@ -349,8 +362,8 @@ function Header({ lang }: { lang: string }) {
         </Container>
         {/* End of top part */}
 
-        <div className="hidden navbar lg:block bg-brand-light">
-          <Container className="h-20 flex justify-between gap-4 items-center py-2.5">
+        <div className="navbar hidden min-w-0 max-w-full overflow-x-clip bg-brand-light lg:block">
+          <Container className="flex min-h-0 min-w-0 max-w-full flex-wrap items-center justify-between gap-3 overflow-x-clip py-3 lg:flex-nowrap lg:gap-4">
           
 
             {!isAuthorized ? (
@@ -359,26 +372,24 @@ function Header({ lang }: { lang: string }) {
               <>
               
                 <div
-                  ref={parentRef}
-                  className="relative categories-header-button rtl:ml-8 shrink-0 flex flex-1"
+                  ref={desktopCategoryWrapRef}
+                  className="categories-header-button relative flex min-w-0 max-w-full flex-1 items-center gap-2 rtl:ml-8"
                 >
                   <button
-                    className=" rounded-md focus:outline-none shrink-0 text-15px font-medium text-brand-dark pl-[18px] py-3 flex items-center transition-all hover:border-border-four"
+                    className="rounded-md py-3 pl-[18px] text-15px font-medium text-brand-dark transition-all hover:border-border-four focus:outline-none shrink-0 flex items-center"
                     onClick={handleCategoryMenu}
                   >
                     <FiMenu className="text-2xl ltr:mr-3 rtl:ml-3" />
-                 
                   </button>
-                  {categoryMenu && <CategoryDropdownMenu />}
-                  <div>
+                  {categoryMenu && isDesktopLg && <CategoryDropdownMenu />}
+                  <div className="min-w-0 flex-1 max-w-[min(100%,580px)]">
                     <GlobalSearch />
-             
                   </div>
                 </div>
 
                 <HeaderMenu
                   data={site_header.pagesMenu}
-                  className="flex flex-[3] transition-all duration-200 ease-in-out p-0 w-[100vw]"
+                  className="min-w-0 max-w-full flex-[1.15] p-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-[2]"
                   lang={lang}
                   userPermission={userData?.permissions}
                 />

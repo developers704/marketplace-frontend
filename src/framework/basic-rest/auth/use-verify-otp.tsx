@@ -7,7 +7,7 @@ export interface VerifyOTPInputType {
   email: string;
 }
 
-export async function verifyOTP(input: VerifyOTPInputType, setPermissions?: any) {
+export async function verifyOTP(input: VerifyOTPInputType) {
   try {
     const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
     const response = await fetch(`${BASE_API}/api/auth/customer/verify-otp`, {
@@ -36,15 +36,10 @@ export async function verifyOTP(input: VerifyOTPInputType, setPermissions?: any)
 
     if (data.token) {
       Cookies.set('auth_token', data.token);
-      // Save permissions if provided in response
-      if (data?.customer?.role?.permissions && setPermissions) {
-        setPermissions(data?.customer?.role?.permissions);
-        localStorage.setItem(
-          'userPermissions',
-          JSON.stringify(data?.customer?.role?.permissions),
-        );
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', data.token);
       }
-
+      // Permissions: use GET /api/auth/permissions after login (see PermissionsProvider).
       toast.success('OTP verified successfully!', { position: 'bottom-right' });
     }
 

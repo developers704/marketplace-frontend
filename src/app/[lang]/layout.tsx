@@ -65,10 +65,10 @@ export default function RootLayout({
       <body className={jost.variable}>
         <RootClientLayout>
           <Providers>
-            <PermissionsProvider>
-              <WishlistProvider>
-                <ProfileProvider>
-                  <ManagedUIContext>
+            <WishlistProvider>
+              <ProfileProvider>
+                <ManagedUIContext>
+                  <PermissionsProvider>
                     <div className="w-full">
                       {/* <PreventScreenCapture /> */}
                       <ElegantLayout lang={lang}>{children}</ElegantLayout>
@@ -76,10 +76,10 @@ export default function RootLayout({
                       <ManagedDrawer lang={lang} /> */}
                       <ToasterProvider />
                     </div>
-                  </ManagedUIContext>
-                </ProfileProvider>
-              </WishlistProvider>
-            </PermissionsProvider>
+                  </PermissionsProvider>
+                </ManagedUIContext>
+              </ProfileProvider>
+            </WishlistProvider>
           </Providers>
         </RootClientLayout>
       </body>

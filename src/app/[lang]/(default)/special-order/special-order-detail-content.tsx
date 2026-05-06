@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { io } from 'socket.io-client';
 import Container from '@/components/ui/container';
@@ -24,7 +24,7 @@ import {
   Clock3,
   MessageSquare,
 } from 'lucide-react';
-import SpoOrdersSidebar from './spo-orders-sidebar';
+import SpecialOrderSidebarTabs from './special-order-sidebar-tabs';
 const GOLD_ACCENT = '#C6A87D';
 const BASE_API = process.env.NEXT_PUBLIC_BASE_API || 'http://localhost:5000';
 
@@ -234,7 +234,11 @@ const SpecialOrderDetailContent = ({ lang, orderId }: Props) => {
       <div className="my-6 md:my-10">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
           <aside className="w-full shrink-0 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm lg:sticky lg:top-24 lg:w-72 xl:w-80 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-            <SpoOrdersSidebar lang={lang} refreshTrigger={sidebarRefresh} />
+            <Suspense
+              fallback={<div className="h-48 animate-pulse rounded-xl bg-slate-100" aria-hidden />}
+            >
+              <SpecialOrderSidebarTabs lang={lang} spoRefreshTrigger={sidebarRefresh} />
+            </Suspense>
           </aside>
 
           <div className="min-w-0 flex-1">

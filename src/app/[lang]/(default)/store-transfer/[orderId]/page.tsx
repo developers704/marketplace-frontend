@@ -1,14 +1,9 @@
-import { Metadata } from 'next';
-import StoreTransferDetailContent from '../store-transfer-detail-content';
-
-export const metadata: Metadata = {
-  title: 'Store transfer request',
-};
+import { redirect } from 'next/navigation';
 
 export default async function Page({
   params,
 }: {
   params: { lang: string; orderId: string };
 }) {
-  return <StoreTransferDetailContent lang={params.lang} orderId={params.orderId} />;
+  redirect(`/${params.lang}/special-order/store-transfer/${params.orderId}`);
 }

@@ -230,8 +230,8 @@ const GlobalSearch = ({
   }, [showPanel, updatePanelLayout, isSearching, searchResults.length, debouncedQuery]);
 
   return (
-    <div className="relative z-[100] flex flex-col justify-center w-fit shrink-0">
-      <div className="flex flex-col w-[min(100vw-1rem,580px)] min-w-[280px] sm:min-w-[440px]">
+    <div className="relative z-[100] flex w-full min-w-0 max-w-full flex-col justify-center">
+      <div className="flex w-full min-w-0 max-w-[580px] flex-col sm:max-w-[580px]">
         <div ref={anchorRef} className="relative flex w-full rounded-full" role="search">
           <label className="flex flex-1 items-center py-0.5 rounded-full">
             <input

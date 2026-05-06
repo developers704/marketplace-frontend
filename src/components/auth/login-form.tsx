@@ -25,7 +25,7 @@ const LoginForm = ({ lang }: { lang: string }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   // const { mutate: login, isPending } = useLoginMutation();
-  const { setPermissions } = useContext(PermissionsContext) || {};
+  const { refreshPermissions } = useContext(PermissionsContext) || {};
   const { authorize } = useUI();
   const router = useRouter();
 
@@ -82,9 +82,10 @@ const LoginForm = ({ lang }: { lang: string }) => {
     const loginData = { userId, password, remember_me, warehouseId: selectedWarehouse , setUser};
 
     try {
-      const response = await login(loginData, setPermissions, setUser);
+      const response = await login(loginData, setUser);
       if (response?.token) {
         authorize();
+        await refreshPermissions?.();
         router.push(`/${lang}/`);
       } else if (response?.requireOTP) {
         setShowOTPModal(true);
@@ -99,14 +100,15 @@ const LoginForm = ({ lang }: { lang: string }) => {
 
   /* ────── OTP HANDLERS ────── */
   const handleOTPVerification = async (otp: string, email: string) => {
-    return await verifyOTP({ otpCode: otp, email }, setPermissions);
+    return await verifyOTP({ otpCode: otp, email });
   };
   const handleResendOTP = async (email: string) => {
     return await resendOTP({ email, userId: email });
   };
-  const handleOTPSuccess = () => {
+  const handleOTPSuccess = async () => {
     setShowOTPModal(false);
     authorize();
+    await refreshPermissions?.();
     router.push(`/${lang}/`);
   };
   const handleCloseOTPModal = () => setShowOTPModal(false);

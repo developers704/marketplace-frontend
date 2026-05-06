@@ -109,7 +109,7 @@ export default function B2BPurchasePanel({
     },
     onSuccess: (data) => {
       toast.success('Request sent to admin. You can track status and chat in the next screen.');
-      router.push(`/${lang}/store-transfer/${data._id}`);
+      router.push(`/${lang}/special-order/store-transfer/${data._id}`);
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : 'Request failed');

@@ -11,6 +11,7 @@ import { useIsMounted } from '@utils/use-is-mounted';
 import { useTranslation } from 'src/app/i18n/client';
 import NewFooter from '../footer/new-footer';
 import { usePathname } from 'next/navigation';
+import PermissionRouteGuard from '@/components/auth/permission-route-guard';
 
 function ClientRenderedHightLightedBar({ lang }: { lang: string }) {
   const { t } = useTranslation(lang, 'common');
@@ -42,6 +43,7 @@ export default function ElegantLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
+      <PermissionRouteGuard lang={lang} />
       {/* Fixed header at top of viewport */}
       {!isAuthPage && <Header lang={lang} />}
       {/* Page scroll on body; main has no overflow so sticky works relative to viewport */}

@@ -78,9 +78,10 @@ const NewlyAddedProduct = ({ lang }: any) => {
         </div>
       ) : products.length > 0 ? (
         <>
+          {/* Match Inventory Categories grid — avoid 8–12 cols (cards stayed tiny / one dense row on zoom). */}
           <div
             className={cn(
-              'grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6  lg:grid-cols-8 xl:grid-cols-12 2xl:grid-cols-12 gap-3 md:gap-4 2xl:gap-5',
+              'grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6  lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-10 gap-3 md:gap-4 2xl:gap-5',
             )}
           >
             {products.map((product: VendorProductListItem) => (

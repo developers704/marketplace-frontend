@@ -202,9 +202,22 @@ const VendorProductReviews: React.FC<VendorProductReviewsProps> = ({ productId, 
           <div>
             <button
               onClick={() => setShowReviewForm(!showReviewForm)}
-              className="px-6 py-2.5 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue/90 transition-colors flex items-center gap-2"
+              className={cn(
+              'inline-flex items-center justify-center gap-2',
+              'font-semibold text-white whitespace-nowrap',
+              'text-[clamp(11px,0.85vw,14px)]',
+              'transition-all duration-100 ease-out',
+              'transform hover:-translate-y-0.5 hover:scale-[1.02]',
+              'active:translate-y-0 active:scale-[0.97]',
+              'px-[clamp(10px,1vw,18px)] py-[clamp(6px,0.7vw,10px)]',
+              'rounded-tl-xl rounded-br-2xl',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700',
+              'bg-black/90 ring-1 ring-black/10',
+              'hover:bg-black/80 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:ring-white/10',
+              'active:bg-slate-600 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.25)]'
+              )}
             >
-              <MessageSquare size={18} />
+              <MessageSquare size={18} className="shrink-0" />
               Write A Review
             </button>
           </div>
@@ -431,7 +444,21 @@ const VendorProductReviews: React.FC<VendorProductReviewsProps> = ({ productId, 
           <p className="text-gray-600 mb-6">Be the first to review this SKU variant!</p>
           <button
             onClick={() => setShowReviewForm(true)}
-            className="px-6 py-2.5 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue/90 transition-colors"
+              className={cn(
+           'inline-flex items-center justify-center gap-2 mt-1',
+           'font-semibold text-white whitespace-nowrap',
+           'text-[clamp(11px,0.85vw,14px)]',
+           'transition-all duration-100 ease-out',
+           'transform hover:-translate-y-0.5 hover:scale-[1.02]',
+           'active:translate-y-0 active:scale-[0.97]',
+           'px-[clamp(10px,1vw,18px)] py-[clamp(6px,0.7vw,10px)]',
+           'rounded-tl-xl rounded-br-2xl',
+           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-700',
+           'bg-black/90 ring-1 ring-black/10',
+           'hover:bg-black/80 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] hover:ring-white/10',
+           'active:bg-slate-600 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.25)]'
+            )}
+            // className="px-6 py-2.5 bg-brand-blue text-white font-semibold rounded-lg hover:bg-brand-blue/90 transition-colors"
           >
             Write A Review
           </button>

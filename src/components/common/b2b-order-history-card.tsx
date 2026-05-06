@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { getImageUrl } from '@/lib/utils';
 import {
   Package,
@@ -14,6 +16,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import type { B2BPurchaseRequest } from '@/framework/basic-rest/catalogV2/b2b-requests';
+import { fulfillmentLabel } from '@/framework/basic-rest/catalogV2/b2b-requests';
 
 interface B2BOrderHistoryCardProps {
   data: B2BPurchaseRequest;
@@ -67,9 +70,17 @@ const STATUS_CONFIG: Record<
 };
 
 const B2BOrderHistoryCard = ({ data }: B2BOrderHistoryCardProps) => {
+  const params = useParams();
+  const lang = (params?.lang as string) || 'en';
   const [isExpanded, setIsExpanded] = useState(false);
   const config = STATUS_CONFIG[data.status] || STATUS_CONFIG.PENDING_DM;
   const StatusIcon = config.icon;
+  const effFulfillment =
+    data.status === 'APPROVED'
+      ? data.fulfillmentStatus && data.fulfillmentStatus !== 'NONE'
+        ? data.fulfillmentStatus
+        : 'SUBMITTED'
+      : null;
 
   const price = data.cartItemPrice ?? data.skuId?.price ?? 0;
   const currency = data.cartItemCurrency ?? data.skuId?.currency ?? 'USD';
@@ -80,7 +91,10 @@ const B2BOrderHistoryCard = ({ data }: B2BOrderHistoryCardProps) => {
     null;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-300/80">
+    <Link
+      href={`/${lang}/profile-details/b2b-order/${data._id}`}
+      className="group relative block overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:border-slate-300/80"
+    >
       {/* Top accent bar */}
       <div
         className={`absolute left-0 top-0 h-1 w-full ${
@@ -106,6 +120,11 @@ const B2BOrderHistoryCard = ({ data }: B2BOrderHistoryCardProps) => {
               <span className="text-sm text-slate-500">
                 Requested • {formatDate(data.createdAt)}
               </span>
+              {effFulfillment ? (
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                  Ship: {fulfillmentLabel(effFulfillment)}
+                </span>
+              ) : null}
             </div>
             <div className="flex items-center gap-2 text-slate-600">
               <span className="font-mono text-xs font-medium">
@@ -245,7 +264,11 @@ const B2BOrderHistoryCard = ({ data }: B2BOrderHistoryCardProps) => {
           </>
         )} */}
       </div>
-    </div>
+
+      <div className="border-t border-slate-100 px-6 py-3 text-center text-sm font-medium text-violet-700">
+        View order and messages →
+      </div>
+    </Link>
   );
 };
 

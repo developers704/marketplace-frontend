@@ -1,5 +1,4 @@
 'use client';
-import { useUI } from '@contexts/ui.context';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -11,7 +10,11 @@ export interface LoginInputType {
   remember_me: boolean;
   setUser?: (user: any) => void
 }
-export async function login(input: LoginInputType & { warehouseId?: string }, setPermissions: any,  setUser?: (user: any) => void) {
+// Permissions are loaded via GET /api/auth/permissions (not localStorage / login body).
+export async function login(
+  input: LoginInputType & { warehouseId?: string },
+  setUser?: (user: any) => void,
+) {
   const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
   // const { setUser } = useUI();
   try {
@@ -48,11 +51,6 @@ export async function login(input: LoginInputType & { warehouseId?: string }, se
 
       if (data.selectedWarehouse) {
         localStorage.setItem('selectedWarehouse', JSON.stringify(data.selectedWarehouse));
-      }
-
-      if (data?.customer?.role?.permissions && setPermissions) {
-        setPermissions(data.customer.role.permissions);
-        localStorage.setItem('userPermissions', JSON.stringify(data.customer.role.permissions));
       }
 
       toast.success('Login Successful!');
